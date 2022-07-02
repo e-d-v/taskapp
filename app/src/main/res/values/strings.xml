@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">taskapp</string>
+    <string name="action_settings">Settings</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="unchecked_button_desc">Empty, unfilled circle.</string>
+    <string name="events">Events</string>
+    <string name="tasks">Tasks</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="task_name">Task Name</string>
+    <string name="ecd">Earliest Completion Date (MM/DD/YY)</string>
+    <string name="due_date">Due Date (MM/DD/YY)</string>
+    <string name="ttc">Time to Complete (in minutes)</string>
+    <string name="parent_tasks">Parent Tasks:</string>
+    <string name="number_of_reoccurrences">Number of Reoccurrences</string>
+    <string name="length">Length (in minutes)</string>
+    <string name="start_time">Start Time (MM/DD/YY hh:mm AM/PM)</string>
+    <string name="event_name">Event Name</string>
+    <string name="title_activity_add_item">AddItem</string>
+    <string name="task">Task</string>
+    <string name="event">Event</string>
+    <string name="title_activity_main2">MainActivity2</string>
+    <string name="optimizing">Optimizing...</string>
+    <string name="main_fab_desc">Button with plus symbol</string>
+</resources>

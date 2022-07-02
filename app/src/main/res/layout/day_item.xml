@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:padding="6dp"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/dayItemDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="February 24th, 2022"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="@color/black"
+        android:layout_marginBottom="2dp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/eventHeader"
+        android:text="@string/events"
+        android:visibility="visible"
+        style="@style/subheader"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/eventRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/taskHeader"
+        android:text="@string/tasks"
+        android:visibility="visible"
+        style="@style/subheader" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/taskRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+</LinearLayout>

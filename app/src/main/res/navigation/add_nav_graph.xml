@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph2"
+    app:startDestination="@id/taskEntry">
+    <fragment
+        android:id="@+id/taskEntry"
+        android:name="com.evanv.taskapp.TaskEntry"
+        android:label="fragment_task_entry"
+        tools:layout="@layout/fragment_task_entry" >
+        <action
+            android:id="@+id/action_taskEntry_to_eventEntry"
+            app:destination="@id/eventEntry" />
+    </fragment>
+    <fragment
+        android:id="@+id/eventEntry"
+        android:name="com.evanv.taskapp.EventEntry"
+        android:label="fragment_event_entry"
+        tools:layout="@layout/fragment_event_entry" >
+        <action
+            android:id="@+id/action_eventEntry_to_taskEntry"
+            app:destination="@id/taskEntry" />
+    </fragment>
+</navigation>

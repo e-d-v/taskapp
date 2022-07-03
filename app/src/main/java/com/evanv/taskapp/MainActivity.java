@@ -1,12 +1,16 @@
 package com.evanv.taskapp;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 
@@ -18,6 +22,7 @@ import com.evanv.taskapp.databinding.ActivityMainBinding;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.BufferedWriter;
@@ -59,7 +64,25 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             task.getParents().get(i).removeChild(task);
         }
 
-        Optimize();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(String.format(getString(R.string.complete_dialog_message),
+                task.getName()));
+        builder.setTitle(R.string.complete_dialog_title);
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+        builder.setPositiveButton("Complete Task", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                todayTime += Integer.parseInt(input.getText().toString());
+                Optimize();
+            }
+        });
+
+        builder.show();
+
     }
 
     @Override

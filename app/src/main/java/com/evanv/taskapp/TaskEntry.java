@@ -1,5 +1,7 @@
 package com.evanv.taskapp;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -7,8 +9,12 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -18,6 +24,7 @@ import android.widget.Spinner;
 public class TaskEntry extends Fragment implements ItemEntry {
 
     private ViewGroup mContainer;
+    private String currentParents;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -57,6 +64,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        currentParents = "-1";
     }
 
     @Override
@@ -64,8 +72,57 @@ public class TaskEntry extends Fragment implements ItemEntry {
                              Bundle savedInstanceState) {
         mContainer = container;
 
+        View view = inflater.inflate(R.layout.fragment_task_entry, container, false);
+        Button button = (Button) view.findViewById(R.id.buttonAddParents);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ArrayList<Integer> selectedItems = new ArrayList<>();
+                ArrayList<String> taskNames = getActivity().getIntent()
+                        .getStringArrayListExtra(MainActivity.EXTRA_TASKS);
+
+                String[] taskNamesArr = new String[taskNames.size()];
+                Object[] taskNamesObjs = taskNames.toArray();
+
+                for (int i = 0; i < taskNames.size(); i++) {
+                    taskNamesArr[i] = (String) taskNamesObjs[i];
+                }
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle(R.string.parents_button)
+                        .setMultiChoiceItems(taskNamesArr, null,
+                                new DialogInterface.OnMultiChoiceClickListener() {
+
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int index, boolean isChecked) {
+                                        if (isChecked) {
+                                            selectedItems.add(index);
+                                        }
+                                        else if (selectedItems.contains(index)) {
+                                            selectedItems.remove(index);
+                                        }
+                                    }
+                                }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                StringBuilder sb = new StringBuilder();
+
+                                for (int index : selectedItems) {
+                                    sb.append(index);
+                                    sb.append(",");
+                                }
+
+                                currentParents = sb.toString();
+                            }
+                        });
+
+                builder.create();
+                builder.show();
+            }
+        });
+
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_task_entry, container, false);
+        return view;
     }
 
     @Override
@@ -74,13 +131,11 @@ public class TaskEntry extends Fragment implements ItemEntry {
         EditText editTextECD = mContainer.findViewById(R.id.editTextECD);
         EditText editTextDueDate = mContainer.findViewById(R.id.editTextDueDate);
         EditText editTextTTC = mContainer.findViewById(R.id.editTextTTC);
-        Spinner spinnerParents = mContainer.findViewById(R.id.spinnerParents);
 
         String taskName = editTextTaskName.getText().toString();
         String ecd = editTextECD.getText().toString();
         String dueDate = editTextDueDate.getText().toString();
         String ttc = editTextTTC.getText().toString();
-        String parents = Integer.toString(spinnerParents.getSelectedItemPosition());
 
         if (taskName.equals("") || ecd.equals("") || dueDate.equals("") || ttc.equals("")) {
             return null;
@@ -93,7 +148,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         toReturn.putString(AddItem.EXTRA_ECD, ecd);
         toReturn.putString(AddItem.EXTRA_DUE, dueDate);
         toReturn.putString(AddItem.EXTRA_TTC, ttc);
-        toReturn.putString(AddItem.EXTRA_PARENTS, parents);
+        toReturn.putString(AddItem.EXTRA_PARENTS, currentParents);
 
         return toReturn;
     }

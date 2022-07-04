@@ -31,4 +31,5 @@
     <string name="main_fab_desc">Button with plus symbol</string>
     <string name="complete_dialog_message">How long (in minutes) did %s take to complete?</string>
     <string name="complete_dialog_title">Complete Task</string>
+    <string name="parents_button">Choose prerequisite tasks</string>
 </resources>

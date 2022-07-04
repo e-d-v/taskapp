@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     private int numEvents;
     public static final int ITEM_REQUEST = 1;
     private DayItemAdapter dayItemAdapter;
+    public static final String EXTRA_TASKS = "com.evanv.taskapp.extras.TASKS";
 
     private void Complete(Task task) {
         tasks.remove(task);
@@ -155,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                     int timeToComplete = Integer.parseInt(result.getString(AddItem.EXTRA_TTC));
                     String ecd = result.getString(AddItem.EXTRA_ECD);
                     String dd = result.getString(AddItem.EXTRA_DUE);
-                    int parents = Integer.parseInt(result.getString(AddItem.EXTRA_PARENTS));
+                    String parents = result.getString(AddItem.EXTRA_PARENTS);
 
                     MyTime early;
                     try {
@@ -179,10 +180,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                     Task toAdd = new Task(name, early, due, timeToComplete);
 
-                    if (parents != -1) {
-                        Task parent = tasks.get(parents);
-                        toAdd.addParent(parent);
-                        parent.addChild(toAdd);
+                    String[] parentIndices = parents.split(",");
+
+                    if (!parentIndices[0].equals("-1")) {
+                        for (String parentIndex : parentIndices) {
+                            Task parent = tasks.get(Integer.parseInt(parentIndex));
+                            toAdd.addParent(parent);
+                            parent.addChild(toAdd);
+                        }
                     }
 
                     tasks.add(toAdd);
@@ -354,6 +359,13 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     private void intentAddItem() {
         Intent intent = new Intent(this, AddItem.class);
+
+        ArrayList<String> taskNames = new ArrayList<>();
+        for (Task t : tasks) {
+            taskNames.add(t.getName());
+        }
+
+        intent.putStringArrayListExtra(EXTRA_TASKS, taskNames);
         startActivityForResult(intent, ITEM_REQUEST);
     }
 
@@ -380,9 +392,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                     parents.append(tasks.indexOf(t.getParents().get(j))).append(",");
                 }
 
-                out.write(t.getName() + "|" + t.getEarlyDate().getDateTime() + "|" +
+                String taskLine = t.getName() + "|" + t.getEarlyDate().getDateTime() + "|" +
                         t.getDueDate().getDateTime() + "|" + t.getDoDate().getDateTime() + "|" +
-                        t.getTimeToComplete() + "|" + parents.toString() + "\n");
+                        t.getTimeToComplete() + "|" + parents.toString() + "\n";
+
+                out.write(taskLine);
+                Log.d("HELLO", taskLine);
             }
 
             out.write(Integer.toString(numEvents) + "\n");

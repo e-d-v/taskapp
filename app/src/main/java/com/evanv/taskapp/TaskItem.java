@@ -2,6 +2,8 @@ package com.evanv.taskapp;
 
 /**
  * Class representing a Task for use in the DayItem's recyclerview
+ *
+ * @author Evan Voogd
  */
 public class TaskItem {
     private String mName; // Name of the task (e.g. "Read Ch. 3")

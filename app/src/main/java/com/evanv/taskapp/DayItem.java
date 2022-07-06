@@ -5,6 +5,8 @@ import java.util.List;
 /**
  * Representation of a day for the outer recyclerview in the MainActivity. Contains two
  * sub-recyclerviews, represented by EventItem and TaskItem.
+ *
+ * @author Evan Voogd
  */
 public class DayItem {
     private String mDayString;       // String of the day this DayItem represents

@@ -3,13 +3,13 @@ import java.util.ArrayList;
 import java.util.Date;
 
 /**
- * Represents a single task. Conceptually a Task is a node on a large task dependency graph that spans the entire
- * list of tasks. Tasks that aren't connected can be done in any order, tasks that are connected must be done in
- * an order specified by the child/parent relationships -> children require their parents to complete before they
- * can be started. Definitely overengineered, but this Task class is designed to make the Optimizer work.
+ * Represents a single task. Conceptually a Task is a node on a large task dependency graph that
+ * spans the entire list of tasks. Tasks that aren't connected can be done in any order, tasks that
+ * are connected must be done in an order specified by the child/parent relationships -> children
+ * require their parents to complete before they can be started. Definitely overengineered, but this
+ * Task class is designed to make the Optimizer work.
  *
- * @author Evan Daniel Voogd
- * @author evanv.com
+ * @author Evan Voogd
  */
 public class Task implements Comparable {
     private final String name;               // Name of the task
@@ -133,16 +133,16 @@ public class Task implements Comparable {
     /**
      * Changes the amount of time it takes to complete the task.
      *
-     * @param dueDate The new amount of time it takes to complete the task.
+     * @param timeToComplete The new amount of time it takes to complete the task.
      */
     public void setTimeToComplete(int timeToComplete) {
         this.timeToComplete = timeToComplete;
     }
 
     /**
-     * Returns the "working" parents list. The working list exists so the optimizer can remove parents from
-     * children as they are completed, so checking if all prerequisite tasks are completed is as easy as
-     * getWorkingParents().size().
+     * Returns the "working" parents list. The working list exists so the optimizer can remove
+     * parents from children as they are completed, so checking if all prerequisite tasks are
+     * completed is as easy as getWorkingParents().size() == 0.
      *
      * @return The working parents list.
      */
@@ -160,8 +160,8 @@ public class Task implements Comparable {
     }
 
     /**
-     * Copies children into working children and parents into working parents, so the optimizer can utilize the
-     * inherent dependency tree.
+     * Copies children into working children and parents into working parents, so the optimizer can
+     * utilize the inherent dependency tree.
      */
     public void initalizeForOpimization() {
         workingChildren = (ArrayList<Task>)children.clone();
@@ -241,14 +241,17 @@ public class Task implements Comparable {
      * negative if this task is greater, and 0 if they are equal
      */
     public int compareTo(Object o) {
+        // See if task is due before the other task
         Task other = (Task)o;
         MyTime otherDueDate = other.getDueDate();
         long diff = dueDate.getDateTime() - otherDueDate.getDateTime();
 
         if (diff == 0) {
+            // See if task has more children than the other task
             diff = children.size() - other.getChildren().size();
 
             if (diff == 0) {
+                // See if task can be completed earlier than the other task
                 MyTime otherEarlyDate = other.getEarlyDate();
 
                 diff = earlyDate.getDateTime() - otherEarlyDate.getDateTime();

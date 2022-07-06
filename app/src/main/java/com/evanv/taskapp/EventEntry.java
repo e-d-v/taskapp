@@ -10,70 +10,53 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link EventEntry#newInstance} factory method to
- * create an instance of this fragment.
+ * The fragment that handles data entry for new events
+ *
+ * @author Evan Voogd
  */
 public class EventEntry extends Fragment implements ItemEntry {
+    private ViewGroup mContainer; // The ViewGroup for the activity, allows easy access to views
 
-    private ViewGroup mContainer;
-
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
+    /**
+     * Required empty public constructor
+     */
     public EventEntry() {
-        // Required empty public constructor
     }
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
+     * Required empty onCreate method
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment EventEntry.
+     * @param savedInstanceState not used
      */
-    // TODO: Rename and change types and number of parameters
-    public static EventEntry newInstance(String param1, String param2) {
-        EventEntry fragment = new EventEntry();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
+    /**
+     * If no required fields are empty, pack user input into a bundle and return it.
+     *
+     * @return a Bundle containing user input if all fields are filled, null otherwise
+     */
     public Bundle getItem() {
+        // Get needed views
         EditText editTextEventName = mContainer.findViewById(R.id.editTextEventName);
         EditText editTextECD = mContainer.findViewById(R.id.editTextECD);
         EditText editTextLength = mContainer.findViewById(R.id.editTextLength);
         EditText editTextRecur = mContainer.findViewById(R.id.editTextRecur);
 
+        // Get user input from views
         String eventName = editTextEventName.getText().toString();
         String ecd = editTextECD.getText().toString();
         String length = editTextLength.getText().toString();
         String recur = editTextRecur.getText().toString();
 
+        // If any required views are empty, return null to signify invalid input
         if (eventName.equals("") || ecd.equals("") || length.equals("") || recur.equals("")) {
             return null;
         }
 
+        // Put user input into a bundle
         Bundle bundle = new Bundle();
         bundle.putString(AddItem.EXTRA_TYPE, AddItem.EXTRA_VAL_EVENT);
         bundle.putString(AddItem.EXTRA_NAME, eventName);
@@ -81,9 +64,18 @@ public class EventEntry extends Fragment implements ItemEntry {
         bundle.putString(AddItem.EXTRA_TTC, length);
         bundle.putString(AddItem.EXTRA_RECUR, recur);
 
+        // Return bundle containing user input
         return bundle;
     }
 
+    /**
+     * Required empty onCreateView method
+     *
+     * @param inflater not used
+     * @param container not used
+     * @param savedInstanceState not used
+     * @return not used
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

@@ -5,8 +5,7 @@ import java.util.Date;
 /**
  * Represents a single event, e.g. something that has a set date/time
  *
- * @author Evan Daniel Voogd
- * @author evanv.com
+ * @author Evan Voogd
  */
 public final class Event {
     private String name;   // The name of the event to display in the schedule
@@ -46,7 +45,6 @@ public final class Event {
      * @param event The name of the event
      * @param start The start time for the event
      * @param length The time to complete for the event
-     * @return An object representing an event
      */
     public Event(String event, MyTime start, int length) {
         this.name = event;

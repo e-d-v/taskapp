@@ -12,6 +12,8 @@ import java.util.List;
 
 /**
  * Adapter to interface between data in EventItems and recyclerview in DayItem
+ *
+ * @author Evan Voogd
  */
 public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.EventViewHolder> {
     private List<EventItem> mEventItemList; // List of events for this day
@@ -73,7 +75,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
         TextView mEventItemTimespan; // The TextView representing the timespan in event_item
 
         /**
-         * Constructs a new EventViewHolder, setting it's values to the views in the event_item
+         * Constructs a new EventViewHolder, setting its values to the views in the event_item
          *
          * @param itemView View containing the views in the event_item
          */

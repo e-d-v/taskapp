@@ -6,8 +6,8 @@ import java.util.Date;
 import java.util.PriorityQueue;
 
 /**
- * The holy grail. A class that calculates a (locally) optimal schedule for task completion dependent on other tasks, their
- * prerequisites, and events.
+ * The holy grail. A class that calculates a (locally) optimal schedule for task completion
+ * dependent on other tasks, their prerequisites, and events.
  *
  * @author Evan Daniel Voogd
  * @author evanv.com

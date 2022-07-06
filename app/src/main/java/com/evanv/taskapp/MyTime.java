@@ -2,11 +2,11 @@ package com.evanv.taskapp;
 
 /**
  * Represents a Date and/or a time, simpler than Java DateTime object for this project
- * @author Evan Daniel Voogd
- * @author evanv.com
+ *
+ * @author Evan Voogd
  */
 public class MyTime {
-    private long datetime;
+    private long datetime; // The number of minutes past 1/1/1970 this MyTime represents
 
     /**
      * Initializes an immutable representation of Date/Time, where Time is not neeeded

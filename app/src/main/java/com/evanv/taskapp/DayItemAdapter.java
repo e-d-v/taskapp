@@ -14,12 +14,18 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
+/**
+ * Adapter to interface between data in DayItems and recyclerview in MainActivity
+ *
+ * @author Evan Voogd
+ */
 public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewHolder> {
     // Used to share views between the Event/Task recyclerviews and the Day recyclerviews
     private RecyclerView.RecycledViewPool mTaskViewPool = new RecyclerView.RecycledViewPool();
     private RecyclerView.RecycledViewPool mEventViewPool = new RecyclerView.RecycledViewPool();
     public List<DayItem> mDayItemList; // List of days
-    private ClickListener mListener;
+    // Listener that allows easy completion of tasks (see ClickListener)
+    private final ClickListener mListener;
 
     /**
      * Constructs an adapter for MainActivity's recyclerview
@@ -33,6 +39,7 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
 
     /**
      * Initialize an individual layout for MainActivity's recyclerview
+     *
      * @param parent ViewGroup associated with the parent recyclerview
      * @param viewType not used, required by override
      * @return a DayViewHolder associated with the new layout
@@ -55,8 +62,10 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
      */
     @Override
     public void onBindViewHolder(@NonNull DayViewHolder holder, int position) {
+        // Get the DayItem for the days position past today's date
         DayItem dayItem = mDayItemList.get(position);
 
+        // Set the day header to the string inside DayItem
         holder.mDayItemDate.setText(dayItem.getDayString());
 
         // Hide/show headers depending on if any events/tasks are scheduled for that day
@@ -84,13 +93,10 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         // Initialize the Event/Task Item Adapters
         EventItemAdapter eventItemAdapter = new EventItemAdapter(dayItem.getEvents());
         TaskItemAdapter taskItemAdapter = new TaskItemAdapter(dayItem.getTasks(), holder);
-
         holder.mEventRecyclerView.setLayoutManager(eventLayoutManager);
         holder.mTaskRecyclerView.setLayoutManager(taskLayoutManager);
-
         holder.mEventRecyclerView.setAdapter(eventItemAdapter);
         holder.mTaskRecyclerView.setAdapter(taskItemAdapter);
-
         holder.mEventRecyclerView.setRecycledViewPool(mEventViewPool);
         holder.mTaskRecyclerView.setRecycledViewPool(mTaskViewPool);
     }
@@ -109,13 +115,14 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
      * Holder that interfaces between the adapter and the day_item views
      */
     public class DayViewHolder extends RecyclerView.ViewHolder implements ClickListener {
-        private TextView mDayItemDate;           // The TextView that displays the date
-        private RecyclerView mEventRecyclerView; // The recyclerview that displays this day's events
-        private RecyclerView mTaskRecyclerView;  // The recyclerview that displays this day's tasks
-        private TextView mTaskHeader;            // The TextView that says "Tasks"
-        private TextView mEventHeader;           // The TextView that says "Events"
-        private Context mContext;                 // The Context of the given DayViewHolder
-
+        private final TextView mDayItemDate; // The TextView that displays the date
+        private final TextView mTaskHeader;  // The TextView that says "Tasks"
+        private final TextView mEventHeader; // The TextView that says "Events"
+        // The recyclerview that displays this day's events
+        private final RecyclerView mEventRecyclerView;
+        // The recyclerview that displays this day's tasks
+        private final RecyclerView mTaskRecyclerView;
+        // Listener that allows easy completion of tasks (see ClickListener)
         private WeakReference<ClickListener> mListenerRef;
 
         /**
@@ -126,18 +133,22 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         public DayViewHolder(@NonNull View itemView, ClickListener listener) {
             super(itemView);
 
+            // Sets the DayViewHolder's fields.
             mListenerRef = new WeakReference<>(listener);
-
             mDayItemDate = itemView.findViewById(R.id.dayItemDate);
             mEventRecyclerView = itemView.findViewById(R.id.eventRecycler);
             mTaskRecyclerView = itemView.findViewById(R.id.taskRecycler);
             mTaskHeader = itemView.findViewById(R.id.taskHeader);
             mEventHeader = itemView.findViewById(R.id.eventHeader);
-
-            // We have to keep track of context so TextAppearance can be changed in onBindViewHolder
-            mContext = itemView.getContext();
         }
 
+        /**
+         * Sends the Button Click information up from the TaskItemHolder to MainActivity. Adds the
+         * day index, which is conveniently getAdapterPosition();
+         *
+         * @param position The index into the taskSchedule.get(day) List that has the given Task
+         * @param day Ignored as TaskItemHolder does not know it's recycler's DayRecycler's index.
+         */
         @Override
         public void onButtonClick(int position, int day) {
             mListenerRef.get().onButtonClick(position, getAdapterPosition());

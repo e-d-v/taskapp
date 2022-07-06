@@ -15,9 +15,12 @@ import java.util.List;
 
 /**
  * Adapter to interface between data in TaskItems and recyclerview in DayItem
+ *
+ * @author Evan Voogd
  */
 public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskViewHolder> {
     private List<TaskItem> mTaskItemList; // List of tasks for this day
+    // Listener that allows easy completion of tasks (see ClickListener)
     private ClickListener mListener;
 
     /**
@@ -32,6 +35,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
 
     /**
      * Initialize an individual layout for the dayitem's recyclerview
+     *
      * @param parent ViewGroup associated with the parent recyclerview
      * @param viewType not used, required by override
      * @return TaskViewHolder associated with the new layout
@@ -73,9 +77,10 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
      */
     public class TaskViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView mTaskItemName; // The TextView representing the name in task_item
+        private final int BUTTON_ID; // ID of the completion button.
+        // Listener that allows easy completion of tasks (see ClickListener)
         WeakReference<ClickListener> mListenerRef;
 
-        private int BUTTON_ID;
 
         /**
          * Constructs a new TaskViewHolder, setting it's values to the views in the task_item
@@ -84,16 +89,28 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
          */
         public TaskViewHolder(@NonNull View itemView, ClickListener listener) {
             super(itemView);
+            // Sets the needed fields
             mTaskItemName = itemView.findViewById(R.id.taskName);
             mListenerRef = new WeakReference<>(listener);
             BUTTON_ID = R.id.buttonComplete;
 
+            // Sets this as the OnClickListener for the button, so when the button is clicked, we
+            // can move up the ClickListener chain to mark the task as complete in MainActivity's
+            // data structures and refresh the recyclerview
             ImageButton button = itemView.findViewById(R.id.buttonComplete);
             button.setOnClickListener(this);
         }
 
+        /**
+         * Uses the ClickListener chain to mark the task as complete in MainActivity
+         *
+         * @param v the view that was clicked
+         */
         @Override
         public void onClick(View v) {
+            // If the view clicked was the button, tell the DayViewHolder the index of the task
+            // to be completd. As the TaskViewHolder doesn't know the day index, this is -1, and
+            // will be filled in by the DayViewHolder
             if (v.getId() == BUTTON_ID) {
                 mListenerRef.get().onButtonClick(getAdapterPosition(), -1);
             }

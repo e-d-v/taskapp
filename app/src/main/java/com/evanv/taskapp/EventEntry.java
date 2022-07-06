@@ -12,8 +12,7 @@ import android.widget.EditText;
 /**
  * The fragment that handles data entry for new events
  *
- * @author Evan Daniel Voogd
- * @author evanv.com
+ * @author Evan Voogd
  */
 public class EventEntry extends Fragment implements ItemEntry {
     private ViewGroup mContainer; // The ViewGroup for the activity, allows easy access to views

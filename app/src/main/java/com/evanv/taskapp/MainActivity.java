@@ -34,19 +34,25 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Main Activity for the app. Display's the user's schedule of Tasks/Events, while allowing for
+ * Task completion/addition (with the latter done through the use of a separate AddItem activity).
+ *
+ * @author Evan Voogd
+ */
 public class MainActivity extends AppCompatActivity implements ClickListener {
 
-    private ActivityMainBinding binding;                         // Binding for the MainActivity
-    private final ArrayList<Task> tasks = new ArrayList<Task>(); // List of all tasks for user
-    // taskSchedule[i] represents the list of tasks for the day i days past startDate
-    private final ArrayList<ArrayList<Task>> taskSchedule = new ArrayList<ArrayList<Task>>();
-    // eventSchedule[i] represents the list of events for the day i days past startDate
-    private final ArrayList<ArrayList<Event>> eventSchedule = new ArrayList<ArrayList<Event>>();
+    private ActivityMainBinding binding;      // Binding for the MainActivity
     private MyTime startDate;                 // The current date
     private int todayTime;                    // The amount of time spent completing tasks today
     private int numEvents;                    // Number of events for user
     public static final int ITEM_REQUEST = 1; // requestCode for task/item entry
     private DayItemAdapter dayItemAdapter;    // Adapter for recyclerview showing user commitments
+    private final ArrayList<Task> tasks = new ArrayList<Task>(); // List of all tasks for user
+    // taskSchedule[i] represents the list of tasks for the day i days past startDate
+    private final ArrayList<ArrayList<Task>> taskSchedule = new ArrayList<ArrayList<Task>>();
+    // eventSchedule[i] represents the list of events for the day i days past startDate
+    private final ArrayList<ArrayList<Event>> eventSchedule = new ArrayList<ArrayList<Event>>();
     // Key for the extra that stores the list of Task names for the Parent Task Picker Dialog in
     // TaskEntry
     public static final String EXTRA_TASKS = "com.evanv.taskapp.extras.TASKS";
@@ -652,9 +658,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+        // Handle action bar item clicks here. The action bar will automatically handle clicks on
+        // the Home/Up button, so long as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement

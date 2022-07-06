@@ -2,6 +2,8 @@ package com.evanv.taskapp;
 
 /**
  * Class representing an Event for use in the DayItem's recyclerview
+ *
+ * @author Evan Voogd
  */
 public class EventItem {
     private String mName;     // Name of the event (e.g. "Staff Meeting")

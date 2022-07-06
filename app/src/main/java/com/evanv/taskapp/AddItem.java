@@ -24,8 +24,7 @@ import com.evanv.taskapp.databinding.ActivityAddItemBinding;
 /**
  * Class for the AddItem activity. Gets fields for a new Task/Event to be added in MainActivity
  *
- * @author Evan Daniel Voogd
- * @author evanv.com
+ * @author Evan Voogd
  */
 public class AddItem extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;

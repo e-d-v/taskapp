@@ -5,6 +5,8 @@ import android.os.Bundle;
 /**
  * An interface describing a Fragment that has a method that returns a Bundle with all of it's
  * fields, allowing MainActivity to retrieve all the fields for Event/Task entry easily
+ *
+ * @author Evan Voogd
  */
 public interface ItemEntry {
     /**

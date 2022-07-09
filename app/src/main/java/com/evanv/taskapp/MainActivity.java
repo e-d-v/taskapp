@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
         builder.setView(input);
 
-        builder.setPositiveButton("Complete Task", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.complete_task, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 todayTime += Integer.parseInt(input.getText().toString());
@@ -153,11 +153,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                         int minute = Integer.parseInt(timeTokens[1]);
 
                         if (hour == 12) {
-                            if (fullTokens[2].equals("AM")) {
+                            if (fullTokens[2].equals(getString(R.string.am))) {
                                 hour = 0;
                             }
                         }
-                        else if (fullTokens[2].equals("PM")) {
+                        else if (fullTokens[2].equals(getString(R.string.pm))) {
                             hour += 12;
                         }
 
@@ -537,8 +537,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             }
 
             // Set the fields
-            dayString = "Schedule for " + curr.getMonth() + "/" + curr.getDate() + "/" + +
-                    (curr.getYear()-2000) + " (" + totalTime + " minutes)" + ":";
+            dayString = getString(R.string.schedule_for) + curr.getMonth() + "/" + curr.getDate()
+                    + "/" + (curr.getYear()-2000) + " (" + totalTime + getString(R.string.minutes)
+                    + ":";
             events = EventItemList(i);
             tasks = TaskItemList(i);
 
@@ -576,7 +577,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 // Format the start time in the format HH:MM AM/PM
                 short eventHour = eventTime.getHour();
                 boolean event_am = eventHour < 12;
-                String event_ampm = event_am ? " AM" : " PM";
+                String event_ampm = event_am ? " " + getString(R.string.am) :
+                        " " + getString(R.string.pm);
                 eventHour -= event_am ? 0 : 12;
                 eventHour = (eventHour == 0) ? 12 : eventHour;
                 short eventMinute = eventTime.getMinute();
@@ -587,7 +589,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 // Format the end time in the format HH:MM AM/PM
                 short endHour = endTime.getHour();
                 boolean end_am = endHour < 12;
-                String end_ampm = end_am ? " AM" : " PM";
+                String end_ampm = end_am ? " " + getString(R.string.am) :
+                        " " + getString(R.string.pm);;
                 endHour -= end_am ? 0 : 12;
                 endHour = (endHour == 0) ? 12 : endHour;
                 short endMinute = endTime.getMinute();
@@ -628,7 +631,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                 // Create the name in the format NAME (TTC minutes to complete)
                 name = task.getName() + " (" + task.getTimeToComplete() +
-                        " minutes to complete)";
+                        " " + getString(R.string.minutes_to_complete) + ")";
 
                 itemList.add(new TaskItem(name));
             }

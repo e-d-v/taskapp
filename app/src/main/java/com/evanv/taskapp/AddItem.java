@@ -133,11 +133,6 @@ public class AddItem extends AppCompatActivity {
             setResult(RESULT_OK, replyIntent);
             finish();
         }
-        // If the user didn't correctly enter all fields, prompt the user with a Toast
-        else {
-            Toast.makeText(this, "Please complete missing fields.", Toast.LENGTH_LONG)
-                    .show();
-        }
     }
 
     /**

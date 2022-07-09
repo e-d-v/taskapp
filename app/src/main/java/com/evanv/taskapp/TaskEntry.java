@@ -12,9 +12,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 /**
  * The fragment that handles data entry for new tasks
@@ -112,7 +115,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
                                             selectedItems.remove(index);
                                         }
                                     }
-                                }).setPositiveButton("OK",
+                                }).setPositiveButton(R.string.ok,
                                     new DialogInterface.OnClickListener() {
 
                                     /**
@@ -167,8 +170,147 @@ public class TaskEntry extends Fragment implements ItemEntry {
         String dueDate = editTextDueDate.getText().toString();
         String ttc = editTextTTC.getText().toString();
 
-        // If any required fields are empty, return null
-        if (taskName.equals("") || ecd.equals("") || dueDate.equals("") || ttc.equals("")) {
+        boolean flag = false; // Allows us to Toast multiple errors at once.
+
+        // Check if eventName is valid
+        if (taskName.length() == 0) {
+            Toast.makeText(getActivity(), R.string.name_empty_task,
+                    Toast.LENGTH_LONG).show();
+            flag = true;
+        }
+        // Check if ECD is valid
+        MyTime earlyDate = null; // Allows us to check if due date is after early date
+        if (ecd.length() == 0) {
+            Toast.makeText(getActivity(),
+                    R.string.ecd_empty_task,
+                    Toast.LENGTH_LONG).show();
+            flag = true;
+        }
+        else {
+            boolean ecdFlag = false; // true if there is an issue with ecd input
+
+            // Check if ecd follows format MM/DD/YY HH:MM AM/PM
+            String[] dateTokens = ecd.split("/");
+
+            if (dateTokens.length == 3) {
+                // Check if everything that's supposed to be a number is an integer
+                try {
+                    int month = Integer.parseInt(dateTokens[0]);
+                    int day = Integer.parseInt(dateTokens[1]);
+                    int year = Integer.parseInt(dateTokens[2]);
+
+                    // Make sure input makes sense
+                    if (month > 12 || month < 1 || day > 31 || day < 1 || year < 0 ) {
+                        ecdFlag = true;
+                    }
+
+                    // Make sure we're not scheduling an event for before today.
+                    GregorianCalendar rightNow = new GregorianCalendar();
+                    MyTime start = new MyTime(rightNow.get(Calendar.MONTH) + 1,
+                            rightNow.get(Calendar.DAY_OF_MONTH), rightNow.get(Calendar.YEAR));
+
+                    earlyDate = new MyTime(month, day, 2000 + year);
+                    if (start.getDateTime() - earlyDate.getDateTime() > 0) {
+                        Toast.makeText(getActivity(),
+                                R.string.ecd_early_task,
+                                Toast.LENGTH_LONG).show();
+                        flag = true;
+                    }
+                }
+                catch (Exception e) {
+                    ecdFlag = true;
+                }
+            }
+            else {
+                ecdFlag = true;
+            }
+
+            if (ecdFlag) {
+                Toast.makeText(getActivity(),
+                        R.string.date_format_task,
+                        Toast.LENGTH_LONG).show();
+                flag = true;
+            }
+        }
+        if (dueDate.length() == 0) {
+            Toast.makeText(getActivity(),
+                    R.string.due_empty_task,
+                    Toast.LENGTH_LONG).show();
+            flag = true;
+        }
+        else {
+            boolean ddFlag= false; // true if there is an issue with ecd input
+
+            // Check if duedate follows format mm/dd/yy
+            String[] dateTokens = dueDate.split("/");
+
+            if (dateTokens.length == 3) {
+                // Check if everything that's supposed to be a number is an integer
+                try {
+                    int month = Integer.parseInt(dateTokens[0]);
+                    int day = Integer.parseInt(dateTokens[1]);
+                    int year = Integer.parseInt(dateTokens[2]);
+
+                    // Make sure input makes sense
+                    if (month > 12 || month < 1 || day > 31 || day < 1 || year < 0 ) {
+                        ddFlag = true;
+                    }
+
+                    // Make sure we're not scheduling an event for before today.
+                    GregorianCalendar rightNow = new GregorianCalendar();
+                    MyTime start = new MyTime(rightNow.get(Calendar.MONTH) + 1,
+                            rightNow.get(Calendar.DAY_OF_MONTH), rightNow.get(Calendar.YEAR));
+
+                    MyTime dueDateTime = new MyTime(month, day, 2000 + year);
+                    if (start.getDateTime() - dueDateTime.getDateTime() > 0) {
+                        Toast.makeText(getActivity(),
+                                R.string.due_early_task,
+                                Toast.LENGTH_LONG).show();
+                        flag = true;
+                    }
+                    // Make sure the due date is on or after the current date
+                    if (earlyDate != null &&
+                            earlyDate.getDateTime() - dueDateTime.getDateTime() > 0) {
+                        Toast.makeText(getActivity(),
+                                R.string.due_before_task,
+                                Toast.LENGTH_LONG).show();
+                        flag = true;
+                    }
+                }
+                catch (Exception e) {
+                    ddFlag = true;
+                }
+            }
+            else {
+                ddFlag = true;
+            }
+
+            if (ddFlag) {
+                Toast.makeText(getActivity(),
+                        R.string.date_format_task,
+                        Toast.LENGTH_LONG).show();
+                flag = true;
+            }
+        }
+        // Check if length is valid
+        if (ttc.length() == 0) {
+            Toast.makeText(getActivity(), R.string.ttc_error_empty_task, Toast.LENGTH_LONG).show();
+            flag = true;
+        }
+        else {
+            try {
+                Integer.parseInt(ttc);
+            }
+            catch (Exception e) {
+                Toast.makeText(getActivity(),
+                        R.string.ttc_format_event,
+                        Toast.LENGTH_LONG).show();
+                flag = true;
+            }
+        }
+
+        // If any required views are empty, return null to signify invalid input
+        if (flag) {
             return null;
         }
 

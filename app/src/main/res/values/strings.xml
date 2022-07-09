@@ -35,4 +35,24 @@
     <string name="ecd_help_text_format">Start times are formatted as MM/DD/YY HH:MM AM/PM.</string>
     <string name="ttc_error_empty">Make sure to enter an estimated completion time for the event.</string>
     <string name="ttc_error_empty_task">Make sure to enter an estimated completion time for the task.</string>
+    <string name="name_error_event">Make sure to enter a name for the event.</string>
+    <string name="ecd_empty_event">Make sure to enter the start time for the event.</string>
+    <string name="ecd_format_event">Make sure start time is today or later.</string>
+    <string name="am">AM</string>
+    <string name="pm">PM</string>
+    <string name="ttc_format_event">Make sure to enter a whole number (in minutes) for completion time.</string>
+    <string name="recur_empty_event">Make sure to enter a number of recurrences for this event</string>
+    <string name="recur_format_event">Make sure to enter a whole number for the number of recurrences.</string>
+    <string name="complete_task">Complete Task</string>
+    <string name="schedule_for">\"Schedule for \"</string>
+    <string name="minutes">\" minutes)\"</string>
+    <string name="minutes_to_complete">minutes to complete</string>
+    <string name="ok">OK</string>
+    <string name="name_empty_task">Make sure to enter a name for the task.</string>
+    <string name="ecd_empty_task">Make sure to enter an earliest completion date for the task.</string>
+    <string name="ecd_early_task">Make sure earliest completion date is today or later.</string>
+    <string name="date_format_task">Make sure dates are formatted MM/DD/YY</string>
+    <string name="due_empty_task">Make sure to enter a due date for the task.</string>
+    <string name="due_early_task">Make sure due date is today or later.</string>
+    <string name="due_before_task">Make sure due date is on or after earliest completion date.</string>
 </resources>

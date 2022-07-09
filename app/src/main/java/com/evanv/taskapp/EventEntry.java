@@ -59,14 +59,14 @@ public class EventEntry extends Fragment implements ItemEntry {
 
         // Check if eventName is valid
         if (eventName.length() == 0) {
-            Toast.makeText(getActivity(), "Make sure to enter a name for the event.",
+            Toast.makeText(getActivity(), R.string.name_error_event,
                     Toast.LENGTH_LONG).show();
             flag = true;
         }
         // Check if ECD is valid
         if (ecd.length() == 0) {
             Toast.makeText(getActivity(),
-                    "Make sure to enter the start time for the event.",
+                    R.string.ecd_empty_event,
                     Toast.LENGTH_LONG).show();
             flag = true;
         }
@@ -103,7 +103,7 @@ public class EventEntry extends Fragment implements ItemEntry {
                         MyTime thisDate = new MyTime(month, day, 2000 + year);
                         if (start.getDateTime() - thisDate.getDateTime() > 0) {
                             Toast.makeText(getActivity(),
-                                    "Make sure start time is today or later.",
+                                    R.string.ecd_format_event,
                                     Toast.LENGTH_LONG).show();
                             flag = true;
                         }
@@ -112,7 +112,8 @@ public class EventEntry extends Fragment implements ItemEntry {
                         ecdFlag = true;
                     }
 
-                    if (!fullTokens[2].equals("AM") && !fullTokens[2].equals("PM")) {
+                    if (!fullTokens[2].equals(getString(R.string.am)) &&
+                            !fullTokens[2].equals(getString(R.string.pm))) {
                         ecdFlag = true;
                     }
                 }
@@ -139,7 +140,7 @@ public class EventEntry extends Fragment implements ItemEntry {
             }
             catch (Exception e) {
                 Toast.makeText(getActivity(),
-                        "Make sure to enter a whole number (in minutes) for completion time.",
+                        R.string.ttc_format_event,
                         Toast.LENGTH_LONG).show();
                 flag = true;
             }
@@ -147,7 +148,7 @@ public class EventEntry extends Fragment implements ItemEntry {
         // Check if recur is valid
         if (recur.length() == 0) {
             Toast.makeText(getActivity(),
-                    "Make sure to enter a number of recurrences for this event",
+                    R.string.recur_empty_event,
                     Toast.LENGTH_LONG).show();
             flag = true;
         }
@@ -157,7 +158,7 @@ public class EventEntry extends Fragment implements ItemEntry {
             }
             catch (Exception e) {
                 Toast.makeText(getActivity(),
-                        "Make sure to enter a whole number for the number of recurrences.",
+                        R.string.recur_format_event,
                         Toast.LENGTH_LONG).show();
                 flag = true;
             }

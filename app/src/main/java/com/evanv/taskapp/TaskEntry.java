@@ -115,7 +115,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
                                             selectedItems.remove(index);
                                         }
                                     }
-                                }).setPositiveButton("OK",
+                                }).setPositiveButton(R.string.ok,
                                     new DialogInterface.OnClickListener() {
 
                                     /**
@@ -174,7 +174,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
 
         // Check if eventName is valid
         if (taskName.length() == 0) {
-            Toast.makeText(getActivity(), "Make sure to enter a name for the task.",
+            Toast.makeText(getActivity(), R.string.name_empty_task,
                     Toast.LENGTH_LONG).show();
             flag = true;
         }
@@ -182,7 +182,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         MyTime earlyDate = null; // Allows us to check if due date is after early date
         if (ecd.length() == 0) {
             Toast.makeText(getActivity(),
-                    "Make sure to enter an earliest completion date for the task.",
+                    R.string.ecd_empty_task,
                     Toast.LENGTH_LONG).show();
             flag = true;
         }
@@ -212,7 +212,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
                     earlyDate = new MyTime(month, day, 2000 + year);
                     if (start.getDateTime() - earlyDate.getDateTime() > 0) {
                         Toast.makeText(getActivity(),
-                                "Make sure earliest completion date is today or later.",
+                                R.string.ecd_early_task,
                                 Toast.LENGTH_LONG).show();
                         flag = true;
                     }
@@ -227,14 +227,14 @@ public class TaskEntry extends Fragment implements ItemEntry {
 
             if (ecdFlag) {
                 Toast.makeText(getActivity(),
-                        "Make sure dates are formatted MM/DD/YY",
+                        R.string.date_format_task,
                         Toast.LENGTH_LONG).show();
                 flag = true;
             }
         }
         if (dueDate.length() == 0) {
             Toast.makeText(getActivity(),
-                    "Make sure to enter a due date for the task.",
+                    R.string.due_empty_task,
                     Toast.LENGTH_LONG).show();
             flag = true;
         }
@@ -264,7 +264,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
                     MyTime dueDateTime = new MyTime(month, day, 2000 + year);
                     if (start.getDateTime() - dueDateTime.getDateTime() > 0) {
                         Toast.makeText(getActivity(),
-                                "Make sure earliest completion date is today or later.",
+                                R.string.due_early_task,
                                 Toast.LENGTH_LONG).show();
                         flag = true;
                     }
@@ -272,7 +272,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
                     if (earlyDate != null &&
                             earlyDate.getDateTime() - dueDateTime.getDateTime() > 0) {
                         Toast.makeText(getActivity(),
-                                "Make sure due date is on or after earliest completion date.",
+                                R.string.due_before_task,
                                 Toast.LENGTH_LONG).show();
                         flag = true;
                     }
@@ -287,7 +287,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
 
             if (ddFlag) {
                 Toast.makeText(getActivity(),
-                        "Make sure to enter a due date in the format MM/DD/YY.",
+                        R.string.date_format_task,
                         Toast.LENGTH_LONG).show();
                 flag = true;
             }
@@ -303,12 +303,11 @@ public class TaskEntry extends Fragment implements ItemEntry {
             }
             catch (Exception e) {
                 Toast.makeText(getActivity(),
-                        "Make sure to enter a whole number (in minutes) for completion time.",
+                        R.string.ttc_format_event,
                         Toast.LENGTH_LONG).show();
                 flag = true;
             }
         }
-        // Check if recur is valid
 
         // If any required views are empty, return null to signify invalid input
         if (flag) {

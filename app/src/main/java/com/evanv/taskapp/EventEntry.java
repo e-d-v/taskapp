@@ -8,6 +8,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.Toast;
+
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 /**
  * The fragment that handles data entry for new events
@@ -51,8 +55,116 @@ public class EventEntry extends Fragment implements ItemEntry {
         String length = editTextLength.getText().toString();
         String recur = editTextRecur.getText().toString();
 
+        boolean flag = false; // Allows us to Toast multiple errors at once.
+
+        // Check if eventName is valid
+        if (eventName.length() == 0) {
+            Toast.makeText(getActivity(), "Make sure to enter a name for the event.",
+                    Toast.LENGTH_LONG).show();
+            flag = true;
+        }
+        // Check if ECD is valid
+        if (ecd.length() == 0) {
+            Toast.makeText(getActivity(),
+                    "Make sure to enter the start time for the event.",
+                    Toast.LENGTH_LONG).show();
+            flag = true;
+        }
+        else {
+            String[] fullTokens = ecd.split(" ");
+
+            boolean ecdFlag = false; // true if there is an issue with ecd input
+
+            // Check if ecd follows format MM/DD/YY HH:MM AM/PM
+            if (fullTokens.length == 3) {
+                String[] dateTokens = fullTokens[0].split("/");
+                String[] timeTokens = fullTokens[1].split(":");
+
+                if (dateTokens.length == 3 && timeTokens.length == 2) {
+                    // Check if everything that's supposed to be a number is an integer
+                    try {
+                        int month = Integer.parseInt(dateTokens[0]);
+                        int day = Integer.parseInt(dateTokens[1]);
+                        int year = Integer.parseInt(dateTokens[2]);
+                        int hour = Integer.parseInt(timeTokens[0]);
+                        int minute = Integer.parseInt(timeTokens[1]);
+
+                        // Make sure input makes sense
+                        if (month > 12 || month < 1 || day > 31 || day < 1 || year < 0 ||
+                                hour < 1 || hour > 12 || minute < 0 || minute > 59) {
+                            ecdFlag = true;
+                        }
+
+                        // Make sure we're not scheduling an event for before today.
+                        GregorianCalendar rightNow = new GregorianCalendar();
+                        MyTime start = new MyTime(rightNow.get(Calendar.MONTH) + 1,
+                                rightNow.get(Calendar.DAY_OF_MONTH), rightNow.get(Calendar.YEAR));
+
+                        MyTime thisDate = new MyTime(month, day, 2000 + year);
+                        if (start.getDateTime() - thisDate.getDateTime() > 0) {
+                            Toast.makeText(getActivity(),
+                                    "Make sure start time is today or later.",
+                                    Toast.LENGTH_LONG).show();
+                            flag = true;
+                        }
+                    }
+                    catch (Exception e) {
+                        ecdFlag = true;
+                    }
+
+                    if (!fullTokens[2].equals("AM") && !fullTokens[2].equals("PM")) {
+                        ecdFlag = true;
+                    }
+                }
+            }
+            else {
+                ecdFlag = true;
+            }
+
+            if (ecdFlag) {
+                Toast.makeText(getActivity(),
+                        R.string.ecd_help_text_format,
+                        Toast.LENGTH_LONG).show();
+                flag = true;
+            }
+        }
+        // Check if length is valid
+        if (length.length() == 0) {
+            Toast.makeText(getActivity(), R.string.ttc_error_empty, Toast.LENGTH_LONG).show();
+            flag = true;
+        }
+        else {
+            try {
+                Integer.parseInt(length);
+            }
+            catch (Exception e) {
+                Toast.makeText(getActivity(),
+                        "Make sure to enter a whole number (in minutes) for completion time.",
+                        Toast.LENGTH_LONG).show();
+                flag = true;
+            }
+        }
+        // Check if recur is valid
+        if (recur.length() == 0) {
+            Toast.makeText(getActivity(),
+                    "Make sure to enter a number of recurrences for this event",
+                    Toast.LENGTH_LONG).show();
+            flag = true;
+        }
+        else {
+            try {
+                Integer.parseInt(recur);
+            }
+            catch (Exception e) {
+                Toast.makeText(getActivity(),
+                        "Make sure to enter a whole number for the number of recurrences.",
+                        Toast.LENGTH_LONG).show();
+                flag = true;
+            }
+        }
+
         // If any required views are empty, return null to signify invalid input
-        if (eventName.equals("") || ecd.equals("") || length.equals("") || recur.equals("")) {
+        if (flag) {
             return null;
         }
 

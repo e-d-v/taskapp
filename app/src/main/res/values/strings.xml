@@ -32,4 +32,7 @@
     <string name="complete_dialog_message">How long (in minutes) did %s take to complete?</string>
     <string name="complete_dialog_title">Complete Task</string>
     <string name="parents_button">Choose prerequisite tasks</string>
+    <string name="ecd_help_text_format">Start times are formatted as MM/DD/YY HH:MM AM/PM.</string>
+    <string name="ttc_error_empty">Make sure to enter an estimated completion time for the event.</string>
+    <string name="ttc_error_empty_task">Make sure to enter an estimated completion time for the task.</string>
 </resources>

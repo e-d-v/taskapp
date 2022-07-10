@@ -44,8 +44,8 @@
     <string name="recur_empty_event">Make sure to enter a number of recurrences for this event</string>
     <string name="recur_format_event">Make sure to enter a whole number for the number of recurrences.</string>
     <string name="complete_task">Complete Task</string>
-    <string name="schedule_for">\"Schedule for \"</string>
-    <string name="minutes">\" minutes)\"</string>
+    <string name="schedule_for">Schedule for\u0020</string>
+    <string name="minutes">\u0020minutes)</string>
     <string name="minutes_to_complete">minutes to complete</string>
     <string name="ok">OK</string>
     <string name="name_empty_task">Make sure to enter a name for the task.</string>
@@ -55,4 +55,7 @@
     <string name="due_empty_task">Make sure to enter a due date for the task.</string>
     <string name="due_early_task">Make sure due date is today or later.</string>
     <string name="due_before_task">Make sure due date is on or after earliest completion date.</string>
+    <string name="due_when">\u0020(due\u0020</string>
+    <string name="overdue_dialog_title">Check if overdue task was completed</string>
+    <string name="overdue_dialog_button">Mark selections as complete</string>
 </resources>

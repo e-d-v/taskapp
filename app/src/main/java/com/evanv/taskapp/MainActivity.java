@@ -62,8 +62,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * complete and adding that time to todayTime to prevent overscheduling on today's date.
      *
      * @param task The task to be removed from the task dependency graph
+     * @param showDialog true if dialog is needed, false if dialog isn't
      */
-    private void Complete(Task task) {
+    private void Complete(Task task, boolean showDialog) {
         tasks.remove(task);
 
         MyTime doDate = task.getDoDate();
@@ -84,28 +85,29 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             task.getParents().get(i).removeChild(task);
         }
 
-        // Prompt the user to ask how long it took to complete the task, and add this time to
-        // todayTime to prevent the user from being overscheduled on today's date.
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(String.format(getString(R.string.complete_dialog_message),
-                task.getName()));
-        builder.setTitle(R.string.complete_dialog_title);
+        if (showDialog) {
+            // Prompt the user to ask how long it took to complete the task, and add this time to
+            // todayTime to prevent the user from being overscheduled on today's date.
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(String.format(getString(R.string.complete_dialog_message),
+                    task.getName()));
+            builder.setTitle(R.string.complete_dialog_title);
 
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER);
-        builder.setView(input);
+            final EditText input = new EditText(this);
+            input.setInputType(InputType.TYPE_CLASS_NUMBER);
+            builder.setView(input);
 
-        builder.setPositiveButton(R.string.complete_task, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                todayTime += Integer.parseInt(input.getText().toString());
-                // As the task dependency graph has been updated, we must reoptimize it
-                Optimize();
-            }
-        });
+            builder.setPositiveButton(R.string.complete_task, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    todayTime += Integer.parseInt(input.getText().toString());
+                    // As the task dependency graph has been updated, we must reoptimize it
+                    Optimize(true);
+                }
+            });
 
-        builder.show();
-
+            builder.show();
+        }
     }
 
     /**
@@ -245,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 }
 
                 // As the task dependency graph has been updated, we must reoptimize it
-                Optimize();
+                Optimize(true);
             }
         }
     }
@@ -253,14 +255,19 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     /**
      * Calls the Optimizer to find an optimal schedule for the user's tasks, given the user's
      * scheduled events.
+     *
+     * @param refresh true refreshes recycler, false doesn't allows us to call Optimize() before
+     *                recycler initialization
      */
-    private void Optimize() {
+    private void Optimize(boolean refresh) {
         Optimizer opt = new Optimizer();
         opt.Optimize(tasks, taskSchedule, eventSchedule, startDate, todayTime);
 
         // As the Optimizer may have changed tasks' dates, we must refresh the recycler
-        dayItemAdapter.mDayItemList = DayItemList();
-        dayItemAdapter.notifyDataSetChanged();
+        if (refresh) {
+            dayItemAdapter.mDayItemList = DayItemList();
+            dayItemAdapter.notifyDataSetChanged();
+        }
     }
 
     /**
@@ -299,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
             // Read the task count from the file
             int numTasks = Integer.parseInt(ntString);
-            ArrayList<Task> tasksToComplete = new ArrayList<Task>();
+            ArrayList<Task> overdueTasks = new ArrayList<Task>();
 
             // Read in all the tasks from the file, in the general format:
             // Task Name|earlyDate|dueDate|doDate|timeToComplete|head,parent1,parent2,etc.\n
@@ -349,19 +356,119 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                     taskSchedule.get(doDateIndex).add(toAdd);
                 }
 
-                // If the task has (presumably) already been completed, mark it as needing to be
-                // completed. We have to wait to complete it until later so the indices on the
-                // parent tasks work properly.
+                // If a task is overdue, add it to the overdue list so the user can mark it as
+                // complete or not.
                 if (doDate.getDateTime() < startDate.getDateTime()) {
-                    tasksToComplete.add(toAdd);
+                    overdueTasks.add(toAdd);
                 }
             }
 
-            // Complete all tasks with do dates before today, as they are presumably completed
-            for (int i = 0; i < tasksToComplete.size(); i++) {
-                Complete(tasksToComplete.get(i));
-            }
+            // Prompt the user with a dialog containing overdue tasks so they can mark overdue tasks
+            // so taskapp can reoptimize the schedule if some tasks are overdue.
+            if (overdueTasks.size() != 0) {
+                String[] overdueNames = new String[overdueTasks.size()];
 
+                // Create a list of overdue task names for the dialog
+                for (int i = 0; i < overdueNames.length; i++) {
+                    Task t = overdueTasks.get(i);
+                    MyTime tDate = t.getDueDate();
+                    overdueNames[i] = t.getName() + getString(R.string.due_when) + tDate.getMonth() +
+                            "/" + tDate.getDate() + "/" + (tDate.getYear() - 2000) + ")";
+                }
+
+                // List of indices to tasks that were completed.
+                ArrayList<Integer> selectedItems = new ArrayList<>();
+
+                // Show a dialog prompting the user to mark tasks that were completed as complete
+                android.app.AlertDialog.Builder builder =
+                        new android.app.AlertDialog.Builder(this);
+                builder.setTitle(R.string.overdue_dialog_title)
+                        .setMultiChoiceItems(overdueNames, null,
+                                new DialogInterface.OnMultiChoiceClickListener() {
+
+                                    /**
+                                     * Adds the selected task to the toRemove list, or removes it if
+                                     * the task was unselected
+                                     *
+                                     * @param dialogInterface not used
+                                     * @param index           the index into the tasks ArrayList of
+                                     *                        the parent
+                                     * @param isChecked       true if checked, false if unchecked
+                                     */
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int index,
+                                                        boolean isChecked) {
+
+                                        // If checked, add to list of Tasks to be added as complete
+                                        if (isChecked) {
+                                            selectedItems.add(index);
+                                        }
+                                        // If unchecked, remove form list of Tasks to be added as
+                                        // complete
+                                        else if (selectedItems.contains(index)) {
+                                            selectedItems.remove(index);
+                                        }
+                                    }
+                                }).setPositiveButton(R.string.overdue_dialog_button,
+                                new DialogInterface.OnClickListener() {
+
+                                    /**
+                                     * Continues starter code when overdue tasks exist
+                                     *
+                                     * @param di    not used
+                                     * @param index not used
+                                     */
+                                    @Override
+                                    public void onClick(DialogInterface di, int index) {
+                                        // As the user has marked these tasks as completed, remove
+                                        // them. Pass in false as the user completed them on a prior
+                                        // day.
+                                        for (int i = 0; i < selectedItems.size(); i++) {
+                                            Complete(overdueTasks.get(selectedItems.get(i)),
+                                                    false);
+                                        }
+
+                                        // Change due date for overdue tasks if it has already been
+                                        // passed to today.
+                                        if (overdueTasks.size() != selectedItems.size()) {
+                                            for (int i = 0; i < overdueTasks.size(); i++) {
+                                                if (selectedItems.contains(i)) {
+                                                    continue;
+                                                }
+
+                                                Task t = overdueTasks.get(i);
+
+                                                if (t.getDueDate().getDateTime() <
+                                                        startDate.getDateTime()) {
+                                                    t.setDueDate(startDate);
+                                                }
+                                            }
+                                        }
+
+                                        finishProcessing(fileRead, true);
+                                    }
+                                });
+
+                builder.create();
+                builder.show();
+
+            }
+            else {
+                finishProcessing(fileRead, false);
+            }
+        }
+        catch (Exception e) {
+            Log.d("TaskApp.MainActivity", "Storage file empty/misformatted");
+        }
+    }
+
+    /**
+     * Extremely sketchy, but allows us to wait to finish processing events and displaying the
+     * recycler until the user has completed the overdue tasks dialog
+     * @param fileRead The scanner used to read the state file
+     */
+    private void finishProcessing(Scanner fileRead, boolean reoptimize) {
+        try {
             // Read the number of events in from the file.
             numEvents = fileRead.nextInt();
             fileRead.nextLine();
@@ -405,6 +512,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         catch (Exception e) {
             Log.d("TaskApp.MainActivity", "Storage file empty/misformatted");
         }
+
+        // If tasks were changed, make sure to reoptimize the schedule in case it's necessary
+        if (reoptimize) {
+            Optimize(false);
+        }
+
         // Initialize the main recyclerview with data calculated in helper function DayItemList
         RecyclerView dayRecyclerView = findViewById(R.id.main_recyclerview);
         LinearLayoutManager layoutManager = new LinearLayoutManager(MainActivity.this);
@@ -434,7 +547,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // tasks
         ArrayList<String> taskNames = new ArrayList<>();
         for (Task t : tasks) {
-            taskNames.add(t.getName());
+            MyTime tDate = t.getDueDate();
+            taskNames.add(t.getName() + getString(R.string.due_when) + tDate.getMonth() +
+                    "/" + tDate.getDate() + "/" + (tDate.getYear()-2000) + ")");
         }
 
         intent.putStringArrayListExtra(EXTRA_TASKS, taskNames);
@@ -685,6 +800,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     @Override
     public void onButtonClick(int position, int day) {
         // Remove the given task from the task dependency graph
-        Complete(taskSchedule.get(day).get(position));
+        Complete(taskSchedule.get(day).get(position), true);
     }
 }

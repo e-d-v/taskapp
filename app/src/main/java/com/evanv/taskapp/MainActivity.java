@@ -24,6 +24,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     // Key for the extra that stores the list of Task names for the Parent Task Picker Dialog in
     // TaskEntry
     public static final String EXTRA_TASKS = "com.evanv.taskapp.extras.TASKS";
+    private ViewFlipper vf; // Swaps between loading screen and recycler
 
     /**
      * Removes a task from the task dependency graph, while asking the user how long it took to
@@ -65,6 +67,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * @param showDialog true if dialog is needed, false if dialog isn't
      */
     private void Complete(Task task, boolean showDialog) {
+        // Show loading screen
+        vf.setDisplayedChild(0);
         tasks.remove(task);
 
         MyTime doDate = task.getDoDate();
@@ -103,6 +107,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                     todayTime += Integer.parseInt(input.getText().toString());
                     // As the task dependency graph has been updated, we must reoptimize it
                     Optimize(true);
+                    // Show recycler
+                    vf.setDisplayedChild(1);
                 }
             });
 
@@ -123,6 +129,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        // Show loading screen
+        vf.setDisplayedChild(0);
 
         // If the request is for AddItem
         if (requestCode == ITEM_REQUEST) {
@@ -139,6 +147,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                     int ttc = Integer.parseInt(result.getString(AddItem.EXTRA_TTC));
                     String startStr = result.getString(AddItem.EXTRA_START);
                     int recur = Integer.parseInt(result.getString(AddItem.EXTRA_RECUR));
+
+                    // Makes sure recur works if the user enters 0 instead of 1
+                    recur = (recur == 0) ? 1 : recur;
 
 
                     // Convert the String start time into a MyTime
@@ -248,6 +259,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                 // As the task dependency graph has been updated, we must reoptimize it
                 Optimize(true);
+                // Show recycler as Optimize is finished
+                vf.setDisplayedChild(1);
             }
         }
     }
@@ -535,6 +548,10 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 intentAddItem();
             }
         });
+
+        // Make visible the main content
+        vf = (ViewFlipper) findViewById(R.id.vf);
+        vf.setDisplayedChild(1);
     }
 
     /**

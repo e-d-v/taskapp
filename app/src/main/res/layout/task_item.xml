@@ -10,6 +10,7 @@
         android:layout_height="24dp"
         android:layout_marginEnd="6dp"
         android:contentDescription="@string/unchecked_button_desc"
+        android:background="#0000"
         android:src="@drawable/ic_unchecked_button" />
 
     <TextView
@@ -20,4 +21,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
+    <LinearLayout
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:gravity="end">
+        <ImageButton
+            android:id="@+id/buttonDeleteTask"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="6dp"
+            android:contentDescription="@string/desc_delete_button"
+            android:background="#0000"
+            android:src="@drawable/ic_delete_24" />
+
+    </LinearLayout>
 </LinearLayout>

@@ -20,6 +20,7 @@ public interface ClickListener {
      *
      * @param position The index into the taskSchedule.get(day) List that has the given Task
      * @param day How many days past today's date the task is scheduled for
+     * @param action 0: complete task, 1: delete task, 2: delete event
      */
-    void onButtonClick(int position, int day);
+    void onButtonClick(int position, int day, int action);
 }

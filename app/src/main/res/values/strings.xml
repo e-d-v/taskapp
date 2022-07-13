@@ -58,4 +58,5 @@
     <string name="due_when">\u0020(due\u0020</string>
     <string name="overdue_dialog_title">Check if overdue task was completed</string>
     <string name="overdue_dialog_button">Mark selections as complete</string>
+    <string name="desc_delete_button">Trash can</string>
 </resources>

@@ -135,7 +135,9 @@ public class TaskEntry extends Fragment implements ItemEntry {
                                             sb.append(index);
                                             sb.append(",");
                                         }
-                                        currentParents = sb.toString();
+                                        currentParents = (selectedItems.size() != 0) ? sb.toString()
+                                                : "-1";
+
                                      }
                                 });
 

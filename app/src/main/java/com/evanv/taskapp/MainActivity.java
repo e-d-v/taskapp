@@ -114,6 +114,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
             builder.show();
         }
+        else {
+            // As the task dependency graph has been updated, we must reoptimize it
+            Optimize(true);
+            // Show recycler
+            vf.setDisplayedChild(1);
+        }
     }
 
     /**
@@ -815,8 +821,22 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * @param day The date this task is scheduled for is day days past today's date
      */
     @Override
-    public void onButtonClick(int position, int day) {
+    public void onButtonClick(int position, int day, int action) {
         // Remove the given task from the task dependency graph
-        Complete(taskSchedule.get(day).get(position), true);
+        if (action == 0) {
+            Complete(taskSchedule.get(day).get(position), true);
+        }
+        // Remove the given task from the task dependency graph without completion time dialog
+        if (action == 1) {
+            Complete(taskSchedule.get(day).get(position), false);
+            vf.setDisplayedChild(1);
+        }
+        // Remove the given event from the schedule and re-optimize.
+        if (action == 2) {
+            vf.setDisplayedChild(0);
+            eventSchedule.get(day).remove(position);
+            Optimize(true);
+            vf.setDisplayedChild(1);
+        }
     }
 }

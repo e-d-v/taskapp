@@ -45,23 +45,23 @@ import java.util.Scanner;
 public class MainActivity extends AppCompatActivity implements ClickListener {
 
     @SuppressWarnings("unused")
-    private ActivityMainBinding binding;      // Binding for the MainActivity
-    private MyTime startDate;                 // The current date
-    private int todayTime;                    // The amount of time spent completing tasks today
-    private int numEvents;                    // Number of events for user
+    private ActivityMainBinding mBinding;      // Binding for the MainActivity
+    private MyTime mStartDate;                 // The current date
+    private int mTodayTime;                    // The amount of time spent completing tasks today
+    private int mNumEvents;                    // Number of events for user
     public static final int ITEM_REQUEST = 1; // requestCode for task/item entry
-    private DayItemAdapter dayItemAdapter;    // Adapter for recyclerview showing user commitments
-    private final ArrayList<Task> tasks = new ArrayList<>(); // List of all tasks for user
+    private DayItemAdapter mDayItemAdapter;    // Adapter for recyclerview showing user commitments
+    private final ArrayList<Task> mTasks = new ArrayList<>(); // List of all tasks for user
     // taskSchedule[i] represents the list of tasks for the day i days past startDate
-    private final ArrayList<ArrayList<Task>> taskSchedule = new ArrayList<>();
+    private final ArrayList<ArrayList<Task>> mTaskSchedule = new ArrayList<>();
     // eventSchedule[i] represents the list of events for the day i days past startDate
-    private final ArrayList<ArrayList<Event>> eventSchedule = new ArrayList<>();
+    private final ArrayList<ArrayList<Event>> mEventSchedule = new ArrayList<>();
     // Key for the extra that stores the list of Task names for the Parent Task Picker Dialog in
     // TaskEntry
     public static final String EXTRA_TASKS = "com.evanv.taskapp.extras.TASKS";
-    private ViewFlipper vf; // Swaps between loading screen and recycler
+    private ViewFlipper mVF; // Swaps between loading screen and recycler
     // Allows data to be pulled from activity
-    private ActivityResultLauncher<Intent> startForResult;
+    private ActivityResultLauncher<Intent> mStartForResult;
 
     /**
      * Removes a task from the task dependency graph, while asking the user how long it took to
@@ -73,16 +73,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     private void Complete(Task task, boolean showDialog, boolean refresh) {
         // Show loading screen
-        tasks.remove(task);
+        mTasks.remove(task);
 
         MyTime doDate = task.getDoDate();
 
         // Get the number of days past the start date this task is scheduled for, so we can get the
         // index of the taskSchedule member for it's do date.
-        int diff = (int) (((doDate.getDateTime() - startDate.getDateTime()) / 1440));
+        int diff = (int) (((doDate.getDateTime() - mStartDate.getDateTime()) / 1440));
 
         if (diff >= 0) {
-            taskSchedule.get(diff).remove(task);
+            mTaskSchedule.get(diff).remove(task);
         }
 
         // Remove the task from the task dependency graph
@@ -106,11 +106,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             builder.setView(input);
 
             builder.setPositiveButton(R.string.complete_task, (dialogInterface, i) -> {
-                todayTime += Integer.parseInt(input.getText().toString());
+                mTodayTime += Integer.parseInt(input.getText().toString());
                 // As the task dependency graph has been updated, we must reoptimize it
                 Optimize(refresh);
                 // Show recycler
-                vf.setDisplayedChild(1);
+                mVF.setDisplayedChild(1);
             });
 
             builder.show();
@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     protected void onActivityResult(int resultCode, @Nullable Intent data) {
         // Show loading screen
-        vf.setDisplayedChild(0);
+        mVF.setDisplayedChild(0);
 
         // If the request is for AddItem
         if (resultCode == RESULT_OK) {
@@ -183,26 +183,26 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                 // Calculate how many days past today's date this event is scheduled (used to
                 // index into eventSchedule
-                int diff = (int) (((start.getDateTime() - startDate.getDateTime()) / 1440));
+                int diff = (int) (((start.getDateTime() - mStartDate.getDateTime()) / 1440));
 
                 // As the eventSchedule's indices are based on how many days past the start day,
                 // we make sure to add enough lists to get to the needed index
-                for (int i = eventSchedule.size(); i <= diff + (7*(recur-1)); i++) {
-                    eventSchedule.add(new ArrayList<>());
+                for (int i = mEventSchedule.size(); i <= diff + (7*(recur-1)); i++) {
+                    mEventSchedule.add(new ArrayList<>());
                 }
 
                 // Add the new event to the data structure
                 Event toAdd = new Event(name, start, ttc);
-                eventSchedule.get(diff).add(toAdd);
-                numEvents++;
+                mEventSchedule.get(diff).add(toAdd);
+                mNumEvents++;
 
                 // Recurring is only on a weekly basis (this is a prototype after all), this is
                 // how we achieve it.
                 for (int i = 1; i < recur; i++) {
-                    eventSchedule.get(diff + (7*i)).add(new Event(name,
+                    mEventSchedule.get(diff + (7*i)).add(new Event(name,
                             new MyTime(start.getDateTime() + ((long) i * 7 * 1440)),
                             ttc));
-                    numEvents++;
+                    mNumEvents++;
                 }
 
             }
@@ -248,19 +248,19 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 String[] parentIndices = parents.split(",");
                 if (!parentIndices[0].equals("-1")) {
                     for (String parentIndex : parentIndices) {
-                        Task parent = tasks.get(Integer.parseInt(parentIndex));
+                        Task parent = mTasks.get(Integer.parseInt(parentIndex));
                         toAdd.addParent(parent);
                         parent.addChild(toAdd);
                     }
                 }
 
-                tasks.add(toAdd);
+                mTasks.add(toAdd);
             }
 
             // As the task dependency graph has been updated, we must reoptimize it
             Optimize(true);
             // Show recycler as Optimize is finished
-            vf.setDisplayedChild(1);
+            mVF.setDisplayedChild(1);
         }
     }
 
@@ -273,12 +273,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     private void Optimize(boolean refresh) {
         Optimizer opt = new Optimizer();
-        opt.Optimize(tasks, taskSchedule, eventSchedule, startDate, todayTime);
+        opt.Optimize(mTasks, mTaskSchedule, mEventSchedule, mStartDate, mTodayTime);
 
         // As the Optimizer may have changed tasks' dates, we must refresh the recycler
         if (refresh) {
-            dayItemAdapter.mDayItemList = DayItemList();
-            dayItemAdapter.notifyDataSetChanged();
+            mDayItemAdapter.mDayItemList = DayItemList();
+            mDayItemAdapter.notifyDataSetChanged();
         }
     }
 
@@ -292,16 +292,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         super.onCreate(savedInstanceState);
 
         // Create layout
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        mBinding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(mBinding.getRoot());
 
         // startDate is our representation for the current date upon the launch of TaskApp.
         GregorianCalendar rightNow = new GregorianCalendar();
-        startDate = new MyTime(rightNow.get(Calendar.MONTH) + 1,
+        mStartDate = new MyTime(rightNow.get(Calendar.MONTH) + 1,
                 rightNow.get(Calendar.DAY_OF_MONTH), rightNow.get(Calendar.YEAR));
 
-        numEvents = 0;
-        todayTime = 0;
+        mNumEvents = 0;
+        mTodayTime = 0;
 
         try {
             // Populate from file
@@ -310,8 +310,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             // Get todayTime from the file to make sure the optimizer doesn't overschedule today
             String todTimeString = fileRead.nextLine();
             String[] todTimeSplit = todTimeString.split(": ");
-            if (startDate.getDateTime() == Integer.parseInt(todTimeSplit[0])) {
-                todayTime = Integer.parseInt(todTimeSplit[1]);
+            if (mStartDate.getDateTime() == Integer.parseInt(todTimeSplit[0])) {
+                mTodayTime = Integer.parseInt(todTimeSplit[1]);
             }
 
             String ntString = fileRead.nextLine();
@@ -337,8 +337,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 String[] parentList = parents.split(",");
 
                 // If earlyDate has past, set today as the earlyDate
-                if (earlyDate.getDateTime() < startDate.getDateTime()) {
-                    earlyDate = startDate;
+                if (earlyDate.getDateTime() < mStartDate.getDateTime()) {
+                    earlyDate = mStartDate;
                 }
 
                 // Create the task
@@ -348,29 +348,29 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 // Add parents based on the parent list. Start at 1 as 0 is the head
                 // (there for ease of writing)
                 for (int j = 1; j < parentList.length; j++) {
-                    toAdd.addParent(tasks.get(Integer.parseInt(parentList[j])));
-                    tasks.get(Integer.parseInt(parentList[j])).addChild(toAdd);
+                    toAdd.addParent(mTasks.get(Integer.parseInt(parentList[j])));
+                    mTasks.get(Integer.parseInt(parentList[j])).addChild(toAdd);
                 }
 
-                tasks.add(toAdd);
+                mTasks.add(toAdd);
 
                 // Calculate how many days past today's date this task is scheduled for. Used to
                 // index into taskSchedule
                 int doDateIndex = (int) (((toAdd.getDoDate().getDateTime() -
-                        startDate.getDateTime()) / 1440));
+                        mStartDate.getDateTime()) / 1440));
 
                 // Adds file to taskSchedule if it is scheduled for today or later.
                 if (doDateIndex >= 0) {
-                    for (int j = taskSchedule.size(); j <= doDateIndex; j++) {
-                        taskSchedule.add(new ArrayList<>());
+                    for (int j = mTaskSchedule.size(); j <= doDateIndex; j++) {
+                        mTaskSchedule.add(new ArrayList<>());
                     }
 
-                    taskSchedule.get(doDateIndex).add(toAdd);
+                    mTaskSchedule.get(doDateIndex).add(toAdd);
                 }
 
                 // If a task is overdue, add it to the overdue list so the user can mark it as
                 // complete or not.
-                if (doDate.getDateTime() < startDate.getDateTime()) {
+                if (doDate.getDateTime() < mStartDate.getDateTime()) {
                     overdueTasks.add(toAdd);
                 }
             }
@@ -451,8 +451,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                                                 Task t = overdueTasks.get(i);
 
                                                 if (t.getDueDate().getDateTime() <
-                                                        startDate.getDateTime()) {
-                                                    t.setDueDate(startDate);
+                                                        mStartDate.getDateTime()) {
+                                                    t.setDueDate(mStartDate);
                                                 }
                                             }
                                         }
@@ -482,10 +482,10 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     private void finishProcessing(Scanner fileRead, boolean reoptimize) {
         try {
             // Read the number of events in from the file.
-            numEvents = fileRead.nextInt();
+            mNumEvents = fileRead.nextInt();
             fileRead.nextLine();
             // Allows us to decrement numEvents without messing up iteration
-            int numEventsCopy = numEvents;
+            int numEventsCopy = mNumEvents;
 
             // Read in all the events in the file, with the general format of:
             // Event Name|Time to Complete|Start Time\n
@@ -504,18 +504,18 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 // Calculate how many days past today's date this event is scheduled for. Used to
                 // index into eventSchedule
                 int doDateIndex = (int) (((toAdd.getDoDate().getDateTime() -
-                        startDate.getDateTime()) / 1440));
+                        mStartDate.getDateTime()) / 1440));
 
                 // Add the events to the list if they aren't for an earlier date
-                if (doDate.getDateTime() >= startDate.getDateTime()) {
-                    for (int j = eventSchedule.size(); j <= doDateIndex; j++) {
-                        eventSchedule.add(new ArrayList<>());
+                if (doDate.getDateTime() >= mStartDate.getDateTime()) {
+                    for (int j = mEventSchedule.size(); j <= doDateIndex; j++) {
+                        mEventSchedule.add(new ArrayList<>());
                     }
 
-                    eventSchedule.get(doDateIndex).add(toAdd);
+                    mEventSchedule.get(doDateIndex).add(toAdd);
                 }
                 else {
-                    numEvents--;
+                    mNumEvents--;
                 }
             }
 
@@ -533,21 +533,21 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // Initialize the main recyclerview with data calculated in helper function DayItemList
         RecyclerView dayRecyclerView = findViewById(R.id.main_recyclerview);
         LinearLayoutManager layoutManager = new LinearLayoutManager(MainActivity.this);
-        dayItemAdapter = new DayItemAdapter(DayItemList(), this);
-        dayRecyclerView.setAdapter(dayItemAdapter);
+        mDayItemAdapter = new DayItemAdapter(DayItemList(), this);
+        dayRecyclerView.setAdapter(mDayItemAdapter);
         dayRecyclerView.setLayoutManager(layoutManager);
 
         // Adds the action bar at the top of the screen
-        setSupportActionBar(binding.toolbar);
+        setSupportActionBar(mBinding.toolbar);
 
         // When the FAB is clicked, run intentAddItem to open the AddItem Activity
-        binding.fab.setOnClickListener(view -> intentAddItem());
+        mBinding.fab.setOnClickListener(view -> intentAddItem());
 
         // Make visible the main content
-        vf = (ViewFlipper) findViewById(R.id.vf);
-        vf.setDisplayedChild(1);
+        mVF = (ViewFlipper) findViewById(R.id.vf);
+        mVF.setDisplayedChild(1);
 
-        startForResult = registerForActivityResult(
+        mStartForResult = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> MainActivity.this.onActivityResult(result.getResultCode(), result.getData()));
     }
@@ -561,14 +561,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // Create an ArrayList of task names so the multiselect dialog can use it to choose parent
         // tasks
         ArrayList<String> taskNames = new ArrayList<>();
-        for (Task t : tasks) {
+        for (Task t : mTasks) {
             MyTime tDate = t.getDueDate();
             taskNames.add(t.getName() + getString(R.string.due_when) + tDate.getMonth() +
                     "/" + tDate.getDate() + "/" + (tDate.getYear()-2000) + ")");
         }
 
         intent.putStringArrayListExtra(EXTRA_TASKS, taskNames);
-        startForResult.launch(intent);
+        mStartForResult.launch(intent);
     }
 
     /**
@@ -585,17 +585,17 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             BufferedWriter out = new BufferedWriter(
                     new FileWriter(getFilesDir() + "state.tsk"));
             // Save todayTime to file to prevent from overscheduling on today's date
-            out.write(startDate.getDateTime() + ": " +
-                    todayTime + "\n");
-            out.write(tasks.size() + "\n");
+            out.write(mStartDate.getDateTime() + ": " +
+                    mTodayTime + "\n");
+            out.write(mTasks.size() + "\n");
 
             // Add all tasks to file, in the structure described in onCreate.
-            for (int i = 0; i < tasks.size(); i++) {
-                Task t = tasks.get(i);
+            for (int i = 0; i < mTasks.size(); i++) {
+                Task t = mTasks.get(i);
                 StringBuilder parents = new StringBuilder("head,");
 
                 for (int j = 0; j < t.getParents().size(); j++) {
-                    parents.append(tasks.indexOf(t.getParents().get(j))).append(",");
+                    parents.append(mTasks.indexOf(t.getParents().get(j))).append(",");
                 }
 
                 String taskLine = t.getName() + "|" + t.getEarlyDate().getDateTime() + "|" +
@@ -606,12 +606,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             }
 
             // Write the number of scheduled events to the file.
-            out.write(numEvents + "\n");
+            out.write(mNumEvents + "\n");
 
             // Add all events to file, in the structure described in onCreate
-            for (int i = 0; i < eventSchedule.size(); i++) {
-                for (int j = 0; j < eventSchedule.get(i).size(); j++) {
-                    Event e = eventSchedule.get(i).get(j);
+            for (int i = 0; i < mEventSchedule.size(); i++) {
+                for (int j = 0; j < mEventSchedule.get(i).size(); j++) {
+                    Event e = mEventSchedule.get(i).get(j);
 
                     out.write(e.getName() + "|" +
                             e.getLength() + "|" + e.getDoDate().getDateTime() +
@@ -636,31 +636,31 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         List<DayItem> itemList = new ArrayList<>();
 
         // Generate a DayItem for the date i days past today's date
-        for (int i = 0; i < taskSchedule.size() || i < eventSchedule.size(); i++) {
+        for (int i = 0; i < mTaskSchedule.size() || i < mEventSchedule.size(); i++) {
             // Fields for the DayItem
             String dayString;
             List<EventItem> events;
             List<TaskItem> tasks;
 
             // MyTime representing the date i days past today's date
-            MyTime curr = new MyTime(startDate.getDateTime() + (i * 1440L));
+            MyTime curr = new MyTime(mStartDate.getDateTime() + (i * 1440L));
 
             // Number representing totalTime this date has scheduled. If it's today's date, add
             // todayTime to represent the time already completed tasks took.
-            int totalTime = (i == 0) ? todayTime : 0;
+            int totalTime = (i == 0) ? mTodayTime : 0;
 
             // Adds the total event time for the day to the total time
-            if (i < eventSchedule.size() && eventSchedule.get(i).size() > 0) {
-                for (int j = 0; j < eventSchedule.get(i).size(); j++) {
-                    Event event = eventSchedule.get(i).get(j);
+            if (i < mEventSchedule.size() && mEventSchedule.get(i).size() > 0) {
+                for (int j = 0; j < mEventSchedule.get(i).size(); j++) {
+                    Event event = mEventSchedule.get(i).get(j);
                     totalTime += event.getLength();
                 }
             }
 
             // Adds the total task time for the day to the total time
-            if (i < taskSchedule.size() && taskSchedule.get(i).size() > 0) {
-                for (int j = 0; j < taskSchedule.get(i).size(); j++) {
-                    Task task = taskSchedule.get(i).get(j);
+            if (i < mTaskSchedule.size() && mTaskSchedule.get(i).size() > 0) {
+                for (int j = 0; j < mTaskSchedule.get(i).size(); j++) {
+                    Task task = mTaskSchedule.get(i).get(j);
 
                     totalTime += task.getTimeToComplete();
                 }
@@ -691,14 +691,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         List<EventItem> itemList = new ArrayList<>();
 
         // Add all the events scheduled for the given day to itemList, if any are scheduled
-        if (index < eventSchedule.size() && eventSchedule.get(index).size() > 0) {
-            for (int j = 0; j < eventSchedule.get(index).size(); j++) {
+        if (index < mEventSchedule.size() && mEventSchedule.get(index).size() > 0) {
+            for (int j = 0; j < mEventSchedule.get(index).size(); j++) {
                 // Fields for itemList
                 String name;
                 String timespan;
 
                 // Get the jth event from the given date
-                Event event = eventSchedule.get(index).get(j);
+                Event event = mEventSchedule.get(index).get(j);
 
                 // Get the start/end time in MyTime objects
                 MyTime eventTime = event.getDoDate();
@@ -751,13 +751,13 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         List<TaskItem> itemList = new ArrayList<>();
 
         // Add all the tasks scheduled for the given date to itemList
-        if (index < taskSchedule.size() && taskSchedule.get(index).size() > 0) {
-            for (int j = 0; j < taskSchedule.get(index).size(); j++) {
+        if (index < mTaskSchedule.size() && mTaskSchedule.get(index).size() > 0) {
+            for (int j = 0; j < mTaskSchedule.get(index).size(); j++) {
                 // DayItem's only field
                 String name;
 
                 // Get the jth task scheduled for the given day.
-                Task task = taskSchedule.get(index).get(j);
+                Task task = mTaskSchedule.get(index).get(j);
 
                 // Create the name in the format NAME (TTC minutes to complete)
                 name = task.getName() + " (" + task.getTimeToComplete() +
@@ -815,19 +815,19 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     @Override
     public void onButtonClick(int position, int day, int action) {
         // Remove the given task from the task dependency graph
-        vf.setDisplayedChild(0);
+        mVF.setDisplayedChild(0);
         if (action == 0) {
-            Complete(taskSchedule.get(day).get(position), true, true);
+            Complete(mTaskSchedule.get(day).get(position), true, true);
         }
         // Remove the given task from the task dependency graph without completion time dialog
         if (action == 1) {
-            Complete(taskSchedule.get(day).get(position), false, true);
+            Complete(mTaskSchedule.get(day).get(position), false, true);
         }
         // Remove the given event from the schedule and re-optimize.
         if (action == 2) {
-            eventSchedule.get(day).remove(position);
+            mEventSchedule.get(day).remove(position);
             Optimize(true);
         }
-        vf.setDisplayedChild(1);
+        mVF.setDisplayedChild(1);
     }
 }

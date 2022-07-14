@@ -7,7 +7,7 @@ package com.evanv.taskapp;
  */
 @SuppressWarnings("unused")
 public class MyTime {
-    private final long datetime; // The number of minutes past 1/1/1970 this MyTime represents
+    private final long mDateTime; // The number of minutes past 1/1/1970 this MyTime represents
 
     /**
      * Initializes an immutable representation of Date/Time, where Time is not needed
@@ -27,7 +27,7 @@ public class MyTime {
      * @param datetime A long representation of datetime, based on another MyTime's GetDateTime()
      */
     public MyTime(long datetime) {
-        this.datetime = datetime;
+        this.mDateTime = datetime;
     }
 
     /**
@@ -99,7 +99,7 @@ public class MyTime {
         // Calculates datetime (number of minutes since 1/1/1970. date is number of days since 1970,
         // so it follows that we should multiply it by 1440 (number of minutes in a day).
         long time = (short) ((60 * hour) + minute);
-        datetime = (date * 1440) + time;
+        mDateTime = (date * 1440) + time;
     }
 
     /**
@@ -112,7 +112,7 @@ public class MyTime {
      * @return See yearRemLeap parameter
      */
     private short yearHelper(short yearRemLeap) {
-        int date = (int)(datetime/1440);
+        int date = (int)(mDateTime /1440);
 
         // The idea behind this is to create a rough estimate for the year, and then adjust it if
         // it's off due to leap years.
@@ -231,7 +231,7 @@ public class MyTime {
      * @return The hour of the object
      */
     public short getHour() {
-        return (short) ((datetime % 1440)/60);
+        return (short) ((mDateTime % 1440)/60);
     }
 
     /**
@@ -240,7 +240,7 @@ public class MyTime {
      * @return The minute of the object
      */
     public short getMinute() {
-        return (short) ((datetime % 1440) - (getHour() * 60));
+        return (short) ((mDateTime % 1440) - (getHour() * 60));
     }
 
     /**
@@ -249,7 +249,7 @@ public class MyTime {
      * @return The minute of the object
      */
     public long getDateTime() {
-        return datetime;
+        return mDateTime;
     }
 
 

@@ -26,7 +26,7 @@ import java.util.Objects;
 @SuppressWarnings("unused")
 public class AddItem extends AppCompatActivity {
     @SuppressWarnings("unused")
-    private AppBarConfiguration appBarConfiguration;
+    private AppBarConfiguration mAppBarConfiguration;
 
     // Extras used in the Bundle:
     // Used by both
@@ -67,16 +67,17 @@ public class AddItem extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         // Initialization stuff needed by Android
         super.onCreate(savedInstanceState);
-        com.evanv.taskapp.databinding.ActivityAddItemBinding binding = ActivityAddItemBinding.inflate(getLayoutInflater());
+        com.evanv.taskapp.databinding.ActivityAddItemBinding binding = ActivityAddItemBinding
+                .inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar);
 
         // Set up fragments/get them to work with the app bar
         NavController navController =
                 Navigation.findNavController(this, R.id.nav_host_fragment_content_add_item);
-        appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
+        mAppBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController,
-                appBarConfiguration);
+                mAppBarConfiguration);
 
         // When FAB is clicked, run submit() method
         binding.fab.setOnClickListener(view -> submit());
@@ -109,7 +110,8 @@ public class AddItem extends AppCompatActivity {
         // of it's fields easily
         NavHostFragment navFragment = (NavHostFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.nav_host_fragment_content_add_item);
-        ItemEntry current = (ItemEntry) Objects.requireNonNull(navFragment).getChildFragmentManager().getFragments().get(0);
+        ItemEntry current = (ItemEntry) Objects.requireNonNull(navFragment)
+                .getChildFragmentManager().getFragments().get(0);
 
         // Call getItem so we can get a bundle of the data the user has entered
         Bundle toReturn = current.getItem();
@@ -130,8 +132,9 @@ public class AddItem extends AppCompatActivity {
      */
     @Override
     public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_add_item);
-        return NavigationUI.navigateUp(navController, appBarConfiguration)
+        NavController navController = Navigation.findNavController(this,
+                R.id.nav_host_fragment_content_add_item);
+        return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
     }
 }

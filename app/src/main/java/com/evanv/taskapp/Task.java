@@ -12,17 +12,16 @@ import java.util.ArrayList;
  */
 @SuppressWarnings("unused")
 public class Task implements Comparable<Task> {
-    private final String name;               // Name of the task
-    private MyTime earlyDate;                // Earliest date to complete
-    private MyTime doDate;                   // Date to do the task
-    private MyTime dueDate;                  // Date the task is due
-    private int timeToComplete;              // Time (in minutes) to complete the tasks
-    private final ArrayList<Task> parents;         // Tasks this task depends on
-    private final ArrayList<Task> children;        // Tasks that depend on this task
-    private ArrayList<Task> workingParents;  // Working copy of parents for optimizer
-    private ArrayList<Task> workingChildren; // Working copy of children for optimizer
-
-    private MyTime workingEarlyDate;         // Working copy of earlyDate for optimizer.
+    private final String mName;               // Name of the task
+    private MyTime mEarlyDate;                // Earliest date to complete
+    private MyTime mDoDate;                   // Date to do the task
+    private MyTime mDueDate;                  // Date the task is due
+    private int mTimeToComplete;              // Time (in minutes) to complete the tasks
+    private final ArrayList<Task> mParents;         // Tasks this task depends on
+    private final ArrayList<Task> mChildren;        // Tasks that depend on this task
+    private ArrayList<Task> mWorkingParents;  // Working copy of parents for optimizer
+    private ArrayList<Task> mWorkingChildren; // Working copy of children for optimizer
+    private MyTime mWorkingEarlyDate;         // Working copy of earlyDate for optimizer.
 
     /**
      * Initializes an object representing a task
@@ -32,12 +31,12 @@ public class Task implements Comparable<Task> {
      * @param due When the task is due
      */
     public Task(String name, MyTime early, MyTime due, int time) {
-        this.name = name;
-        this.earlyDate = early;
-        this.dueDate = due;
-        this.timeToComplete = time;
-        parents = new ArrayList<>();
-        children = new ArrayList<>();
+        this.mName = name;
+        this.mEarlyDate = early;
+        this.mDueDate = due;
+        this.mTimeToComplete = time;
+        mParents = new ArrayList<>();
+        mChildren = new ArrayList<>();
     }
 
     /**
@@ -46,7 +45,7 @@ public class Task implements Comparable<Task> {
      * @return The name of the task
      */
     public String getName() {
-        return name;
+        return mName;
     }
 
     /**
@@ -55,7 +54,7 @@ public class Task implements Comparable<Task> {
      * @return The earliest completion date for the task
      */
     public MyTime getEarlyDate() {
-        return earlyDate;
+        return mEarlyDate;
     }
 
     /**
@@ -64,7 +63,7 @@ public class Task implements Comparable<Task> {
      * @param earlyDate The new earliest completion date for the task.
      */
     public void setEarlyDate(MyTime earlyDate) {
-        this.earlyDate = earlyDate;
+        this.mEarlyDate = earlyDate;
     }
 
     /**
@@ -73,7 +72,7 @@ public class Task implements Comparable<Task> {
      * @return The working copy of the earliest completion date for the task
      */
     public MyTime getWorkingEarlyDate() {
-        return workingEarlyDate;
+        return mWorkingEarlyDate;
     }
 
     /**
@@ -82,7 +81,7 @@ public class Task implements Comparable<Task> {
      * @param earlyDate The new working copy of the earliest completion date for the task.
      */
     public void setWorkingEarlyDate(MyTime earlyDate) {
-        this.workingEarlyDate = earlyDate;
+        this.mWorkingEarlyDate = earlyDate;
     }
     /**
      * Returns the currently scheduled completion date (by the optimizer) for the task
@@ -90,7 +89,7 @@ public class Task implements Comparable<Task> {
      * @return The currently scheduled completion date (by the optimizer) for the task
      */
     public MyTime getDoDate() {
-        return doDate;
+        return mDoDate;
     }
 
     /**
@@ -99,7 +98,7 @@ public class Task implements Comparable<Task> {
      * @param doDate The new completion date for the task.
      */
     public void setDoDate(MyTime doDate) {
-        this.doDate = doDate;
+        this.mDoDate = doDate;
     }
 
     /**
@@ -108,7 +107,7 @@ public class Task implements Comparable<Task> {
      * @return The due date for the task
      */
     public MyTime getDueDate() {
-        return dueDate;
+        return mDueDate;
     }
 
     /**
@@ -117,7 +116,7 @@ public class Task implements Comparable<Task> {
      * @param dueDate The new due date for the task.
      */
     public void setDueDate(MyTime dueDate) {
-        this.dueDate = dueDate;
+        this.mDueDate = dueDate;
     }
 
     /**
@@ -126,7 +125,7 @@ public class Task implements Comparable<Task> {
      * @return The amount of time (in minutes) it takes to complete the task
      */
     public int getTimeToComplete() {
-        return timeToComplete;
+        return mTimeToComplete;
     }
 
     /**
@@ -135,7 +134,7 @@ public class Task implements Comparable<Task> {
      * @param timeToComplete The new amount of time it takes to complete the task.
      */
     public void setTimeToComplete(int timeToComplete) {
-        this.timeToComplete = timeToComplete;
+        this.mTimeToComplete = timeToComplete;
     }
 
     /**
@@ -146,7 +145,7 @@ public class Task implements Comparable<Task> {
      * @return The working parents list.
      */
     public ArrayList<Task> getWorkingParents() {
-        return workingParents;
+        return mWorkingParents;
     }
 
     /**
@@ -155,7 +154,7 @@ public class Task implements Comparable<Task> {
      * @return The working children list.
      */
     public ArrayList<Task> getWorkingChildren() {
-        return workingChildren;
+        return mWorkingChildren;
     }
 
     /**
@@ -164,9 +163,9 @@ public class Task implements Comparable<Task> {
      */
     @SuppressWarnings("unchecked")
     public void initializeForOptimization() {
-        workingChildren = (ArrayList<Task>)children.clone();
-        workingParents = (ArrayList<Task>)parents.clone();
-        workingEarlyDate = earlyDate;
+        mWorkingChildren = (ArrayList<Task>) mChildren.clone();
+        mWorkingParents = (ArrayList<Task>) mParents.clone();
+        mWorkingEarlyDate = mEarlyDate;
     }
 
     /**
@@ -175,7 +174,7 @@ public class Task implements Comparable<Task> {
      * @return The prerequisite tasks for the task
      */
     public ArrayList<Task> getParents() {
-        return parents;
+        return mParents;
     }
 
     /**
@@ -184,7 +183,7 @@ public class Task implements Comparable<Task> {
      * @param parent The task that whose completion is required for the completion of the task
      */
     public void addParent(Task parent) {
-        this.parents.add(parent);
+        this.mParents.add(parent);
     }
 
     /**
@@ -193,7 +192,7 @@ public class Task implements Comparable<Task> {
      * @param parent The prerequisite task to remove
      */
     public void removeParent(Task parent) {
-        this.parents.remove(parent);
+        this.mParents.remove(parent);
     }
 
     /**
@@ -202,7 +201,7 @@ public class Task implements Comparable<Task> {
      * @param parent The prerequisite task to remove
      */
     public void removeWorkingParent(Task parent) {
-        this.workingParents.remove(parent);
+        this.mWorkingParents.remove(parent);
     }
 
     /**
@@ -211,7 +210,7 @@ public class Task implements Comparable<Task> {
      * @return The tasks dependent on the completion of the task
      */
     public ArrayList<Task> getChildren() {
-        return children;
+        return mChildren;
     }
 
     /**
@@ -220,7 +219,7 @@ public class Task implements Comparable<Task> {
      * @param child The dependent task to add
      */
     public void addChild(Task child) {
-        this.children.add(child);
+        this.mChildren.add(child);
     }
 
     /**
@@ -229,7 +228,7 @@ public class Task implements Comparable<Task> {
      * @param child The dependent task to remove
      */
     public void removeChild(Task child) {
-        this.children.remove(child);
+        this.mChildren.remove(child);
     }
 
     /**
@@ -243,17 +242,17 @@ public class Task implements Comparable<Task> {
     public int compareTo(Task other) {
         // See if task is due before the other task
         MyTime otherDueDate = other.getDueDate();
-        long diff = dueDate.getDateTime() - otherDueDate.getDateTime();
+        long diff = mDueDate.getDateTime() - otherDueDate.getDateTime();
 
         if (diff == 0) {
             // See if task has more children than the other task
-            diff = children.size() - other.getChildren().size();
+            diff = mChildren.size() - other.getChildren().size();
 
             if (diff == 0) {
                 // See if task can be completed earlier than the other task
                 MyTime otherEarlyDate = other.getEarlyDate();
 
-                diff = earlyDate.getDateTime() - otherEarlyDate.getDateTime();
+                diff = mEarlyDate.getDateTime() - otherEarlyDate.getDateTime();
             }
         }
 

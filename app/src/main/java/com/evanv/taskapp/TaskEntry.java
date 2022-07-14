@@ -25,7 +25,7 @@ import java.util.GregorianCalendar;
 public class TaskEntry extends Fragment implements ItemEntry {
 
     private ViewGroup mContainer;  // The ViewGroup for the activity, allows easy access to views
-    private String currentParents; // The list of parents for the task, returned when fab is clicked
+    private String mCurrentParents; // The list of parents for task, returned when fab is clicked
 
     /**
      * Required empty public constructor, creates new TaskEntry fragment
@@ -44,7 +44,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         super.onCreate(savedInstanceState);
 
         // -1 signifies that the new task has no dependent tasks, as none were entered
-        currentParents = "-1";
+        mCurrentParents = "-1";
     }
 
     /**
@@ -133,7 +133,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
                                             sb.append(index);
                                             sb.append(",");
                                         }
-                                        currentParents = (selectedItems.size() != 0) ? sb.toString()
+                                        mCurrentParents = (selectedItems.size() != 0) ? sb.toString()
                                                 : "-1";
 
                                      }
@@ -322,7 +322,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         toReturn.putString(AddItem.EXTRA_ECD, ecd);
         toReturn.putString(AddItem.EXTRA_DUE, dueDate);
         toReturn.putString(AddItem.EXTRA_TTC, ttc);
-        toReturn.putString(AddItem.EXTRA_PARENTS, currentParents);
+        toReturn.putString(AddItem.EXTRA_PARENTS, mCurrentParents);
 
         return toReturn;
     }

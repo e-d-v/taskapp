@@ -35,7 +35,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
     }
 
     /**
-     * Initialize an individual layout for the dayitem's recyclerview
+     * Initialize an individual layout for the DayItem's recyclerview
      *
      * @param parent ViewGroup associated with the parent recyclerview
      * @param viewType not used, required by override

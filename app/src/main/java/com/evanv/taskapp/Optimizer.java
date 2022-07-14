@@ -1,8 +1,6 @@
 package com.evanv.taskapp;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.PriorityQueue;
 
 /**
@@ -83,7 +81,7 @@ public class Optimizer {
         // Initializes tasks for optimization, see Javadoc for Task for more detail on why this is
         // necessary.
         for (int i = 0; i < tasks.size(); i++) {
-            tasks.get(i).initalizeForOpimization();
+            tasks.get(i).initializeForOptimization();
 
             if (tasks.get(i).getDueDate().getDateTime() > lateDate.getDateTime()) {
                 lateDate = tasks.get(i).getDueDate();

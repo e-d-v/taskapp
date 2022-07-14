@@ -20,7 +20,7 @@ public class TaskItem {
     /**
      * Returns string representing the name of the Task
      *
-     * @return a string representing the name of the Tasl
+     * @return a string representing the name of the Task
      */
     public String getName() {
         return mName;

@@ -243,7 +243,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         else {
             boolean ddFlag= false; // true if there is an issue with ecd input
 
-            // Check if duedate follows format mm/dd/yy
+            // Check if Due Date follows format mm/dd/yy
             String[] dateTokens = dueDate.split("/");
 
             if (dateTokens.length == 3) {

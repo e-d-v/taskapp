@@ -34,7 +34,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
     }
 
     /**
-     * Initialize an individual layout for the dayitem's recyclerview
+     * Initialize an individual layout for the DayItem's recyclerview
      * @param parent ViewGroup associated with the parent recyclerview
      * @param viewType not used, required by override
      * @return an EventViewHolder associated with the new layout

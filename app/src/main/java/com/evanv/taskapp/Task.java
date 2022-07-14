@@ -163,7 +163,7 @@ public class Task implements Comparable {
      * Copies children into working children and parents into working parents, so the optimizer can
      * utilize the inherent dependency tree.
      */
-    public void initalizeForOpimization() {
+    public void initializeForOptimization() {
         workingChildren = (ArrayList<Task>)children.clone();
         workingParents = (ArrayList<Task>)parents.clone();
         workingEarlyDate = earlyDate;

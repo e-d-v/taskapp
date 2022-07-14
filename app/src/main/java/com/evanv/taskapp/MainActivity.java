@@ -716,7 +716,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 // Get the jth event from the given date
                 Event event = eventSchedule.get(index).get(j);
 
-                // Get the start/end time in mytime objects
+                // Get the start/end time in MyTime objects
                 MyTime eventTime = event.getDoDate();
                 MyTime endTime = new MyTime(eventTime.getDateTime() + event.getLength());
 

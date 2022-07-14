@@ -9,7 +9,7 @@ public class MyTime {
     private final long datetime; // The number of minutes past 1/1/1970 this MyTime represents
 
     /**
-     * Initializes an immutable representation of Date/Time, where Time is not neeeded
+     * Initializes an immutable representation of Date/Time, where Time is not needed
      *
      * @param month The month of the year (1-12)
      * @param day The day in the year (1-31)
@@ -32,7 +32,7 @@ public class MyTime {
     }
 
     /**
-     * Initializes an immutable representation of Date/Time, where Time is neeeded
+     * Initializes an immutable representation of Date/Time, where Time is needed
      *
      * @param month The month of the year (1-12)
      * @param day The day in the year (1-31)

@@ -5,6 +5,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -58,6 +62,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     // TaskEntry
     public static final String EXTRA_TASKS = "com.evanv.taskapp.extras.TASKS";
     private ViewFlipper vf; // Swaps between loading screen and recycler
+    // Allows data to be pulled from activity
+    private ActivityResultLauncher<Intent> startForResult;
 
     /**
      * Removes a task from the task dependency graph, while asking the user how long it took to
@@ -65,10 +71,10 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      *
      * @param task The task to be removed from the task dependency graph
      * @param showDialog true if dialog is needed, false if dialog isn't
+     * @param refresh true if we should refresh recycler
      */
-    private void Complete(Task task, boolean showDialog) {
+    private void Complete(Task task, boolean showDialog, boolean refresh) {
         // Show loading screen
-        vf.setDisplayedChild(0);
         tasks.remove(task);
 
         MyTime doDate = task.getDoDate();
@@ -106,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 public void onClick(DialogInterface dialogInterface, int i) {
                     todayTime += Integer.parseInt(input.getText().toString());
                     // As the task dependency graph has been updated, we must reoptimize it
-                    Optimize(true);
+                    Optimize(refresh);
                     // Show recycler
                     vf.setDisplayedChild(1);
                 }
@@ -116,9 +122,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
         else {
             // As the task dependency graph has been updated, we must reoptimize it
-            Optimize(true);
-            // Show recycler
-            vf.setDisplayedChild(1);
+            Optimize(refresh);
         }
     }
 
@@ -127,147 +131,142 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * a new Event/Task to be added. Parses the data in the BundleExtra AddItem.EXTRA_ITEM into a
      * Task/Event depending on their AddItem.EXTRA_TYPE.
      *
-     * @param requestCode ITEM_REQUEST if request was for AddItem
      * @param resultCode RESULT_OK if there were no issues with user input
      * @param data Contains the BundleExtra AddItem.EXTRA_ITEM, with all the data needed to build
      *             the item.
      */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    protected void onActivityResult(int resultCode, @Nullable Intent data) {
         // Show loading screen
         vf.setDisplayedChild(0);
 
         // If the request is for AddItem
-        if (requestCode == ITEM_REQUEST) {
-            if (resultCode == RESULT_OK) {
-                // Get the data to build the item
-                assert data != null;
-                Bundle result = data.getBundleExtra(AddItem.EXTRA_ITEM);
-                String type = result.getString(AddItem.EXTRA_TYPE);
+        if (resultCode == RESULT_OK) {
+            // Get the data to build the item
+            assert data != null;
+            Bundle result = data.getBundleExtra(AddItem.EXTRA_ITEM);
+            String type = result.getString(AddItem.EXTRA_TYPE);
 
-                // If the item type is Event
-                if (type.equals(AddItem.EXTRA_VAL_EVENT)) {
-                    // Get the fields from the bundle
-                    String name = result.getString(AddItem.EXTRA_NAME);
-                    int ttc = Integer.parseInt(result.getString(AddItem.EXTRA_TTC));
-                    String startStr = result.getString(AddItem.EXTRA_START);
-                    int recur = Integer.parseInt(result.getString(AddItem.EXTRA_RECUR));
+            // If the item type is Event
+            if (type.equals(AddItem.EXTRA_VAL_EVENT)) {
+                // Get the fields from the bundle
+                String name = result.getString(AddItem.EXTRA_NAME);
+                int ttc = Integer.parseInt(result.getString(AddItem.EXTRA_TTC));
+                String startStr = result.getString(AddItem.EXTRA_START);
+                int recur = Integer.parseInt(result.getString(AddItem.EXTRA_RECUR));
 
-                    // Makes sure recur works if the user enters 0 instead of 1
-                    recur = (recur == 0) ? 1 : recur;
+                // Makes sure recur works if the user enters 0 instead of 1
+                recur = (recur == 0) ? 1 : recur;
 
 
-                    // Convert the String start time into a MyTime
-                    MyTime start;
-                    try {
-                        String[] fullTokens = startStr.split(" ");
-                        String[] dateTokens = fullTokens[0].split("/");
-                        String[] timeTokens = fullTokens[1].split(":");
+                // Convert the String start time into a MyTime
+                MyTime start;
+                try {
+                    String[] fullTokens = startStr.split(" ");
+                    String[] dateTokens = fullTokens[0].split("/");
+                    String[] timeTokens = fullTokens[1].split(":");
 
-                        int month = Integer.parseInt(dateTokens[0]);
-                        int day = Integer.parseInt(dateTokens[1]);
-                        int year = 2000 + Integer.parseInt(dateTokens[2]);
-                        int hour = Integer.parseInt(timeTokens[0]);
-                        int minute = Integer.parseInt(timeTokens[1]);
+                    int month = Integer.parseInt(dateTokens[0]);
+                    int day = Integer.parseInt(dateTokens[1]);
+                    int year = 2000 + Integer.parseInt(dateTokens[2]);
+                    int hour = Integer.parseInt(timeTokens[0]);
+                    int minute = Integer.parseInt(timeTokens[1]);
 
-                        if (hour == 12) {
-                            if (fullTokens[2].equals(getString(R.string.am))) {
-                                hour = 0;
-                            }
+                    if (hour == 12) {
+                        if (fullTokens[2].equals(getString(R.string.am))) {
+                            hour = 0;
                         }
-                        else if (fullTokens[2].equals(getString(R.string.pm))) {
-                            hour += 12;
-                        }
-
-                        start = new MyTime(month, day, year, hour, minute);
                     }
-                    catch (Exception e) {
-                        System.out.println(e.getMessage());
-                        return;
+                    else if (fullTokens[2].equals(getString(R.string.pm))) {
+                        hour += 12;
                     }
 
-                    // Calculate how many days past today's date this event is scheduled (used to
-                    // index into eventSchedule
-                    int diff = (int) (((start.getDateTime() - startDate.getDateTime()) / 1440));
+                    start = new MyTime(month, day, year, hour, minute);
+                }
+                catch (Exception e) {
+                    System.out.println(e.getMessage());
+                    return;
+                }
 
-                    // As the eventSchedule's indices are based on how many days past the start day,
-                    // we make sure to add enough lists to get to the needed index
-                    for (int i = eventSchedule.size(); i <= diff + (7*(recur-1)); i++) {
-                        eventSchedule.add(new ArrayList<Event>());
-                    }
+                // Calculate how many days past today's date this event is scheduled (used to
+                // index into eventSchedule
+                int diff = (int) (((start.getDateTime() - startDate.getDateTime()) / 1440));
 
-                    // Add the new event to the data structure
-                    Event toAdd = new Event(name, start, ttc);
-                    eventSchedule.get(diff).add(toAdd);
+                // As the eventSchedule's indices are based on how many days past the start day,
+                // we make sure to add enough lists to get to the needed index
+                for (int i = eventSchedule.size(); i <= diff + (7*(recur-1)); i++) {
+                    eventSchedule.add(new ArrayList<Event>());
+                }
+
+                // Add the new event to the data structure
+                Event toAdd = new Event(name, start, ttc);
+                eventSchedule.get(diff).add(toAdd);
+                numEvents++;
+
+                // Recurring is only on a weekly basis (this is a prototype after all), this is
+                // how we achieve it.
+                for (int i = 1; i < recur; i++) {
+                    eventSchedule.get(diff + (7*i)).add(new Event(name,
+                            new MyTime(start.getDateTime() + ((long) i * 7 * 1440)),
+                            ttc));
                     numEvents++;
-
-                    // Recurring is only on a weekly basis (this is a prototype after all), this is
-                    // how we achieve it.
-                    for (int i = 1; i < recur; i++) {
-                        eventSchedule.get(diff + (7*i)).add(new Event(name,
-                                new MyTime(start.getDateTime() + ((long) i * 7 * 1440)),
-                                ttc));
-                        numEvents++;
-                    }
-
-                }
-                // If the item type is Task
-                else if (type.equals(AddItem.EXTRA_VAL_TASK)) {
-                    // Get the fields from the Bundle
-                    String name = result.getString(AddItem.EXTRA_NAME);
-                    int timeToComplete = Integer.parseInt(result.getString(AddItem.EXTRA_TTC));
-                    String ecd = result.getString(AddItem.EXTRA_ECD);
-                    String dd = result.getString(AddItem.EXTRA_DUE);
-                    String parents = result.getString(AddItem.EXTRA_PARENTS);
-
-                    // Convert the earliest completion date String to a MyTime
-                    MyTime early;
-                    try {
-                        String[] earlyStrs = ecd.split("/");
-                        early = new MyTime(Integer.parseInt(earlyStrs[0]),
-                                Integer.parseInt(earlyStrs[1]),
-                                2000 + Integer.parseInt(earlyStrs[2]));
-                    }
-                    catch (Exception e) {
-                        Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    // Convert the due date String to a MyTime
-                    MyTime due;
-                    try {
-                        String[] dueStrs = dd.split("/");
-                        due = new MyTime(Integer.parseInt(dueStrs[0]), Integer.parseInt(dueStrs[1]),
-                                2000 + Integer.parseInt(dueStrs[2]));
-                    }
-                    catch (Exception e) {
-                        Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    Task toAdd = new Task(name, early, due, timeToComplete);
-
-                    // The parents string in the Bundle is a String of the format "n1,n2,n3,...nN,"
-                    // where each nx is an index to a Task in tasks that should be used as a parent
-                    // for the task to be added.
-                    String[] parentIndices = parents.split(",");
-                    if (!parentIndices[0].equals("-1")) {
-                        for (String parentIndex : parentIndices) {
-                            Task parent = tasks.get(Integer.parseInt(parentIndex));
-                            toAdd.addParent(parent);
-                            parent.addChild(toAdd);
-                        }
-                    }
-
-                    tasks.add(toAdd);
                 }
 
-                // As the task dependency graph has been updated, we must reoptimize it
-                Optimize(true);
-                // Show recycler as Optimize is finished
-                vf.setDisplayedChild(1);
             }
+            // If the item type is Task
+            else if (type.equals(AddItem.EXTRA_VAL_TASK)) {
+                // Get the fields from the Bundle
+                String name = result.getString(AddItem.EXTRA_NAME);
+                int timeToComplete = Integer.parseInt(result.getString(AddItem.EXTRA_TTC));
+                String ecd = result.getString(AddItem.EXTRA_ECD);
+                String dd = result.getString(AddItem.EXTRA_DUE);
+                String parents = result.getString(AddItem.EXTRA_PARENTS);
+
+                // Convert the earliest completion date String to a MyTime
+                MyTime early;
+                try {
+                    String[] earlyStrs = ecd.split("/");
+                    early = new MyTime(Integer.parseInt(earlyStrs[0]),
+                            Integer.parseInt(earlyStrs[1]),
+                            2000 + Integer.parseInt(earlyStrs[2]));
+                }
+                catch (Exception e) {
+                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Convert the due date String to a MyTime
+                MyTime due;
+                try {
+                    String[] dueStrs = dd.split("/");
+                    due = new MyTime(Integer.parseInt(dueStrs[0]), Integer.parseInt(dueStrs[1]),
+                            2000 + Integer.parseInt(dueStrs[2]));
+                }
+                catch (Exception e) {
+                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Task toAdd = new Task(name, early, due, timeToComplete);
+
+                // The parents string in the Bundle is a String of the format "n1,n2,n3,...nN,"
+                // where each nx is an index to a Task in tasks that should be used as a parent
+                // for the task to be added.
+                String[] parentIndices = parents.split(",");
+                if (!parentIndices[0].equals("-1")) {
+                    for (String parentIndex : parentIndices) {
+                        Task parent = tasks.get(Integer.parseInt(parentIndex));
+                        toAdd.addParent(parent);
+                        parent.addChild(toAdd);
+                    }
+                }
+
+                tasks.add(toAdd);
+            }
+
+            // As the task dependency graph has been updated, we must reoptimize it
+            Optimize(true);
+            // Show recycler as Optimize is finished
+            vf.setDisplayedChild(1);
         }
     }
 
@@ -444,7 +443,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                                         // day.
                                         for (int i = 0; i < selectedItems.size(); i++) {
                                             Complete(overdueTasks.get(selectedItems.get(i)),
-                                                    false);
+                                                    false, false);
                                         }
 
                                         // Change due date for overdue tasks if it has already been
@@ -558,6 +557,15 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // Make visible the main content
         vf = (ViewFlipper) findViewById(R.id.vf);
         vf.setDisplayedChild(1);
+
+        startForResult = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        MainActivity.this.onActivityResult(result.getResultCode(), result.getData());
+                    }
+                });
     }
 
     /**
@@ -576,7 +584,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
 
         intent.putStringArrayListExtra(EXTRA_TASKS, taskNames);
-        startActivityForResult(intent, ITEM_REQUEST);
+        startForResult.launch(intent);
     }
 
     /**
@@ -823,20 +831,19 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     @Override
     public void onButtonClick(int position, int day, int action) {
         // Remove the given task from the task dependency graph
+        vf.setDisplayedChild(0);
         if (action == 0) {
-            Complete(taskSchedule.get(day).get(position), true);
+            Complete(taskSchedule.get(day).get(position), true, true);
         }
         // Remove the given task from the task dependency graph without completion time dialog
         if (action == 1) {
-            Complete(taskSchedule.get(day).get(position), false);
-            vf.setDisplayedChild(1);
+            Complete(taskSchedule.get(day).get(position), false, true);
         }
         // Remove the given event from the schedule and re-optimize.
         if (action == 2) {
-            vf.setDisplayedChild(0);
             eventSchedule.get(day).remove(position);
             Optimize(true);
-            vf.setDisplayedChild(1);
         }
+        vf.setDisplayedChild(1);
     }
 }

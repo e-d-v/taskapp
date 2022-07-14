@@ -18,9 +18,9 @@ import java.util.List;
  * @author Evan Voogd
  */
 public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.EventViewHolder> {
-    private List<EventItem> mEventItemList; // List of events for this day
+    private final List<EventItem> mEventItemList; // List of events for this day
     // Listener that allows easy deletion of events (see ClickListener)
-    private ClickListener mListener;
+    private final ClickListener mListener;
 
     /**
      * Constructs an adapter for a given DayItem's event recyclerview

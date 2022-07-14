@@ -28,7 +28,6 @@ import com.evanv.taskapp.databinding.ActivityAddItemBinding;
  */
 public class AddItem extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
-    private ActivityAddItemBinding binding;
 
     // Extras used in the Bundle:
     // Used by both
@@ -69,7 +68,7 @@ public class AddItem extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         // Initialization stuff needed by Android
         super.onCreate(savedInstanceState);
-        binding = ActivityAddItemBinding.inflate(getLayoutInflater());
+        com.evanv.taskapp.databinding.ActivityAddItemBinding binding = ActivityAddItemBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar);
 

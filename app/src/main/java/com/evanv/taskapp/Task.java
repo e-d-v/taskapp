@@ -17,8 +17,8 @@ public class Task implements Comparable {
     private MyTime doDate;                   // Date to do the task
     private MyTime dueDate;                  // Date the task is due
     private int timeToComplete;              // Time (in minutes) to complete the tasks
-    private ArrayList<Task> parents;         // Tasks this task depends on
-    private ArrayList<Task> children;        // Tasks that depend on this task
+    private final ArrayList<Task> parents;         // Tasks this task depends on
+    private final ArrayList<Task> children;        // Tasks that depend on this task
     private ArrayList<Task> workingParents;  // Working copy of parents for optimizer
     private ArrayList<Task> workingChildren; // Working copy of children for optimizer
 

@@ -8,9 +8,9 @@ import java.util.Date;
  * @author Evan Voogd
  */
 public final class Event {
-    private String name;   // The name of the event to display in the schedule
-    private MyTime doDate; // The start time for the event. Called "doDate" with consistency to Task
-    private int length;    // How long the event lasts
+    private final String name;   // The name of the event to display in the schedule
+    private final MyTime doDate; // The start time for the event. Called "doDate" with consistency to Task
+    private final int length;    // How long the event lasts
 
     /**
      * Returns the name of the event

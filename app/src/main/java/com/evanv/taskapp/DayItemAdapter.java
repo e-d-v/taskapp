@@ -23,8 +23,8 @@ import java.util.List;
  */
 public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewHolder> {
     // Used to share views between the Event/Task recyclerviews and the Day recyclerviews
-    private RecyclerView.RecycledViewPool mTaskViewPool = new RecyclerView.RecycledViewPool();
-    private RecyclerView.RecycledViewPool mEventViewPool = new RecyclerView.RecycledViewPool();
+    private final RecyclerView.RecycledViewPool mTaskViewPool = new RecyclerView.RecycledViewPool();
+    private final RecyclerView.RecycledViewPool mEventViewPool = new RecyclerView.RecycledViewPool();
     public List<DayItem> mDayItemList; // List of days
     // Listener that allows easy completion of tasks (see ClickListener)
     private final ClickListener mListener;
@@ -138,7 +138,7 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         // The recyclerview that displays this day's tasks
         private final RecyclerView mTaskRecyclerView;
         // Listener that allows easy completion of tasks (see ClickListener)
-        private WeakReference<ClickListener> mListenerRef;
+        private final WeakReference<ClickListener> mListenerRef;
 
         /**
          * Constructs a new DayViewHolder, setting it's values to the views in the day_item

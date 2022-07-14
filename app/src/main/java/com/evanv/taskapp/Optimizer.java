@@ -115,7 +115,7 @@ public class Optimizer {
         // Initialize the time array, where time[i] is the amount of currently scheduled time for
         // the date i days past today's date. We start with only using events, as they can't be
         // rescheduled, so we should schedule tasks around them
-        int time[] = new int[taskSchedule.size()];
+        int[] time = new int[taskSchedule.size()];
         for (int i = 0; i < taskSchedule.size() && i < eventSchedule.size(); i++) {
             time[i] = (i == 0) ? todayTime : 0;
 

@@ -6,7 +6,7 @@ package com.evanv.taskapp;
  * @author Evan Voogd
  */
 public class MyTime {
-    private long datetime; // The number of minutes past 1/1/1970 this MyTime represents
+    private final long datetime; // The number of minutes past 1/1/1970 this MyTime represents
 
     /**
      * Initializes an immutable representation of Date/Time, where Time is not neeeded

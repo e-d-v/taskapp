@@ -19,9 +19,9 @@ import java.util.List;
  * @author Evan Voogd
  */
 public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskViewHolder> {
-    private List<TaskItem> mTaskItemList; // List of tasks for this day
+    private final List<TaskItem> mTaskItemList; // List of tasks for this day
     // Listener that allows easy completion of tasks (see ClickListener)
-    private ClickListener mListener;
+    private final ClickListener mListener;
 
     /**
      * Constructs an adapter for a given DayItem's task recyclerview

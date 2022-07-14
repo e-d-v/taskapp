@@ -194,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                     // As the eventSchedule's indices are based on how many days past the start day,
                     // we make sure to add enough lists to get to the needed index
                     for (int i = eventSchedule.size(); i <= diff + (7*(recur-1)); i++) {
-                        eventSchedule.add(new ArrayList<Event>());;
+                        eventSchedule.add(new ArrayList<Event>());
                     }
 
                     // Add the new event to the data structure
@@ -593,9 +593,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             BufferedWriter out = new BufferedWriter(
                     new FileWriter(getFilesDir() + "state.tsk"));
             // Save todayTime to file to prevent from overscheduling on today's date
-            out.write(Long.toString(startDate.getDateTime()) + ": " +
-                    Integer.toString(todayTime) + "\n");
-            out.write(Integer.toString(tasks.size()) + "\n");
+            out.write(startDate.getDateTime() + ": " +
+                    todayTime + "\n");
+            out.write(tasks.size() + "\n");
 
             // Add all tasks to file, in the structure described in onCreate.
             for (int i = 0; i < tasks.size(); i++) {
@@ -608,13 +608,13 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                 String taskLine = t.getName() + "|" + t.getEarlyDate().getDateTime() + "|" +
                         t.getDueDate().getDateTime() + "|" + t.getDoDate().getDateTime() + "|" +
-                        t.getTimeToComplete() + "|" + parents.toString() + "\n";
+                        t.getTimeToComplete() + "|" + parents + "\n";
 
                 out.write(taskLine);
             }
 
             // Write the number of scheduled events to the file.
-            out.write(Integer.toString(numEvents) + "\n");
+            out.write(numEvents + "\n");
 
             // Add all events to file, in the structure described in onCreate
             for (int i = 0; i < eventSchedule.size(); i++) {
@@ -728,7 +728,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 short endHour = endTime.getHour();
                 boolean end_am = endHour < 12;
                 String end_ampm = end_am ? " " + getString(R.string.am) :
-                        " " + getString(R.string.pm);;
+                        " " + getString(R.string.pm);
                 endHour -= end_am ? 0 : 12;
                 endHour = (endHour == 0) ? 12 : endHour;
                 short endMinute = endTime.getMinute();
@@ -803,8 +803,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // the Home/Up button, so long as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         // Handles the settings menu item being chosen
+        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }

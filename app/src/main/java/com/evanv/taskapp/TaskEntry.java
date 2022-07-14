@@ -11,10 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.Toast;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -79,7 +77,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
                 // Converts the bundled arraylist of task names to a String[] that can be used by
                 // the alert dialog
                 ArrayList<Integer> selectedItems = new ArrayList<>();
-                ArrayList<String> taskNames = getActivity().getIntent()
+                ArrayList<String> taskNames = requireActivity().getIntent()
                         .getStringArrayListExtra(MainActivity.EXTRA_TASKS);
                 String[] taskNamesArr = new String[taskNames.size()];
                 Object[] taskNamesObjs = taskNames.toArray();
@@ -158,6 +156,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
      * @return If all fields are correct, a Bundle containing the information needed to create an
      *         event, if not, null.
      */
+    @SuppressWarnings("unused")
     @Override
     public Bundle getItem() {
         // Gets all the required EditTexts containing user input

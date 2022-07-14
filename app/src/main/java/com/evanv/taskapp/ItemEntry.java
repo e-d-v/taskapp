@@ -16,5 +16,6 @@ public interface ItemEntry {
      *
      * @return A bundle containing all the fields needed to make a specific item.
      */
+    @SuppressWarnings("unused")
     Bundle getItem();
 }

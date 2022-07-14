@@ -42,6 +42,7 @@ public class EventEntry extends Fragment implements ItemEntry {
      *
      * @return a Bundle containing user input if all fields are filled, null otherwise
      */
+    @SuppressWarnings("unused")
     public Bundle getItem() {
         // Get needed views
         EditText editTextEventName = mContainer.findViewById(R.id.editTextEventName);

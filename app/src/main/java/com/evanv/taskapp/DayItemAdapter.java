@@ -1,8 +1,6 @@
 package com.evanv.taskapp;
 
-import android.content.Context;
 import android.content.res.Resources;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +32,7 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
      *
      * @param dayItemList the list of days for this user
      */
+    @SuppressWarnings("unused")
     public DayItemAdapter(List<DayItem> dayItemList, ClickListener listener) {
         mDayItemList = dayItemList;
         mListener = listener;
@@ -129,6 +128,7 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
     /**
      * Holder that interfaces between the adapter and the day_item views
      */
+    @SuppressWarnings("InnerClassMayBeStatic")
     public class DayViewHolder extends RecyclerView.ViewHolder implements ClickListener {
         private final TextView mDayItemDate; // The TextView that displays the date
         private final TextView mTaskHeader;  // The TextView that says "Tasks"

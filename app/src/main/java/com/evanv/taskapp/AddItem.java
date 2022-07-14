@@ -3,16 +3,11 @@ package com.evanv.taskapp;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.google.android.material.snackbar.Snackbar;
-
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.Toast;
 
-import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
@@ -21,12 +16,16 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.evanv.taskapp.databinding.ActivityAddItemBinding;
 
+import java.util.Objects;
+
 /**
  * Class for the AddItem activity. Gets fields for a new Task/Event to be added in MainActivity
  *
  * @author Evan Voogd
  */
+@SuppressWarnings("unused")
 public class AddItem extends AppCompatActivity {
+    @SuppressWarnings("unused")
     private AppBarConfiguration appBarConfiguration;
 
     // Extras used in the Bundle:
@@ -62,7 +61,7 @@ public class AddItem extends AppCompatActivity {
      * Runs when Activity starts. Most importantly initializes the fragments and sets up the radio
      * group to change fragment when a different task/event is selected.
      *
-     * @param savedInstanceState
+     * @param savedInstanceState not used
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,31 +79,22 @@ public class AddItem extends AppCompatActivity {
                 appBarConfiguration);
 
         // When FAB is clicked, run submit() method
-        binding.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                submit();
-            }
-        });
+        binding.fab.setOnClickListener(view -> submit());
 
         // When radio button is changed, switch to respective fragment
         RadioGroup rGroup = (RadioGroup)findViewById(R.id.radioGroupTaskEvent);
-        rGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
-        {
-            public void onCheckedChanged(RadioGroup group, int checkedId)
+        rGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            RadioButton checkedRadioButton = (RadioButton)group.findViewById(checkedId);
+            boolean isChecked = checkedRadioButton.isChecked();
+            if (isChecked)
             {
-                RadioButton checkedRadioButton = (RadioButton)group.findViewById(checkedId);
-                boolean isChecked = checkedRadioButton.isChecked();
-                if (isChecked)
-                {
-                    // If event button is checked, switch from taskEntry to eventEntry
-                    if (checkedRadioButton.getId() == R.id.radioButtonEvent) {
-                        navController.navigate(R.id.action_taskEntry_to_eventEntry);
-                    }
-                    // If task button is checked, switch from eventEntry to taskEntry
-                    else {
-                        navController.navigate(R.id.action_eventEntry_to_taskEntry);
-                    }
+                // If event button is checked, switch from taskEntry to eventEntry
+                if (checkedRadioButton.getId() == R.id.radioButtonEvent) {
+                    navController.navigate(R.id.action_taskEntry_to_eventEntry);
+                }
+                // If task button is checked, switch from eventEntry to taskEntry
+                else {
+                    navController.navigate(R.id.action_eventEntry_to_taskEntry);
                 }
             }
         });
@@ -119,10 +109,9 @@ public class AddItem extends AppCompatActivity {
         // of it's fields easily
         NavHostFragment navFragment = (NavHostFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.nav_host_fragment_content_add_item);
-        ItemEntry current = (ItemEntry) navFragment.getChildFragmentManager().getFragments().get(0);
+        ItemEntry current = (ItemEntry) Objects.requireNonNull(navFragment).getChildFragmentManager().getFragments().get(0);
 
         // Call getItem so we can get a bundle of the data the user has entered
-        assert current != null;
         Bundle toReturn = current.getItem();
 
         // If the user correctly entered all fields, send the bundle to MainActivity and return

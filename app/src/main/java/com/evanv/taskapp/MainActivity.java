@@ -1,12 +1,9 @@
 package com.evanv.taskapp;
 
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -16,9 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.text.InputType;
 import android.util.Log;
-import android.view.View;
 
-import androidx.navigation.ui.AppBarConfiguration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -37,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 
 /**
@@ -45,19 +41,21 @@ import java.util.Scanner;
  *
  * @author Evan Voogd
  */
+@SuppressWarnings("unused")
 public class MainActivity extends AppCompatActivity implements ClickListener {
 
+    @SuppressWarnings("unused")
     private ActivityMainBinding binding;      // Binding for the MainActivity
     private MyTime startDate;                 // The current date
     private int todayTime;                    // The amount of time spent completing tasks today
     private int numEvents;                    // Number of events for user
     public static final int ITEM_REQUEST = 1; // requestCode for task/item entry
     private DayItemAdapter dayItemAdapter;    // Adapter for recyclerview showing user commitments
-    private final ArrayList<Task> tasks = new ArrayList<Task>(); // List of all tasks for user
+    private final ArrayList<Task> tasks = new ArrayList<>(); // List of all tasks for user
     // taskSchedule[i] represents the list of tasks for the day i days past startDate
-    private final ArrayList<ArrayList<Task>> taskSchedule = new ArrayList<ArrayList<Task>>();
+    private final ArrayList<ArrayList<Task>> taskSchedule = new ArrayList<>();
     // eventSchedule[i] represents the list of events for the day i days past startDate
-    private final ArrayList<ArrayList<Event>> eventSchedule = new ArrayList<ArrayList<Event>>();
+    private final ArrayList<ArrayList<Event>> eventSchedule = new ArrayList<>();
     // Key for the extra that stores the list of Task names for the Parent Task Picker Dialog in
     // TaskEntry
     public static final String EXTRA_TASKS = "com.evanv.taskapp.extras.TASKS";
@@ -107,15 +105,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             input.setInputType(InputType.TYPE_CLASS_NUMBER);
             builder.setView(input);
 
-            builder.setPositiveButton(R.string.complete_task, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    todayTime += Integer.parseInt(input.getText().toString());
-                    // As the task dependency graph has been updated, we must reoptimize it
-                    Optimize(refresh);
-                    // Show recycler
-                    vf.setDisplayedChild(1);
-                }
+            builder.setPositiveButton(R.string.complete_task, (dialogInterface, i) -> {
+                todayTime += Integer.parseInt(input.getText().toString());
+                // As the task dependency graph has been updated, we must reoptimize it
+                Optimize(refresh);
+                // Show recycler
+                vf.setDisplayedChild(1);
             });
 
             builder.show();
@@ -142,8 +137,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // If the request is for AddItem
         if (resultCode == RESULT_OK) {
             // Get the data to build the item
-            assert data != null;
-            Bundle result = data.getBundleExtra(AddItem.EXTRA_ITEM);
+            Bundle result = Objects.requireNonNull(data).getBundleExtra(AddItem.EXTRA_ITEM);
             String type = result.getString(AddItem.EXTRA_TYPE);
 
             // If the item type is Event
@@ -194,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 // As the eventSchedule's indices are based on how many days past the start day,
                 // we make sure to add enough lists to get to the needed index
                 for (int i = eventSchedule.size(); i <= diff + (7*(recur-1)); i++) {
-                    eventSchedule.add(new ArrayList<Event>());
+                    eventSchedule.add(new ArrayList<>());
                 }
 
                 // Add the new event to the data structure
@@ -324,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
             // Read the task count from the file
             int numTasks = Integer.parseInt(ntString);
-            ArrayList<Task> overdueTasks = new ArrayList<Task>();
+            ArrayList<Task> overdueTasks = new ArrayList<>();
 
             // Read in all the tasks from the file, in the general format:
             // Task Name|earlyDate|dueDate|doDate|timeToComplete|head,parent1,parent2,etc.\n
@@ -368,7 +362,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 // Adds file to taskSchedule if it is scheduled for today or later.
                 if (doDateIndex >= 0) {
                     for (int j = taskSchedule.size(); j <= doDateIndex; j++) {
-                        taskSchedule.add(new ArrayList<Task>());
+                        taskSchedule.add(new ArrayList<>());
                     }
 
                     taskSchedule.get(doDateIndex).add(toAdd);
@@ -515,7 +509,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 // Add the events to the list if they aren't for an earlier date
                 if (doDate.getDateTime() >= startDate.getDateTime()) {
                     for (int j = eventSchedule.size(); j <= doDateIndex; j++) {
-                        eventSchedule.add(new ArrayList<Event>());
+                        eventSchedule.add(new ArrayList<>());
                     }
 
                     eventSchedule.get(doDateIndex).add(toAdd);
@@ -547,12 +541,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         setSupportActionBar(binding.toolbar);
 
         // When the FAB is clicked, run intentAddItem to open the AddItem Activity
-        binding.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                intentAddItem();
-            }
-        });
+        binding.fab.setOnClickListener(view -> intentAddItem());
 
         // Make visible the main content
         vf = (ViewFlipper) findViewById(R.id.vf);
@@ -560,12 +549,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
         startForResult = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
-                new ActivityResultCallback<ActivityResult>() {
-                    @Override
-                    public void onActivityResult(ActivityResult result) {
-                        MainActivity.this.onActivityResult(result.getResultCode(), result.getData());
-                    }
-                });
+                result -> MainActivity.this.onActivityResult(result.getResultCode(), result.getData()));
     }
 
     /**
@@ -629,9 +613,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 for (int j = 0; j < eventSchedule.get(i).size(); j++) {
                     Event e = eventSchedule.get(i).get(j);
 
-                    out.write(new StringBuilder().append(e.getName()).append("|")
-                            .append(e.getLength()).append("|").append(e.getDoDate().getDateTime())
-                            .append("\n").toString());
+                    out.write(e.getName() + "|" +
+                            e.getLength() + "|" + e.getDoDate().getDateTime() +
+                            "\n");
                 }
             }
 

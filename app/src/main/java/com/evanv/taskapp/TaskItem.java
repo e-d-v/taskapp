@@ -6,13 +6,14 @@ package com.evanv.taskapp;
  * @author Evan Voogd
  */
 public class TaskItem {
-    private String mName; // Name of the task (e.g. "Read Ch. 3")
+    private final String mName; // Name of the task (e.g. "Read Ch. 3")
 
     /**
      * Creates an item representing a Task
      *
      * @param name a string representing the name of the Task
      */
+    @SuppressWarnings("unused")
     public TaskItem(String name) {
         mName = name;
     }
@@ -24,15 +25,6 @@ public class TaskItem {
      */
     public String getName() {
         return mName;
-    }
-
-    /**
-     * Sets the string representing the name of the Task
-     *
-     * @param mName a string representing the name of the Task
-     */
-    public void setName(String mName) {
-        this.mName = mName;
     }
 
 }

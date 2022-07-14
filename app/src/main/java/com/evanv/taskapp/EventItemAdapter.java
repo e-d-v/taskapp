@@ -76,11 +76,12 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
     /**
      * Holder that interfaces between the adapter and the event_item views
      */
+    @SuppressWarnings("InnerClassMayBeStatic")
     public class EventViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView mEventItemName;     // The TextView representing the name in event_item
-        TextView mEventItemTimespan; // The TextView representing the timespan in event_item
+        final TextView mEventItemName;     // The TextView representing the name in event_item
+        final TextView mEventItemTimespan; // The TextView representing the timespan in event_item
         // Listener that allows easy completion of tasks (see ClickListener)
-        WeakReference<ClickListener> mListenerRef;
+        final WeakReference<ClickListener> mListenerRef;
         private final int DELETE_ID; // The ID of the delete button;
 
         /**

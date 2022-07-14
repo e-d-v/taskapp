@@ -5,6 +5,7 @@ package com.evanv.taskapp;
  *
  * @author Evan Voogd
  */
+@SuppressWarnings("unused")
 public class MyTime {
     private final long datetime; // The number of minutes past 1/1/1970 this MyTime represents
 
@@ -14,7 +15,6 @@ public class MyTime {
      * @param month The month of the year (1-12)
      * @param day The day in the year (1-31)
      * @param year The year (Gregorian calendar) formatted like 2022 (must be >=1970 AD)
-     * @return A MyTime object with the given Date
      */
     public MyTime(int month, int day, int year) {
         // Use more complicated constructor for ease of code reuse
@@ -25,7 +25,6 @@ public class MyTime {
      * Initializes an immutable representation of Date/Time based on the given long representation
      *
      * @param datetime A long representation of datetime, based on another MyTime's GetDateTime()
-     * @return A MyTime object with the given Date
      */
     public MyTime(long datetime) {
         this.datetime = datetime;
@@ -39,7 +38,6 @@ public class MyTime {
      * @param year The year (Gregorian calendar) formatted like 2022 (must be >=1970 AD)
      * @param hour The hour of the time (24-hour clock where 0 is midnight)
      * @param minute The minute of the time
-     * @return A MyTime object with the given Date and Time
      */
     public MyTime(int month, int day, int year, int hour, int minute) {
         // Sets date to 0, which will be added to within the function.
@@ -53,7 +51,7 @@ public class MyTime {
         // the number of leap years (as each one only adds a single extra day)
         int yearDiff = year-1970;
         int numLeapYears = ((yearDiff + 2) / 4) - ((yearDiff + 70)/100) + ((yearDiff+370)/400);
-        date += (365 * yearDiff) + numLeapYears;
+        date += (365L * yearDiff) + numLeapYears;
 
         // True if year is a leap year or false if it's not.
         boolean leap = (year % 4 == 0) && (year % 400 == 0 || year % 100 != 0);
@@ -188,7 +186,7 @@ public class MyTime {
             if (currMonth == 2 && leapYear) {
                 nextMonthDays = 29;
             }
-            else if (currMonth == 2 && !leapYear) {
+            else if (currMonth == 2) {
                 nextMonthDays = 28;
             }
             else if (currMonth == 3 || currMonth == 5 || currMonth == 7 || currMonth == 8 ||

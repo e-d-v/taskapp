@@ -1,6 +1,5 @@
 package com.evanv.taskapp;
 import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Represents a single task. Conceptually a Task is a node on a large task dependency graph that
@@ -11,7 +10,8 @@ import java.util.Date;
  *
  * @author Evan Voogd
  */
-public class Task implements Comparable {
+@SuppressWarnings("unused")
+public class Task implements Comparable<Task> {
     private final String name;               // Name of the task
     private MyTime earlyDate;                // Earliest date to complete
     private MyTime doDate;                   // Date to do the task
@@ -30,15 +30,14 @@ public class Task implements Comparable {
      * @param name The name of the task
      * @param early The earliest possible day to complete the task (e.g. when it's assigned)
      * @param due When the task is due
-     * @return An object representing a task
      */
     public Task(String name, MyTime early, MyTime due, int time) {
         this.name = name;
         this.earlyDate = early;
         this.dueDate = due;
         this.timeToComplete = time;
-        parents = new ArrayList<Task>();
-        children = new ArrayList<Task>();
+        parents = new ArrayList<>();
+        children = new ArrayList<>();
     }
 
     /**
@@ -163,6 +162,7 @@ public class Task implements Comparable {
      * Copies children into working children and parents into working parents, so the optimizer can
      * utilize the inherent dependency tree.
      */
+    @SuppressWarnings("unchecked")
     public void initializeForOptimization() {
         workingChildren = (ArrayList<Task>)children.clone();
         workingParents = (ArrayList<Task>)parents.clone();
@@ -232,17 +232,16 @@ public class Task implements Comparable {
         this.children.remove(child);
     }
 
-    @Override
     /**
      * Compares this task with another given task
      *
-     * @param o The other task to compare it with
+     * @param other The other task to compare it with
      * @return Returns a positive number if the other task is greater,
      * negative if this task is greater, and 0 if they are equal
      */
-    public int compareTo(Object o) {
+    @Override
+    public int compareTo(Task other) {
         // See if task is due before the other task
-        Task other = (Task)o;
         MyTime otherDueDate = other.getDueDate();
         long diff = dueDate.getDateTime() - otherDueDate.getDateTime();
 

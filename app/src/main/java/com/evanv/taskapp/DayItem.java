@@ -8,6 +8,7 @@ import java.util.List;
  *
  * @author Evan Voogd
  */
+@SuppressWarnings("unused")
 public class DayItem {
     private String mDayString;       // String of the day this DayItem represents
     private List<EventItem> mEvents; // List of EventItems to be displayed in recyclerview
@@ -20,6 +21,7 @@ public class DayItem {
      * @param events list of EventItems to be displayed in recyclerview
      * @param tasks list of TaskItems to be displayed in recyclerview
      */
+    @SuppressWarnings("unused")
     public DayItem(String dayString, List<EventItem> events, List<TaskItem> tasks) {
         mDayString = dayString;
         mEvents = events;

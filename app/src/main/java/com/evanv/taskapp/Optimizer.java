@@ -92,7 +92,7 @@ public class Optimizer {
         int diff = (int) (((lateDate.getDateTime() - startDate.getDateTime()) / 1440));
 
         for (int i = taskSchedule.size(); i <= diff; i++) {
-            taskSchedule.add(new ArrayList<Task>());
+            taskSchedule.add(new ArrayList<>());
         }
 
         // The idea here is fairly simple. We'll schedule tasks with earlier dueDates first, and
@@ -146,7 +146,7 @@ public class Optimizer {
             // Schedule the task for this date
             taskSchedule.get(minIndex).add(t);
             time[minIndex] += t.getTimeToComplete();
-            t.setDoDate(new MyTime(startDate.getDateTime() + (1440 * minIndex)));
+            t.setDoDate(new MyTime(startDate.getDateTime() + (1440L * minIndex)));
 
             // Remove it as a dependency for it's children in the working task dependency graph so
             // we can schedule tasks that now have all their prerequisite tasks scheduled
@@ -215,7 +215,7 @@ public class Optimizer {
                     // If this further optimizes the schedule, implement the task reschedule
                     if (newDiff < currDiff) {
                         changed = true;
-                        curr.setDoDate(new MyTime(startDate.getDateTime() + (1440 * j)));
+                        curr.setDoDate(new MyTime(startDate.getDateTime() + (1440L * j)));
                         taskSchedule.get(doDateIndex).remove(curr);
                         taskSchedule.get(j).add(curr);
                         time[doDateIndex] -= curr.getTimeToComplete();
@@ -261,7 +261,7 @@ public class Optimizer {
                             changed = true;
                             other.setDoDate(curr.getDoDate());
                             curr.setDoDate(new MyTime(startDate.getDateTime() +
-                                    (1440 * j)));
+                                    (1440L * j)));
                             taskSchedule.get(doDateIndex).remove(curr);
                             taskSchedule.get(doDateIndex).add(other);
                             taskSchedule.get(j).add(curr);

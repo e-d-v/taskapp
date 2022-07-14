@@ -1,6 +1,5 @@
 package com.evanv.taskapp;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,12 +75,13 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
     /**
      * Holder that interfaces between the adapter and the task_item views
      */
+    @SuppressWarnings("InnerClassMayBeStatic")
     public class TaskViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView mTaskItemName; // The TextView representing the name in task_item
+        final TextView mTaskItemName; // The TextView representing the name in task_item
         private final int COMPLETE_ID; // ID of the completion button.
         private final int DELETE_ID; // ID of the deletion button.
         // Listener that allows easy completion of tasks (see ClickListener)
-        WeakReference<ClickListener> mListenerRef;
+        final WeakReference<ClickListener> mListenerRef;
 
 
         /**

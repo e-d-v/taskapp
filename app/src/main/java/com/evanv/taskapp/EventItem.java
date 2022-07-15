@@ -6,8 +6,8 @@ package com.evanv.taskapp;
  * @author Evan Voogd
  */
 public class EventItem {
-    private String mName;     // Name of the event (e.g. "Staff Meeting")
-    private String mTimespan; // Timespan of the event (e.g. "2-4pm")
+    private final String mName;     // Name of the event (e.g. "Staff Meeting")
+    private final String mTimespan; // Timespan of the event (e.g. "2-4pm")
 
     /**
      * Creates an item representing an Event
@@ -15,6 +15,7 @@ public class EventItem {
      * @param name a string representing the name of the Event
      * @param timespan a string representing the timespan of the Event
      */
+    @SuppressWarnings("unused")
     public EventItem(String name, String timespan) {
         mName = name;
         mTimespan = timespan;
@@ -38,21 +39,4 @@ public class EventItem {
         return mTimespan;
     }
 
-    /**
-     * Sets the string representing the name of the Event
-     *
-     * @param mName a string representing the name of the Event
-     */
-    public void setName(String mName) {
-        this.mName = mName;
-    }
-
-    /**
-     * Sets the string representing the timespan of the Event
-     *
-     * @param mTimespan a string representing the timespan of the Event
-     */
-    public void setTimespan(String mTimespan) {
-        this.mTimespan = mTimespan;
-    }
 }

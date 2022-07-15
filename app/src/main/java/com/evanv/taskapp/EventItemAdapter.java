@@ -18,9 +18,9 @@ import java.util.List;
  * @author Evan Voogd
  */
 public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.EventViewHolder> {
-    private List<EventItem> mEventItemList; // List of events for this day
+    private final List<EventItem> mEventItemList; // List of events for this day
     // Listener that allows easy deletion of events (see ClickListener)
-    private ClickListener mListener;
+    private final ClickListener mListener;
 
     /**
      * Constructs an adapter for a given DayItem's event recyclerview
@@ -34,7 +34,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
     }
 
     /**
-     * Initialize an individual layout for the dayitem's recyclerview
+     * Initialize an individual layout for the DayItem's recyclerview
      * @param parent ViewGroup associated with the parent recyclerview
      * @param viewType not used, required by override
      * @return an EventViewHolder associated with the new layout
@@ -76,11 +76,12 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
     /**
      * Holder that interfaces between the adapter and the event_item views
      */
+    @SuppressWarnings("InnerClassMayBeStatic")
     public class EventViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView mEventItemName;     // The TextView representing the name in event_item
-        TextView mEventItemTimespan; // The TextView representing the timespan in event_item
+        final TextView mEventItemName;     // The TextView representing the name in event_item
+        final TextView mEventItemTimespan; // The TextView representing the timespan in event_item
         // Listener that allows easy completion of tasks (see ClickListener)
-        WeakReference<ClickListener> mListenerRef;
+        final WeakReference<ClickListener> mListenerRef;
         private final int DELETE_ID; // The ID of the delete button;
 
         /**

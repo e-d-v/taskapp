@@ -1,6 +1,5 @@
 package com.evanv.taskapp;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,9 +18,9 @@ import java.util.List;
  * @author Evan Voogd
  */
 public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskViewHolder> {
-    private List<TaskItem> mTaskItemList; // List of tasks for this day
+    private final List<TaskItem> mTaskItemList; // List of tasks for this day
     // Listener that allows easy completion of tasks (see ClickListener)
-    private ClickListener mListener;
+    private final ClickListener mListener;
 
     /**
      * Constructs an adapter for a given DayItem's task recyclerview
@@ -35,7 +34,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
     }
 
     /**
-     * Initialize an individual layout for the dayitem's recyclerview
+     * Initialize an individual layout for the DayItem's recyclerview
      *
      * @param parent ViewGroup associated with the parent recyclerview
      * @param viewType not used, required by override
@@ -76,12 +75,13 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
     /**
      * Holder that interfaces between the adapter and the task_item views
      */
+    @SuppressWarnings("InnerClassMayBeStatic")
     public class TaskViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView mTaskItemName; // The TextView representing the name in task_item
+        final TextView mTaskItemName; // The TextView representing the name in task_item
         private final int COMPLETE_ID; // ID of the completion button.
         private final int DELETE_ID; // ID of the deletion button.
         // Listener that allows easy completion of tasks (see ClickListener)
-        WeakReference<ClickListener> mListenerRef;
+        final WeakReference<ClickListener> mListenerRef;
 
 
         /**

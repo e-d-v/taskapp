@@ -11,10 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.Toast;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -27,7 +25,7 @@ import java.util.GregorianCalendar;
 public class TaskEntry extends Fragment implements ItemEntry {
 
     private ViewGroup mContainer;  // The ViewGroup for the activity, allows easy access to views
-    private String currentParents; // The list of parents for the task, returned when fab is clicked
+    private String mCurrentParents; // The list of parents for task, returned when fab is clicked
 
     /**
      * Required empty public constructor, creates new TaskEntry fragment
@@ -46,7 +44,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         super.onCreate(savedInstanceState);
 
         // -1 signifies that the new task has no dependent tasks, as none were entered
-        currentParents = "-1";
+        mCurrentParents = "-1";
     }
 
     /**
@@ -79,7 +77,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
                 // Converts the bundled arraylist of task names to a String[] that can be used by
                 // the alert dialog
                 ArrayList<Integer> selectedItems = new ArrayList<>();
-                ArrayList<String> taskNames = getActivity().getIntent()
+                ArrayList<String> taskNames = requireActivity().getIntent()
                         .getStringArrayListExtra(MainActivity.EXTRA_TASKS);
                 String[] taskNamesArr = new String[taskNames.size()];
                 Object[] taskNamesObjs = taskNames.toArray();
@@ -135,7 +133,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
                                             sb.append(index);
                                             sb.append(",");
                                         }
-                                        currentParents = (selectedItems.size() != 0) ? sb.toString()
+                                        mCurrentParents = (selectedItems.size() != 0) ? sb.toString()
                                                 : "-1";
 
                                      }
@@ -158,6 +156,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
      * @return If all fields are correct, a Bundle containing the information needed to create an
      *         event, if not, null.
      */
+    @SuppressWarnings("unused")
     @Override
     public Bundle getItem() {
         // Gets all the required EditTexts containing user input
@@ -243,7 +242,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         else {
             boolean ddFlag= false; // true if there is an issue with ecd input
 
-            // Check if duedate follows format mm/dd/yy
+            // Check if Due Date follows format mm/dd/yy
             String[] dateTokens = dueDate.split("/");
 
             if (dateTokens.length == 3) {
@@ -323,7 +322,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         toReturn.putString(AddItem.EXTRA_ECD, ecd);
         toReturn.putString(AddItem.EXTRA_DUE, dueDate);
         toReturn.putString(AddItem.EXTRA_TTC, ttc);
-        toReturn.putString(AddItem.EXTRA_PARENTS, currentParents);
+        toReturn.putString(AddItem.EXTRA_PARENTS, mCurrentParents);
 
         return toReturn;
     }

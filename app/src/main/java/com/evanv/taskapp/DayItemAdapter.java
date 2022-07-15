@@ -1,8 +1,6 @@
 package com.evanv.taskapp;
 
-import android.content.Context;
 import android.content.res.Resources;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,9 +20,9 @@ import java.util.List;
  * @author Evan Voogd
  */
 public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewHolder> {
-    // Used to share views between the Event/Task recyclerviews and the Day recyclerviews
-    private RecyclerView.RecycledViewPool mTaskViewPool = new RecyclerView.RecycledViewPool();
-    private RecyclerView.RecycledViewPool mEventViewPool = new RecyclerView.RecycledViewPool();
+    // Used to share views between the Event/Task RecyclerViews and the Day RecyclerViews
+    private final RecyclerView.RecycledViewPool mTaskViewPool = new RecyclerView.RecycledViewPool();
+    private final RecyclerView.RecycledViewPool mEventViewPool = new RecyclerView.RecycledViewPool();
     public List<DayItem> mDayItemList; // List of days
     // Listener that allows easy completion of tasks (see ClickListener)
     private final ClickListener mListener;
@@ -34,6 +32,7 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
      *
      * @param dayItemList the list of days for this user
      */
+    @SuppressWarnings("unused")
     public DayItemAdapter(List<DayItem> dayItemList, ClickListener listener) {
         mDayItemList = dayItemList;
         mListener = listener;
@@ -57,7 +56,7 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
     }
 
     /**
-     * Sets the date for the day_item and gives the component recyclerviews their data
+     * Sets the date for the day_item and gives the component RecyclerViews their data
      *
      * @param holder DayViewHolder that represents the day to be changed
      * @param position Index in the dayItemList to be represented
@@ -93,7 +92,7 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
             holder.mEventHeader.setHeight((int) res.getDimension(R.dimen.subheader_height));
         }
 
-        // Initialize the LinearLayoutManagers for the child recyclerviews
+        // Initialize the LinearLayoutManagers for the child RecyclerViews
         LinearLayoutManager eventLayoutManager = new LinearLayoutManager(
                 holder.mEventRecyclerView.getContext(), LinearLayoutManager.VERTICAL,
                 false);
@@ -129,6 +128,7 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
     /**
      * Holder that interfaces between the adapter and the day_item views
      */
+    @SuppressWarnings("InnerClassMayBeStatic")
     public class DayViewHolder extends RecyclerView.ViewHolder implements ClickListener {
         private final TextView mDayItemDate; // The TextView that displays the date
         private final TextView mTaskHeader;  // The TextView that says "Tasks"
@@ -138,7 +138,7 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         // The recyclerview that displays this day's tasks
         private final RecyclerView mTaskRecyclerView;
         // Listener that allows easy completion of tasks (see ClickListener)
-        private WeakReference<ClickListener> mListenerRef;
+        private final WeakReference<ClickListener> mListenerRef;
 
         /**
          * Constructs a new DayViewHolder, setting it's values to the views in the day_item

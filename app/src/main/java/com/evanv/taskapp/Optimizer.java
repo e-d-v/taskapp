@@ -1,8 +1,6 @@
 package com.evanv.taskapp;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.PriorityQueue;
 
 /**
@@ -83,7 +81,7 @@ public class Optimizer {
         // Initializes tasks for optimization, see Javadoc for Task for more detail on why this is
         // necessary.
         for (int i = 0; i < tasks.size(); i++) {
-            tasks.get(i).initalizeForOpimization();
+            tasks.get(i).initializeForOptimization();
 
             if (tasks.get(i).getDueDate().getDateTime() > lateDate.getDateTime()) {
                 lateDate = tasks.get(i).getDueDate();
@@ -94,7 +92,7 @@ public class Optimizer {
         int diff = (int) (((lateDate.getDateTime() - startDate.getDateTime()) / 1440));
 
         for (int i = taskSchedule.size(); i <= diff; i++) {
-            taskSchedule.add(new ArrayList<Task>());
+            taskSchedule.add(new ArrayList<>());
         }
 
         // The idea here is fairly simple. We'll schedule tasks with earlier dueDates first, and
@@ -115,7 +113,7 @@ public class Optimizer {
         // Initialize the time array, where time[i] is the amount of currently scheduled time for
         // the date i days past today's date. We start with only using events, as they can't be
         // rescheduled, so we should schedule tasks around them
-        int time[] = new int[taskSchedule.size()];
+        int[] time = new int[taskSchedule.size()];
         for (int i = 0; i < taskSchedule.size() && i < eventSchedule.size(); i++) {
             time[i] = (i == 0) ? todayTime : 0;
 
@@ -148,7 +146,7 @@ public class Optimizer {
             // Schedule the task for this date
             taskSchedule.get(minIndex).add(t);
             time[minIndex] += t.getTimeToComplete();
-            t.setDoDate(new MyTime(startDate.getDateTime() + (1440 * minIndex)));
+            t.setDoDate(new MyTime(startDate.getDateTime() + (1440L * minIndex)));
 
             // Remove it as a dependency for it's children in the working task dependency graph so
             // we can schedule tasks that now have all their prerequisite tasks scheduled
@@ -217,7 +215,7 @@ public class Optimizer {
                     // If this further optimizes the schedule, implement the task reschedule
                     if (newDiff < currDiff) {
                         changed = true;
-                        curr.setDoDate(new MyTime(startDate.getDateTime() + (1440 * j)));
+                        curr.setDoDate(new MyTime(startDate.getDateTime() + (1440L * j)));
                         taskSchedule.get(doDateIndex).remove(curr);
                         taskSchedule.get(j).add(curr);
                         time[doDateIndex] -= curr.getTimeToComplete();
@@ -263,7 +261,7 @@ public class Optimizer {
                             changed = true;
                             other.setDoDate(curr.getDoDate());
                             curr.setDoDate(new MyTime(startDate.getDateTime() +
-                                    (1440 * j)));
+                                    (1440L * j)));
                             taskSchedule.get(doDateIndex).remove(curr);
                             taskSchedule.get(doDateIndex).add(other);
                             taskSchedule.get(j).add(curr);

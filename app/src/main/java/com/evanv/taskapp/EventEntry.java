@@ -1,5 +1,7 @@
 package com.evanv.taskapp;
 
+import static com.evanv.taskapp.Task.clearDate;
+
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -11,7 +13,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.util.Date;
 
 /**
  * The fragment that handles data entry for new events
@@ -97,12 +99,15 @@ public class EventEntry extends Fragment implements ItemEntry {
                         }
 
                         // Make sure we're not scheduling an event for before today.
-                        GregorianCalendar rightNow = new GregorianCalendar();
-                        MyTime start = new MyTime(rightNow.get(Calendar.MONTH) + 1,
-                                rightNow.get(Calendar.DAY_OF_MONTH), rightNow.get(Calendar.YEAR));
+                        // Note: we allow a start time any time in the current date in case user is
+                        // attempting to inform optimizer of a previous meeting they forgot to add
+                        // to the calendar.
+                        Date thisDay = clearDate(new Date());
+                        Calendar userCal = Calendar.getInstance();
+                        userCal.set(2000+year, month - 1, day);
+                        Date userDay = clearDate(userCal.getTime());
 
-                        MyTime thisDate = new MyTime(month, day, 2000 + year);
-                        if (start.getDateTime() - thisDate.getDateTime() > 0) {
+                        if (userDay.before(thisDay)) {
                             Toast.makeText(getActivity(),
                                     R.string.ecd_format_event,
                                     Toast.LENGTH_LONG).show();

@@ -83,9 +83,9 @@ public class AddItem extends AppCompatActivity {
         binding.fab.setOnClickListener(view -> submit());
 
         // When radio button is changed, switch to respective fragment
-        RadioGroup rGroup = (RadioGroup)findViewById(R.id.radioGroupTaskEvent);
+        RadioGroup rGroup = findViewById(R.id.radioGroupTaskEvent);
         rGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            RadioButton checkedRadioButton = (RadioButton)group.findViewById(checkedId);
+            RadioButton checkedRadioButton = group.findViewById(checkedId);
             boolean isChecked = checkedRadioButton.isChecked();
             if (isChecked)
             {

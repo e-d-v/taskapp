@@ -1,5 +1,7 @@
 package com.evanv.taskapp;
 
+import static com.evanv.taskapp.Task.clearDate;
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -15,7 +17,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.util.Date;
 
 /**
  * The fragment that handles data entry for new tasks
@@ -65,7 +67,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
 
         // Sets the onClick behavior to the button to creating a dialog asking what parents the user
         // wants to give the new task
-        Button button = (Button) view.findViewById(R.id.buttonAddParents);
+        Button button = view.findViewById(R.id.buttonAddParents);
         button.setOnClickListener(new View.OnClickListener() {
             /**
              * Opens a dialog allowing the user to set parents for the task
@@ -180,7 +182,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
             flag = true;
         }
         // Check if ECD is valid
-        MyTime earlyDate = null; // Allows us to check if due date is after early date
+        Date earlyDate = null; // Allows us to check if due date is after early date
         if (ecd.length() == 0) {
             Toast.makeText(getActivity(),
                     R.string.ecd_empty_task,
@@ -206,17 +208,19 @@ public class TaskEntry extends Fragment implements ItemEntry {
                     }
 
                     // Make sure we're not scheduling an event for before today.
-                    GregorianCalendar rightNow = new GregorianCalendar();
-                    MyTime start = new MyTime(rightNow.get(Calendar.MONTH) + 1,
-                            rightNow.get(Calendar.DAY_OF_MONTH), rightNow.get(Calendar.YEAR));
+                    Date rightNow = clearDate(new Date());
 
-                    earlyDate = new MyTime(month, day, 2000 + year);
-                    if (start.getDateTime() - earlyDate.getDateTime() > 0) {
+                    Calendar userCal = Calendar.getInstance();
+                    userCal.set(2000+year, month - 1, day);
+                    earlyDate = clearDate(userCal.getTime());
+
+                    if (earlyDate.before(rightNow)) {
                         Toast.makeText(getActivity(),
                                 R.string.ecd_early_task,
                                 Toast.LENGTH_LONG).show();
                         flag = true;
                     }
+
                 }
                 catch (Exception e) {
                     ecdFlag = true;
@@ -258,20 +262,19 @@ public class TaskEntry extends Fragment implements ItemEntry {
                     }
 
                     // Make sure we're not scheduling an event for before today.
-                    GregorianCalendar rightNow = new GregorianCalendar();
-                    MyTime start = new MyTime(rightNow.get(Calendar.MONTH) + 1,
-                            rightNow.get(Calendar.DAY_OF_MONTH), rightNow.get(Calendar.YEAR));
+                    Date rightNow = clearDate(new Date());
 
-                    MyTime dueDateTime = new MyTime(month, day, 2000 + year);
-                    if (start.getDateTime() - dueDateTime.getDateTime() > 0) {
+                    Calendar userCal = Calendar.getInstance();
+                    userCal.set(2000+year, month - 1, day);
+                    Date dueDateTime = clearDate(userCal.getTime());
+
+                    if (dueDateTime.before(rightNow)) {
                         Toast.makeText(getActivity(),
-                                R.string.due_early_task,
+                                R.string.ecd_early_task,
                                 Toast.LENGTH_LONG).show();
                         flag = true;
                     }
-                    // Make sure the due date is on or after the current date
-                    if (earlyDate != null &&
-                            earlyDate.getDateTime() - dueDateTime.getDateTime() > 0) {
+                    else if (earlyDate != null && dueDateTime.before(earlyDate)) {
                         Toast.makeText(getActivity(),
                                 R.string.due_before_task,
                                 Toast.LENGTH_LONG).show();

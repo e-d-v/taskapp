@@ -1,5 +1,9 @@
 package com.evanv.taskapp;
 
+import static com.evanv.taskapp.Event.clearTime;
+import static com.evanv.taskapp.Task.clearDate;
+import static com.evanv.taskapp.Task.getDiff;
+
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -30,7 +34,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
@@ -46,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
     @SuppressWarnings("unused")
     private ActivityMainBinding mBinding;      // Binding for the MainActivity
-    private MyTime mStartDate;                 // The current date
+    private Date mStartDate;                 // The current date
     private int mTodayTime;                    // The amount of time spent completing tasks today
     private int mNumEvents;                    // Number of events for user
     public static final int ITEM_REQUEST = 1; // requestCode for task/item entry
@@ -75,11 +79,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // Show loading screen
         mTasks.remove(task);
 
-        MyTime doDate = task.getDoDate();
+        Date doDate = task.getDoDate();
 
         // Get the number of days past the start date this task is scheduled for, so we can get the
         // index of the taskSchedule member for it's do date.
-        int diff = (int) (((doDate.getDateTime() - mStartDate.getDateTime()) / 1440));
+        int diff = getDiff(doDate, mStartDate);
 
         if (diff >= 0) {
             mTaskSchedule.get(diff).remove(task);
@@ -151,30 +155,18 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 // Makes sure recur works if the user enters 0 instead of 1
                 recur = (recur == 0) ? 1 : recur;
 
-
                 // Convert the String start time into a MyTime
-                MyTime start;
+                Date start;
+                Calendar userStart;
                 try {
-                    String[] fullTokens = startStr.split(" ");
-                    String[] dateTokens = fullTokens[0].split("/");
-                    String[] timeTokens = fullTokens[1].split(":");
-
-                    int month = Integer.parseInt(dateTokens[0]);
-                    int day = Integer.parseInt(dateTokens[1]);
-                    int year = 2000 + Integer.parseInt(dateTokens[2]);
-                    int hour = Integer.parseInt(timeTokens[0]);
-                    int minute = Integer.parseInt(timeTokens[1]);
-
-                    if (hour == 12) {
-                        if (fullTokens[2].equals(getString(R.string.am))) {
-                            hour = 0;
-                        }
+                    start = Event.dateFormat.parse(startStr);
+                    userStart = Calendar.getInstance();
+                    if (start != null) {
+                        userStart.setTime(start);
                     }
-                    else if (fullTokens[2].equals(getString(R.string.pm))) {
-                        hour += 12;
+                    else {
+                        return;
                     }
-
-                    start = new MyTime(month, day, year, hour, minute);
                 }
                 catch (Exception e) {
                     System.out.println(e.getMessage());
@@ -183,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                 // Calculate how many days past today's date this event is scheduled (used to
                 // index into eventSchedule
-                int diff = (int) (((start.getDateTime() - mStartDate.getDateTime()) / 1440));
+                int diff = getDiff(start, mStartDate);
 
                 // As the eventSchedule's indices are based on how many days past the start day,
                 // we make sure to add enough lists to get to the needed index
@@ -196,12 +188,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 mEventSchedule.get(diff).add(toAdd);
                 mNumEvents++;
 
-                // Recurring is only on a weekly basis (this is a prototype after all), this is
-                // how we achieve it.
+                // Recurring is only on a weekly basis until completion of issue #20, until then,
+                // this is how we achieve it.
                 for (int i = 1; i < recur; i++) {
-                    mEventSchedule.get(diff + (7*i)).add(new Event(name,
-                            new MyTime(start.getDateTime() + ((long) i * 7 * 1440)),
-                            ttc));
+                    userStart.add(Calendar.DAY_OF_YEAR, 7);
+                    mEventSchedule.get(diff + (7*i)).add(
+                            new Event(name, clearTime(userStart.getTime()), ttc));
                     mNumEvents++;
                 }
 
@@ -216,12 +208,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 String parents = result.getString(AddItem.EXTRA_PARENTS);
 
                 // Convert the earliest completion date String to a MyTime
-                MyTime early;
+                Date early;
                 try {
-                    String[] earlyStrs = ecd.split("/");
-                    early = new MyTime(Integer.parseInt(earlyStrs[0]),
-                            Integer.parseInt(earlyStrs[1]),
-                            2000 + Integer.parseInt(earlyStrs[2]));
+                    early = Task.dateFormat.parse(ecd);
                 }
                 catch (Exception e) {
                     Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -229,11 +218,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 }
 
                 // Convert the due date String to a MyTime
-                MyTime due;
+                Date due;
                 try {
-                    String[] dueStrs = dd.split("/");
-                    due = new MyTime(Integer.parseInt(dueStrs[0]), Integer.parseInt(dueStrs[1]),
-                            2000 + Integer.parseInt(dueStrs[2]));
+                    due = Task.dateFormat.parse(dd);
                 }
                 catch (Exception e) {
                     Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -296,9 +283,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         setContentView(mBinding.getRoot());
 
         // startDate is our representation for the current date upon the launch of TaskApp.
-        GregorianCalendar rightNow = new GregorianCalendar();
-        mStartDate = new MyTime(rightNow.get(Calendar.MONTH) + 1,
-                rightNow.get(Calendar.DAY_OF_MONTH), rightNow.get(Calendar.YEAR));
+        mStartDate = clearDate(new Date());
 
         mNumEvents = 0;
         mTodayTime = 0;
@@ -310,7 +295,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             // Get todayTime from the file to make sure the optimizer doesn't overschedule today
             String todTimeString = fileRead.nextLine();
             String[] todTimeSplit = todTimeString.split(": ");
-            if (mStartDate.getDateTime() == Integer.parseInt(todTimeSplit[0])) {
+            if (mStartDate.getTime() == Long.parseLong(todTimeSplit[0])) {
                 mTodayTime = Integer.parseInt(todTimeSplit[1]);
             }
 
@@ -329,15 +314,15 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                 // Read in values from file
                 String name = data[0];
-                MyTime earlyDate = new MyTime(Long.parseLong(data[1]));
-                MyTime dueDate = new MyTime(Long.parseLong(data[2]));
-                MyTime doDate = new MyTime(Long.parseLong(data[3]));
+                Date earlyDate = new Date(Long.parseLong(data[1]));
+                Date dueDate = new Date(Long.parseLong(data[2]));
+                Date doDate = new Date(Long.parseLong(data[3]));
                 int timeToComplete = Integer.parseInt(data[4]);
                 String parents = data[5];
                 String[] parentList = parents.split(",");
 
                 // If earlyDate has past, set today as the earlyDate
-                if (earlyDate.getDateTime() < mStartDate.getDateTime()) {
+                if (earlyDate.before(mStartDate)) {
                     earlyDate = mStartDate;
                 }
 
@@ -356,8 +341,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                 // Calculate how many days past today's date this task is scheduled for. Used to
                 // index into taskSchedule
-                int doDateIndex = (int) (((toAdd.getDoDate().getDateTime() -
-                        mStartDate.getDateTime()) / 1440));
+                int doDateIndex = getDiff(toAdd.getDoDate(), mStartDate);
 
                 // Adds file to taskSchedule if it is scheduled for today or later.
                 if (doDateIndex >= 0) {
@@ -370,7 +354,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                 // If a task is overdue, add it to the overdue list so the user can mark it as
                 // complete or not.
-                if (doDate.getDateTime() < mStartDate.getDateTime()) {
+//                if (doDate.getDateTime() < mStartDate.getDateTime()) {
+                if (doDate.before(mStartDate)) {
                     overdueTasks.add(toAdd);
                 }
             }
@@ -383,9 +368,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 // Create a list of overdue task names for the dialog
                 for (int i = 0; i < overdueNames.length; i++) {
                     Task t = overdueTasks.get(i);
-                    MyTime tDate = t.getDueDate();
-                    overdueNames[i] = t.getName() + getString(R.string.due_when) + tDate.getMonth() +
-                            "/" + tDate.getDate() + "/" + (tDate.getYear() - 2000) + ")";
+                    Date tDate = t.getDueDate();
+                    overdueNames[i] = t.getName() + getString(R.string.due_when) +
+                            Task.dateFormat.format(tDate) + ")";
                 }
 
                 // List of indices to tasks that were completed.
@@ -450,8 +435,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                                                 Task t = overdueTasks.get(i);
 
-                                                if (t.getDueDate().getDateTime() <
-                                                        mStartDate.getDateTime()) {
+                                                if (t.getDueDate().before(mStartDate)) {
                                                     t.setDueDate(mStartDate);
                                                 }
                                             }
@@ -497,17 +481,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 // Load in the fields
                 String name = data[0];
                 int length = Integer.parseInt(data[1]);
-                MyTime doDate = new MyTime(Long.parseLong(data[2]));
+                Date doDate = new Date(Long.parseLong(data[2]));
 
                 Event toAdd = new Event(name, doDate, length);
 
                 // Calculate how many days past today's date this event is scheduled for. Used to
                 // index into eventSchedule
-                int doDateIndex = (int) (((toAdd.getDoDate().getDateTime() -
-                        mStartDate.getDateTime()) / 1440));
+                int doDateIndex = getDiff(toAdd.getDoDate(), mStartDate);
 
                 // Add the events to the list if they aren't for an earlier date
-                if (doDate.getDateTime() >= mStartDate.getDateTime()) {
+                if (!doDate.before(mStartDate)) {
                     for (int j = mEventSchedule.size(); j <= doDateIndex; j++) {
                         mEventSchedule.add(new ArrayList<>());
                     }
@@ -544,12 +527,13 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         mBinding.fab.setOnClickListener(view -> intentAddItem());
 
         // Make visible the main content
-        mVF = (ViewFlipper) findViewById(R.id.vf);
+        mVF = findViewById(R.id.vf);
         mVF.setDisplayedChild(1);
 
         mStartForResult = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
-                result -> MainActivity.this.onActivityResult(result.getResultCode(), result.getData()));
+                result -> MainActivity.this.onActivityResult(result.getResultCode(),
+                        result.getData()));
     }
 
     /**
@@ -562,9 +546,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // tasks
         ArrayList<String> taskNames = new ArrayList<>();
         for (Task t : mTasks) {
-            MyTime tDate = t.getDueDate();
-            taskNames.add(t.getName() + getString(R.string.due_when) + tDate.getMonth() +
-                    "/" + tDate.getDate() + "/" + (tDate.getYear()-2000) + ")");
+            Date tDate = t.getDueDate();
+            taskNames.add(t.getName() + getString(R.string.due_when) + Task.dateFormat.format(tDate) + ")");
         }
 
         intent.putStringArrayListExtra(EXTRA_TASKS, taskNames);
@@ -585,7 +568,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             BufferedWriter out = new BufferedWriter(
                     new FileWriter(getFilesDir() + "state.tsk"));
             // Save todayTime to file to prevent from overscheduling on today's date
-            out.write(mStartDate.getDateTime() + ": " +
+            out.write(mStartDate.getTime() + ": " +
                     mTodayTime + "\n");
             out.write(mTasks.size() + "\n");
 
@@ -598,8 +581,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                     parents.append(mTasks.indexOf(t.getParents().get(j))).append(",");
                 }
 
-                String taskLine = t.getName() + "|" + t.getEarlyDate().getDateTime() + "|" +
-                        t.getDueDate().getDateTime() + "|" + t.getDoDate().getDateTime() + "|" +
+                String taskLine = t.getName() + "|" + t.getEarlyDate().getTime() + "|" +
+                        t.getDueDate().getTime() + "|" + t.getDoDate().getTime() + "|" +
                         t.getTimeToComplete() + "|" + parents + "\n";
 
                 out.write(taskLine);
@@ -614,7 +597,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                     Event e = mEventSchedule.get(i).get(j);
 
                     out.write(e.getName() + "|" +
-                            e.getLength() + "|" + e.getDoDate().getDateTime() +
+                            e.getLength() + "|" + e.getDoDate().getTime() +
                             "\n");
                 }
             }
@@ -643,7 +626,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             List<TaskItem> tasks;
 
             // MyTime representing the date i days past today's date
-            MyTime curr = new MyTime(mStartDate.getDateTime() + (i * 1440L));
+            Calendar currCal = Calendar.getInstance();
+            currCal.add(Calendar.DAY_OF_YEAR, i);
+            Date curr = clearDate(currCal.getTime());
 
             // Number representing totalTime this date has scheduled. If it's today's date, add
             // todayTime to represent the time already completed tasks took.
@@ -667,9 +652,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             }
 
             // Set the fields
-            dayString = getString(R.string.schedule_for) + curr.getMonth() + "/" + curr.getDate()
-                    + "/" + (curr.getYear()-2000) + " (" + totalTime + getString(R.string.minutes)
-                    + ":";
+            dayString = getString(R.string.schedule_for) + Task.dateFormat.format(curr) + " (" + totalTime +
+                    getString(R.string.minutes) + ":";
             events = EventItemList(i);
             tasks = TaskItemList(i);
 
@@ -701,36 +685,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 Event event = mEventSchedule.get(index).get(j);
 
                 // Get the start/end time in MyTime objects
-                MyTime eventTime = event.getDoDate();
-                MyTime endTime = new MyTime(eventTime.getDateTime() + event.getLength());
-
-                // Format the start time in the format HH:MM AM/PM
-                short eventHour = eventTime.getHour();
-                boolean event_am = eventHour < 12;
-                String event_ampm = event_am ? " " + getString(R.string.am) :
-                        " " + getString(R.string.pm);
-                eventHour -= event_am ? 0 : 12;
-                eventHour = (eventHour == 0) ? 12 : eventHour;
-                short eventMinute = eventTime.getMinute();
-                String eventMinuteString = eventMinute + "";
-                eventMinuteString = (eventMinute < 10) ? "0" + eventMinuteString :
-                        eventMinuteString;
-
-                // Format the end time in the format HH:MM AM/PM
-                short endHour = endTime.getHour();
-                boolean end_am = endHour < 12;
-                String end_ampm = end_am ? " " + getString(R.string.am) :
-                        " " + getString(R.string.pm);
-                endHour -= end_am ? 0 : 12;
-                endHour = (endHour == 0) ? 12 : endHour;
-                short endMinute = endTime.getMinute();
-                String endMinuteString = endMinute + "";
-                endMinuteString = (endMinute < 10) ? "0" + endMinuteString : endMinuteString;
+                Date eventTime = event.getDoDate();
+                Calendar endCal = Calendar.getInstance();
+                endCal.setTime(eventTime);
+                endCal.add(Calendar.MINUTE, event.getLength());
+                Date endTime = clearTime(endCal.getTime());
 
                 // Format the event name as Name: StartTime-EndTime
                 name = event.getName();
-                timespan = eventHour + ":" + eventMinuteString + event_ampm + "-" + endHour + ":" +
-                        endMinuteString + end_ampm;
+                timespan = Event.timeFormat.format(eventTime) + "-" +
+                        Event.timeFormat.format(endTime);
 
                 itemList.add(new EventItem(name, timespan));
             }

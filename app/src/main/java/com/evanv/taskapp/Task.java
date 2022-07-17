@@ -1,5 +1,9 @@
 package com.evanv.taskapp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Represents a single task. Conceptually a Task is a node on a large task dependency graph that
@@ -13,15 +17,17 @@ import java.util.ArrayList;
 @SuppressWarnings("unused")
 public class Task implements Comparable<Task> {
     private final String mName;               // Name of the task
-    private MyTime mEarlyDate;                // Earliest date to complete
-    private MyTime mDoDate;                   // Date to do the task
-    private MyTime mDueDate;                  // Date the task is due
+    private Date mEarlyDate;                  // Earliest date to complete
+    private Date mDoDate;                     // Date to do the task
+    private Date mDueDate;                    // Date the task is due
     private int mTimeToComplete;              // Time (in minutes) to complete the tasks
-    private final ArrayList<Task> mParents;         // Tasks this task depends on
-    private final ArrayList<Task> mChildren;        // Tasks that depend on this task
+    private final ArrayList<Task> mParents;   // Tasks this task depends on
+    private final ArrayList<Task> mChildren;  // Tasks that depend on this task
     private ArrayList<Task> mWorkingParents;  // Working copy of parents for optimizer
     private ArrayList<Task> mWorkingChildren; // Working copy of children for optimizer
-    private MyTime mWorkingEarlyDate;         // Working copy of earlyDate for optimizer.
+    private Date mWorkingEarlyDate;           // Working copy of earlyDate for optimizer.
+    // SimpleDateFormat that formats date in the style "08/20/22"
+    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy");
 
     /**
      * Initializes an object representing a task
@@ -30,10 +36,10 @@ public class Task implements Comparable<Task> {
      * @param early The earliest possible day to complete the task (e.g. when it's assigned)
      * @param due When the task is due
      */
-    public Task(String name, MyTime early, MyTime due, int time) {
+    public Task(String name, Date early, Date due, int time) {
         this.mName = name;
-        this.mEarlyDate = early;
-        this.mDueDate = due;
+        this.mEarlyDate = clearDate(early);
+        this.mDueDate = clearDate(due);
         this.mTimeToComplete = time;
         mParents = new ArrayList<>();
         mChildren = new ArrayList<>();
@@ -53,7 +59,7 @@ public class Task implements Comparable<Task> {
      *
      * @return The earliest completion date for the task
      */
-    public MyTime getEarlyDate() {
+    public Date getEarlyDate() {
         return mEarlyDate;
     }
 
@@ -62,8 +68,8 @@ public class Task implements Comparable<Task> {
      *
      * @param earlyDate The new earliest completion date for the task.
      */
-    public void setEarlyDate(MyTime earlyDate) {
-        this.mEarlyDate = earlyDate;
+    public void setEarlyDate(Date earlyDate) {
+        this.mEarlyDate = clearDate(earlyDate);
     }
 
     /**
@@ -71,7 +77,7 @@ public class Task implements Comparable<Task> {
      *
      * @return The working copy of the earliest completion date for the task
      */
-    public MyTime getWorkingEarlyDate() {
+    public Date getWorkingEarlyDate() {
         return mWorkingEarlyDate;
     }
 
@@ -80,15 +86,15 @@ public class Task implements Comparable<Task> {
      *
      * @param earlyDate The new working copy of the earliest completion date for the task.
      */
-    public void setWorkingEarlyDate(MyTime earlyDate) {
-        this.mWorkingEarlyDate = earlyDate;
+    public void setWorkingEarlyDate(Date earlyDate) {
+        this.mWorkingEarlyDate = clearDate(earlyDate);
     }
     /**
      * Returns the currently scheduled completion date (by the optimizer) for the task
      *
      * @return The currently scheduled completion date (by the optimizer) for the task
      */
-    public MyTime getDoDate() {
+    public Date getDoDate() {
         return mDoDate;
     }
 
@@ -97,8 +103,8 @@ public class Task implements Comparable<Task> {
      *
      * @param doDate The new completion date for the task.
      */
-    public void setDoDate(MyTime doDate) {
-        this.mDoDate = doDate;
+    public void setDoDate(Date doDate) {
+        this.mDoDate = clearDate(doDate);
     }
 
     /**
@@ -106,7 +112,7 @@ public class Task implements Comparable<Task> {
      *
      * @return The due date for the task
      */
-    public MyTime getDueDate() {
+    public Date getDueDate() {
         return mDueDate;
     }
 
@@ -115,8 +121,8 @@ public class Task implements Comparable<Task> {
      *
      * @param dueDate The new due date for the task.
      */
-    public void setDueDate(MyTime dueDate) {
-        this.mDueDate = dueDate;
+    public void setDueDate(Date dueDate) {
+        this.mDueDate = clearDate(dueDate);
     }
 
     /**
@@ -241,8 +247,8 @@ public class Task implements Comparable<Task> {
     @Override
     public int compareTo(Task other) {
         // See if task is due before the other task
-        MyTime otherDueDate = other.getDueDate();
-        long diff = mDueDate.getDateTime() - otherDueDate.getDateTime();
+        Date otherDueDate = other.getDueDate();
+        long diff = mDueDate.compareTo(otherDueDate);
 
         if (diff == 0) {
             // See if task has more children than the other task
@@ -250,9 +256,9 @@ public class Task implements Comparable<Task> {
 
             if (diff == 0) {
                 // See if task can be completed earlier than the other task
-                MyTime otherEarlyDate = other.getEarlyDate();
+                Date otherEarlyDate = other.getEarlyDate();
 
-                diff = mEarlyDate.getDateTime() - otherEarlyDate.getDateTime();
+                diff = mEarlyDate.compareTo(otherEarlyDate);
             }
         }
 
@@ -261,5 +267,26 @@ public class Task implements Comparable<Task> {
         }
 
         return (int)diff;
+    }
+
+    /**
+     * Clears time information from Date, as LocalDate wasn't implemented until API 26. Very useful
+     * for Tasks as Tasks have no inherent time information.
+     *
+     * @param toClear The date to return without a time
+     * @return toClear but at the time 00:00:00.0000
+     */
+    public static Date clearDate(Date toClear) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(toClear);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
+    public static int getDiff(Date endDate, Date startDate) {
+        return (int) ((clearDate(endDate).getTime() - clearDate(startDate).getTime()) / TimeUnit.DAYS.toMillis(1));
     }
 }

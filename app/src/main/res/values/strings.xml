@@ -27,7 +27,7 @@
     <string name="task">Task</string>
     <string name="event">Event</string>
     <string name="title_activity_main2">MainActivity2</string>
-    <string name="optimizing">Optimizing...</string>
+    <string name="optimizing">Optimizing…</string>
     <string name="main_fab_desc">Button with plus symbol</string>
     <string name="complete_dialog_message">How long (in minutes) did %s take to complete?</string>
     <string name="complete_dialog_title">Complete Task</string>
@@ -59,4 +59,24 @@
     <string name="overdue_dialog_title">Check if overdue task was completed</string>
     <string name="overdue_dialog_button">Mark selections as complete</string>
     <string name="desc_delete_button">Trash can</string>
+    <string name="reoccur_header">Pick Recurrence Interval:</string>
+    <string name="no_recur">Don\'t Recur</string>
+    <string name="daily_recur">Recur Every Day</string>
+    <string name="weekly_recur">Recur Every Week</string>
+    <string name="monthly_recur">Recur Every Month</string>
+    <string name="yearly_recur">Recur Every Year</string>
+    <string name="daily_recur_prompt">Recur every _ days:</string>
+    <string name="sunday_initial">S</string>
+    <string name="monday_initial">M</string>
+    <string name="tuesday_initial">T</string>
+    <string name="wednesday_initial">W</string>
+    <string name="thursday_initial">T</string>
+    <string name="friday_initial">F</string>
+    <string name="saturday_initial">S</string>
+    <string name="monthly_recur_prompt">Recur every _ months:</string>
+    <string name="recur_days_hint">1,2,3</string>
+    <string name="years_recur_prompt">Recur every _ years:</string>
+    <string name="months_recur_prompt">Months to recur on:</string>
+    <string name="recur_months_hint">Jan,Feb,Mar</string>
+    <string name="weekly_recur_prompt">Recur every _ weeks:</string>
 </resources>

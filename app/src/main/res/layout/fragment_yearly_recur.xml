@@ -36,32 +36,29 @@
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Recur on Jul 18th"
+            android:checked="true"
             android:id="@+id/radioButtonStatic"
             tools:ignore="HardcodedText" />
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Recur on the 3rd Monday of Jul"
             android:id="@+id/radioButtonDynamic"
             tools:ignore="HardcodedText" />
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Recur specific months on the 18th day"
-            android:id="@+id/recurMultipleStatic"
+            android:id="@+id/radioButtonMultipleStatic"
             tools:ignore="HardcodedText" />
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Recur specific months on the 3rd Monday"
-            android:id="@+id/recurMultipleDynamic"
+            android:id="@+id/radioButtonMultipleDynamic"
             tools:ignore="HardcodedText" />
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Recur specific months on specific days"
-            android:id="@+id/recurMultipleMultipleStatic"
+            android:text="@string/recur_specific_days_months"
+            android:id="@+id/radioButtonSpecificMonthsDays"
             tools:ignore="HardcodedText" />
     </RadioGroup>
 

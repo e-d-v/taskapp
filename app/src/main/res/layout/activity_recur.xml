@@ -27,16 +27,21 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
-    <fragment
-        android:id="@+id/nav_host_fragment_reoccur"
-        android:name="androidx.navigation.fragment.NavHostFragment"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+    <FrameLayout
         app:layout_constraintTop_toBottomOf="@id/reoccurSpinner"
-        app:defaultNavHost="true"
-        app:navGraph="@navigation/reoccur_nav_graph"
-        tools:ignore="FragmentTagUsage" />
+        app:layout_constraintBottom_toTopOf="@id/submitButton"
+        app:layout_constraintStart_toStartOf="parent"
+        android:id="@+id/contentFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"/>
+
+    <Button
+        android:id="@+id/submitButton"
+        app:layout_constraintTop_toBottomOf="@id/contentFragment"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Submit"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

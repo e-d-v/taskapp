@@ -36,19 +36,18 @@
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Recur on the 18th"
             android:id="@+id/radioButtonStatic"
+            android:checked="true"
             tools:ignore="HardcodedText" />
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Recur on the 3rd Monday"
             android:id="@+id/radioButtonDynamic"
             tools:ignore="HardcodedText" />
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Recur Specific Days"
+            android:text="@string/recur_specific"
             android:id="@+id/recurSpecificDays"
             tools:ignore="HardcodedText" />
     </RadioGroup>
@@ -61,6 +60,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="visible"
             android:id="@+id/recurDaysPrompt"
             style="@style/subheader"
             android:text="Days to recur on: "
@@ -71,6 +71,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
+            android:visibility="visible"
             android:hint="@string/recur_days_hint"
             android:textSize="@dimen/subheader_height"
             tools:ignore="SpUsage"

@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import java.util.Objects;
 
@@ -128,30 +129,69 @@ public class MonthlyRecurFragment extends Fragment implements RecurInput {
      */
     @Override
     public Bundle getRecurInfo() {
+        // Create a bundle and set it's type to this
         Bundle toReturn = new Bundle();
         toReturn.putString(RecurInput.EXTRA_TYPE, EXTRA_VAL_TYPE);
 
-        String input = mIntervalET.getText().toString();
-        int interval = Integer.parseInt(input);
-        toReturn.putInt(EXTRA_INTERVAL, interval);
+        boolean flag = false; // If input is valid flag == false.
 
+        // If valid, load the interval into the bundle
+        String input = mIntervalET.getText().toString();
+        if (!input.equals("")) {
+            int interval = Integer.parseInt(input);
+            toReturn.putInt(EXTRA_INTERVAL, interval);
+        }
+        else {
+            Toast.makeText(getActivity(),
+                    String.format(getString(R.string.recur_format_event),
+                            getString(R.string.months)),Toast.LENGTH_LONG).show();
+            flag = true;
+        }
+
+        // Get the recurrence type chosen
         int radioButtonID = mRecurTypes.getCheckedRadioButtonId();
         View radioButton = mRecurTypes.findViewById(radioButtonID);
         int idx = mRecurTypes.indexOfChild(radioButton);
 
+        // User chose to recur on the xth day of every month
         if (idx == 0) {
             toReturn.putString(EXTRA_RECUR_TYPE, EXTRA_VAL_STATIC);
         }
+        // User chose to recur on the xth weekday of every month
         else if (idx == 1) {
             toReturn.putString(EXTRA_RECUR_TYPE, EXTRA_VAL_DYNAMIC);
         }
+        // User chose to recur on multiple days of every month
         else if (idx == 2) {
             toReturn.putString(EXTRA_RECUR_TYPE, EXTRA_VAL_SPECIFIC);
 
             String userInput = mDaysET.getText().toString();
-            toReturn.putString(EXTRA_DAYS, userInput);
+
+            // If the list of days is valid, load it into the bundle
+            if (!userInput.equals("")) {
+                toReturn.putString(EXTRA_DAYS, userInput);
+
+                try {
+                    String[] strs = userInput.split(",");
+
+                    for (String str : strs) {
+                        Integer.parseInt(str);
+                    }
+                }
+                catch (Exception e) {
+                    Toast.makeText(getActivity(), R.string.date_list_format,
+                            Toast.LENGTH_LONG).show();
+                    flag = true;
+                }
+            }
+            else {
+                Toast.makeText(getActivity(), R.string.no_days,
+                        Toast.LENGTH_LONG).show();
+                flag = true;
+            }
         }
 
-        return toReturn;
+        // If valid return the bundle, if not, send null to the calling activity to inform it
+        return (!flag) ? toReturn : null;
     }
 }

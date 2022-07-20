@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.util.Objects;
 
@@ -91,13 +92,26 @@ public class WeeklyRecurFragment extends Fragment implements RecurInput {
      */
     @Override
     public Bundle getRecurInfo() {
+        // Create a bundle and set it's type to this one
         Bundle toReturn = new Bundle();
         toReturn.putString(RecurInput.EXTRA_TYPE, EXTRA_VAL_TYPE);
 
-        String input = mIntervalET.getText().toString();
-        int interval = Integer.parseInt(input);
-        toReturn.putInt(EXTRA_INTERVAL, interval);
+        boolean flag = false; // If input is valid flag == false.
 
+        // Load the interval field into the bundle if valid
+        String input = mIntervalET.getText().toString();
+        if (!input.equals("")) {
+            int interval = Integer.parseInt(input);
+            toReturn.putInt(EXTRA_INTERVAL, interval);
+        }
+        else {
+            Toast.makeText(getActivity(),
+                    String.format(getString(R.string.recur_format_event),
+                            getString(R.string.weeks)),Toast.LENGTH_LONG).show();
+            flag = true;
+        }
+
+        // If at least one day is checked, load the list of days to repeat on into the bundle
         boolean[] daysToRepeatOn = new boolean[7];
         daysToRepeatOn[0] = checkBoxes[0].isChecked();
         daysToRepeatOn[1] = checkBoxes[1].isChecked();
@@ -106,8 +120,17 @@ public class WeeklyRecurFragment extends Fragment implements RecurInput {
         daysToRepeatOn[4] = checkBoxes[4].isChecked();
         daysToRepeatOn[5] = checkBoxes[5].isChecked();
         daysToRepeatOn[6] = checkBoxes[6].isChecked();
-        toReturn.putBooleanArray(EXTRA_DAYS, daysToRepeatOn);
+        if (daysToRepeatOn[0] || daysToRepeatOn[1] || daysToRepeatOn[2] || daysToRepeatOn[3] ||
+                daysToRepeatOn[4] || daysToRepeatOn[5] || daysToRepeatOn[6]) {
+            toReturn.putBooleanArray(EXTRA_DAYS, daysToRepeatOn);
+        }
+        else {
+            Toast.makeText(getActivity(), R.string.no_day_selected,
+                    Toast.LENGTH_LONG).show();
+            flag = true;
+        }
 
-        return toReturn;
+        // If input was valid, return, if not return null to signal invalid input to RecurActivity
+        return (!flag) ? toReturn : null;
     }
 }

@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.util.Objects;
 
@@ -77,14 +78,25 @@ public class DailyRecurFragment extends Fragment implements RecurInput {
      */
     @Override
     public Bundle getRecurInfo() {
+        // Create a Bundle and set it's type to be Daily Recurrence
         Bundle toReturn = new Bundle();
         toReturn.putString(RecurInput.EXTRA_TYPE, EXTRA_VAL_TYPE);
 
+        // Load the interval field into the Bundle if valid
         String input = mIntervalET.getText().toString();
-        int interval = Integer.parseInt(input);
+        if (!input.equals("")) {
+            int interval = Integer.parseInt(input);
 
-        toReturn.putInt(EXTRA_INTERVAL, interval);
+            toReturn.putInt(EXTRA_INTERVAL, interval);
 
-        return toReturn;
+            return toReturn;
+        }
+        else {
+            Toast.makeText(getActivity(),
+                    String.format(getString(R.string.recur_format_event), getString(R.string.days)),Toast.LENGTH_LONG)
+                    .show();
+
+            return null;
+        }
     }
 }

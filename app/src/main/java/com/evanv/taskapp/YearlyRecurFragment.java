@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import java.util.Objects;
 
@@ -97,7 +98,7 @@ public class YearlyRecurFragment extends Fragment implements RecurInput {
         mDaysET = Objects.requireNonNull(toReturn).findViewById(R.id.recurDaysEditText);
         mMonthsET = Objects.requireNonNull(toReturn).findViewById(R.id.recurMonthsEditText);
 
-        Intent intent = getActivity().getIntent();
+        Intent intent = requireActivity().getIntent();
         String day = intent.getStringExtra(EventEntry.EXTRA_DAY);
         String desc = intent.getStringExtra(EventEntry.EXTRA_DESC);
         String month = intent.getStringExtra(EventEntry.EXTRA_MONTH);
@@ -152,44 +153,106 @@ public class YearlyRecurFragment extends Fragment implements RecurInput {
      */
     @Override
     public Bundle getRecurInfo() {
+        // Create the bundle and set it's type to this
         Bundle toReturn = new Bundle();
         toReturn.putString(RecurInput.EXTRA_TYPE, EXTRA_VAL_TYPE);
 
-        String input = mIntervalET.getText().toString();
-        int interval = Integer.parseInt(input);
-        toReturn.putInt(EXTRA_INTERVAL, interval);
+        boolean flag = false; // If input is valid flag == false.
 
+        // If valid, add the number of years between events to the bundle
+        String input = mIntervalET.getText().toString();
+        if (!input.equals("")) {
+            int interval = Integer.parseInt(input);
+            toReturn.putInt(EXTRA_INTERVAL, interval);
+        }
+        else {
+            Toast.makeText(getActivity(),
+                    String.format(getString(R.string.recur_format_event),
+                            getString(R.string.months)),Toast.LENGTH_LONG).show();
+            flag = true;
+        }
+
+        // Get the type of recurrence chosen
         int radioButtonID = mRecurTypes.getCheckedRadioButtonId();
         View radioButton = mRecurTypes.findViewById(radioButtonID);
         int idx = mRecurTypes.indexOfChild(radioButton);
 
+        // If the user chose to recur on the same day every year
         if (idx == 0) {
             toReturn.putString(EXTRA_RECUR_TYPE, EXTRA_VAL_STATIC);
         }
+        // If the user chose to recur on the xth weekday of month every year
         else if (idx == 1) {
             toReturn.putString(EXTRA_RECUR_TYPE, EXTRA_VAL_DYNAMIC);
         }
-        else if (idx == 2) {
-            toReturn.putString(EXTRA_RECUR_TYPE, EXTRA_VAL_MULTIPLE_STATIC);
-
+        // If the user chose to recur on specific months
+        else if (idx == 2 || idx == 3 || idx == 4) {
             String userInput = mMonthsET.getText().toString();
-            toReturn.putString(EXTRA_MONTHS, userInput);
+
+            if (!userInput.equals("")) {
+                toReturn.putString(EXTRA_MONTHS, userInput);
+
+                String[] strs = userInput.split(",");
+
+                for (String str : strs) {
+                    if (!str.equals("Jan") && !str.equals("Feb") && !str.equals("Mar") &&
+                            !str.equals("Apr") && !str.equals("May") && !str.equals("Jun") &&
+                            !str.equals("Jul") && !str.equals("Aug") && !str.equals("Sep") &&
+                            !str.equals("Oct") && !str.equals("Nov") && !str.equals("Dec")) {
+                        flag = true;
+                        Toast.makeText(getActivity(),
+                                R.string.months_format,
+                                Toast.LENGTH_LONG).show();
+                        break;
+                    }
+                }
+            }
+            else {
+                Toast.makeText(getActivity(),
+                        R.string.months_format,
+                        Toast.LENGTH_LONG).show();
+                flag = true;
+            }
         }
+
+        // If the user chose to recur on the xth day of specific months
+        if (idx == 2) {
+            toReturn.putString(EXTRA_RECUR_TYPE, EXTRA_VAL_MULTIPLE_STATIC);
+        }
+        // If the user chose to recur on the xth weekday of specific months
         else if (idx == 3) {
             toReturn.putString(EXTRA_RECUR_TYPE, EXTRA_VAL_MULTIPLE_DYNAMIC);
-
-            String userInput = mMonthsET.getText().toString();
-            toReturn.putString(EXTRA_MONTHS, userInput);
         }
+        // If the user chose to recur on specific days of specific months
         else if (idx == 4) {
             toReturn.putString(EXTRA_RECUR_TYPE, EXTRA_VAL_SPECIFIC);
 
-            String userInput = mMonthsET.getText().toString();
-            toReturn.putString(EXTRA_MONTHS, userInput);
-            userInput = mDaysET.getText().toString();
-            toReturn.putString(EXTRA_DAYS, userInput);
+            String userInput = mDaysET.getText().toString();
+
+            // If valid, load the days the user entered to recur on into the bundle
+            if (!userInput.equals("")) {
+                toReturn.putString(EXTRA_DAYS, userInput);
+
+                try {
+                    String[] strs = userInput.split(",");
+
+                    for (String str : strs) {
+                        Integer.parseInt(str);
+                    }
+                }
+                catch (Exception e) {
+                    Toast.makeText(getActivity(), R.string.date_list_format,
+                            Toast.LENGTH_LONG).show();
+                    flag = true;
+                }
+            }
+            else {
+                Toast.makeText(getActivity(), R.string.no_days,
+                        Toast.LENGTH_LONG).show();
+                flag = true;
+            }
         }
 
-        return toReturn;
+        return (!flag) ? toReturn : null;
     }
 }

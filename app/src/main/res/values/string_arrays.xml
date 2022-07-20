@@ -30,4 +30,8 @@
         <item>@string/november</item>
         <item>@string/december</item>
     </string-array>
+    <string-array name="timespans">
+        <item>@string/recur_times</item>
+        <item>@string/recur_until</item>
+    </string-array>
 </resources>

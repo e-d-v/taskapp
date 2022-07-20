@@ -41,7 +41,7 @@
     <string name="pm">PM</string>
     <string name="ttc_format_event">Make sure to enter a whole number (in minutes) for completion time.</string>
     <string name="recur_empty_event">Make sure to enter a number of recurrences for this event</string>
-    <string name="recur_format_event">Make sure to enter a whole number for the number of recurrences.</string>
+    <string name="recur_format_event">Make sure to enter a whole number for the number of %s between recurrences.</string>
     <string name="complete_task">Complete Task</string>
     <string name="schedule_for">Schedule for\u0020</string>
     <string name="minutes">\u0020minutes)</string>
@@ -104,4 +104,14 @@
     <string name="recur_specific_months">Recur specific months on the %s</string>
     <string name="recur_on">Recur on %s %s</string>
     <string name="recur_on_of">Recur on the %s of %s</string>
+    <string name="recur_times">Recur _ times</string>
+    <string name="recur_until">Recur until _</string>
+    <string name="recur_until_2">(MM/DD/YY)</string>
+    <string name="days">days</string>
+    <string name="no_day_selected">Make sure to choose at least one day to recur on.</string>
+    <string name="weeks">weeks</string>
+    <string name="months">months</string>
+    <string name="no_days">Make sure to enter a list of days to recur on</string>
+    <string name="date_list_format">Make sure dates formatted as \"1,2,3\"</string>
+    <string name="months_format">Make sure to enter months in format \"Jan,Feb,Mar\"</string>
 </resources>

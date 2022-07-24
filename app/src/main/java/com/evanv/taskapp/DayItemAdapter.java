@@ -1,6 +1,7 @@
 package com.evanv.taskapp;
 
 import android.content.res.Resources;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,6 +66,8 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
     public void onBindViewHolder(@NonNull DayViewHolder holder, int position) {
         // Get the DayItem for the days position past today's date
         DayItem dayItem = mDayItemList.get(position);
+
+        holder.position = position;
 
         // Set the day header to the string inside DayItem
         holder.mDayItemDate.setText(dayItem.getDayString());
@@ -139,6 +142,7 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         private final RecyclerView mTaskRecyclerView;
         // Listener that allows easy completion of tasks (see ClickListener)
         private final WeakReference<ClickListener> mListenerRef;
+        int position;
 
         /**
          * Constructs a new DayViewHolder, setting it's values to the views in the day_item
@@ -161,12 +165,12 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
          * Sends the Button Click information up from the TaskItemHolder to MainActivity. Adds the
          * day index, which is conveniently getAdapterPosition();
          *
-         * @param position The index into the taskSchedule.get(day) List that has the given Task
-         * @param day Ignored as TaskItemHolder does not know it's recycler's DayRecycler's index.
+         * @param p The index into the taskSchedule.get(day) List that has the given Task
+         * @param d Ignored as TaskItemHolder does not know it's recycler's DayRecycler's index.
          */
         @Override
-        public void onButtonClick(int position, int day, int action) {
-            mListenerRef.get().onButtonClick(position, getAdapterPosition(), action);
+        public void onButtonClick(int p, int d, int action) {
+            mListenerRef.get().onButtonClick(p, position, action);
         }
     }
 }

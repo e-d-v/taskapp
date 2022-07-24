@@ -61,6 +61,15 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
         EventItem eventItem = mEventItemList.get(position);
         holder.mEventItemName.setText(eventItem.getName());
         holder.mEventItemTimespan.setText(eventItem.getTimespan());
+
+        holder.delete.setOnClickListener(view -> {
+        // If the view clicked was the button, tell the DayViewHolder the index of the event to
+        // be deleted. As the TaskViewHolder doesn't know the day index, this is -1, and will be
+        // filled in by the DayViewHolder
+        if (view.getId() == holder.DELETE_ID) {
+            holder.mListenerRef.get().onButtonClick(position, -1, 2);
+        }
+        });
     }
 
     /**
@@ -77,12 +86,13 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
      * Holder that interfaces between the adapter and the event_item views
      */
     @SuppressWarnings("InnerClassMayBeStatic")
-    public class EventViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class EventViewHolder extends RecyclerView.ViewHolder {
         final TextView mEventItemName;     // The TextView representing the name in event_item
         final TextView mEventItemTimespan; // The TextView representing the timespan in event_item
         // Listener that allows easy completion of tasks (see ClickListener)
         final WeakReference<ClickListener> mListenerRef;
         private final int DELETE_ID; // The ID of the delete button;
+        ImageButton delete;
 
         /**
          * Constructs a new EventViewHolder, setting its values to the views in the event_item
@@ -100,18 +110,8 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
             // Sets this as the OnClickListener for the button, so when the button is clicked, we
             // can move up the ClickListener chain to mark the event as deleted in MainActivity's
             // data structures and refresh the recyclerview
-            ImageButton delete = itemView.findViewById(R.id.buttonDeleteEvent);
-            delete.setOnClickListener(this);
+            delete = itemView.findViewById(R.id.buttonDeleteEvent);
         }
 
-        @Override
-        public void onClick(View view) {
-            // If the view clicked was the button, tell the DayViewHolder the index of the event to
-            // be deleted. As the TaskViewHolder doesn't know the day index, this is -1, and will be
-            // filled in by the DayViewHolder
-            if (view.getId() == DELETE_ID) {
-                mListenerRef.get().onButtonClick(getAdapterPosition(), -1, 2);
-            }
-        }
     }
 }

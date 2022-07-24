@@ -34,13 +34,13 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
     private static final String TAG_CURR_FRAG = "com.evanv.taskapp.RecurActivity.tag.CURR_FRAG";
     boolean inputShown; // true if recur_n_times, false if recur_until
     // Key for the value representing the type of until statement (number or until)
-    private static final String EXTRA_UNTIL_TYPE = "com.evanv.taskapp.RecurActivity.extra.UNTIL_TYPE";
+    public static final String EXTRA_UNTIL_TYPE = "com.evanv.taskapp.RecurActivity.extra.UNTIL_TYPE";
     // Value representing an event that recurs until a specific date.
-    private static final String EXTRA_VAL_UNTIL = "com.evanv.taskapp.RecurActivity.extra.val.UNTIL";
+    public static final String EXTRA_VAL_UNTIL = "com.evanv.taskapp.RecurActivity.extra.val.UNTIL";
     // Value representing an event that recurs a set number of times.
-    private static final String EXTRA_VAL_NUM = "com.evanv.taskapp.RecurActivity.extra.val.NUM";
+    public static final String EXTRA_VAL_NUM = "com.evanv.taskapp.RecurActivity.extra.val.NUM";
     // Key for the value representing the date the event stops recurring on / number of recurrences
-    private static final String EXTRA_UNTIL = "com.evanv.taskapp.RecurActivity.extra.UNTIL";
+    public static final String EXTRA_UNTIL = "com.evanv.taskapp.RecurActivity.extra.UNTIL";
 
     /**
      * Runs on activity creation. Initializes fragment, spinner, and their interaction.

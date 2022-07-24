@@ -60,6 +60,22 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
         TaskItem taskItem = mTaskItemList.get(position);
         holder.mTaskItemName.setText(taskItem.getName());
+        holder.complete.setOnClickListener(view -> {
+            // If the view clicked was a button, tell the DayViewHolder the index of the task to be
+            // completed or deleted. As the TaskViewHolder doesn't know the day index, this is -1,
+            // and will be filled in by the DayViewHolder
+            if (view.getId() == holder.COMPLETE_ID) {
+                holder.mListenerRef.get().onButtonClick(position, -1, 0);
+            }
+        });
+        holder.delete.setOnClickListener(view -> {
+            // If the view clicked was a button, tell the DayViewHolder the index of the task to be
+            // completed or deleted. As the TaskViewHolder doesn't know the day index, this is -1,
+            // and will be filled in by the DayViewHolder
+            if (view.getId() == holder.DELETE_ID) {
+                holder.mListenerRef.get().onButtonClick(position, -1, 1);
+            }
+        });
     }
 
     /**
@@ -76,13 +92,14 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
      * Holder that interfaces between the adapter and the task_item views
      */
     @SuppressWarnings("InnerClassMayBeStatic")
-    public class TaskViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class TaskViewHolder extends RecyclerView.ViewHolder {
         final TextView mTaskItemName; // The TextView representing the name in task_item
         private final int COMPLETE_ID; // ID of the completion button.
         private final int DELETE_ID; // ID of the deletion button.
         // Listener that allows easy completion of tasks (see ClickListener)
         final WeakReference<ClickListener> mListenerRef;
-
+        ImageButton complete;
+        ImageButton delete;
 
         /**
          * Constructs a new TaskViewHolder, setting it's values to the views in the task_item
@@ -100,29 +117,8 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             // Sets this as the OnClickListener for the button, so when the button is clicked, we
             // can move up the ClickListener chain to mark the task as complete in MainActivity's
             // data structures and refresh the recyclerview
-            ImageButton complete = itemView.findViewById(R.id.buttonComplete);
-            complete.setOnClickListener(this);
-            ImageButton delete = itemView.findViewById(R.id.buttonDeleteTask);
-            delete.setOnClickListener(this);
-
-        }
-
-        /**
-         * Uses the ClickListener chain to mark the task as complete in MainActivity
-         *
-         * @param v the view that was clicked
-         */
-        @Override
-        public void onClick(View v) {
-            // If the view clicked was a button, tell the DayViewHolder the index of the task to be
-            // completed or deleted. As the TaskViewHolder doesn't know the day index, this is -1,
-            // and will be filled in by the DayViewHolder
-            if (v.getId() == COMPLETE_ID) {
-                mListenerRef.get().onButtonClick(getAdapterPosition(), -1, 0);
-            }
-            if (v.getId() == DELETE_ID) {
-                mListenerRef.get().onButtonClick(getAdapterPosition(), -1, 1);
-            }
+            complete = itemView.findViewById(R.id.buttonComplete);
+            delete = itemView.findViewById(R.id.buttonDeleteTask);
         }
     }
 }

@@ -21,16 +21,19 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
     private final List<TaskItem> mTaskItemList; // List of tasks for this day
     // Listener that allows easy completion of tasks (see ClickListener)
     private final ClickListener mListener;
+    private final int mDay; // Index into taskSchedule representing this day
 
     /**
      * Constructs an adapter for a given DayItem's task recyclerview
      *
      * @param taskItemList the list of tasks for this day
      * @param listener ClickListener to handle button clicks
+     * @param day Index into taskSchedule representing this day
      */
-    public TaskItemAdapter(List<TaskItem> taskItemList, ClickListener listener) {
+    public TaskItemAdapter(List<TaskItem> taskItemList, ClickListener listener, int day) {
         mTaskItemList = taskItemList;
         mListener = listener;
+        mDay = day;
     }
 
     /**
@@ -76,6 +79,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
                 holder.mListenerRef.get().onButtonClick(position, -1, 1);
             }
         });
+        holder.mIndex = taskItem.getIndex();
     }
 
     /**
@@ -100,6 +104,8 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         final WeakReference<ClickListener> mListenerRef;
         ImageButton complete;
         ImageButton delete;
+        int mIndex; // Index into taskSchedule.get(day) for this event
+
 
         /**
          * Constructs a new TaskViewHolder, setting it's values to the views in the task_item
@@ -120,5 +126,6 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             complete = itemView.findViewById(R.id.buttonComplete);
             delete = itemView.findViewById(R.id.buttonDeleteTask);
         }
+
     }
 }

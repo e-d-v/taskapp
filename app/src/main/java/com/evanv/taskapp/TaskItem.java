@@ -7,6 +7,7 @@ package com.evanv.taskapp;
  */
 public class TaskItem {
     private final String mName; // Name of the task (e.g. "Read Ch. 3")
+    private final int mIndex;       // Index into taskSchedule.get(day) for this event
 
     /**
      * Creates an item representing a Task
@@ -14,8 +15,18 @@ public class TaskItem {
      * @param name a string representing the name of the Task
      */
     @SuppressWarnings("unused")
-    public TaskItem(String name) {
+    public TaskItem(String name, int index) {
         mName = name;
+        mIndex = index;
+    }
+
+    /**
+     * Returns index of taskSchedule.get(day) this event is stored at.
+     *
+     * @return index of taskSchedule.get(day) this event is stored at.
+     */
+    public int getIndex() {
+        return mIndex;
     }
 
     /**

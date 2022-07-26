@@ -21,6 +21,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
     private final List<EventItem> mEventItemList; // List of events for this day
     // Listener that allows easy deletion of events (see ClickListener)
     private final ClickListener mListener;
+    private final int mDay; // How many days past today's date this Event list represents
 
     /**
      * Constructs an adapter for a given DayItem's event recyclerview
@@ -28,9 +29,10 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
      * @param eventItemList the list of events for this day
      * @param listener ClickListener to handle button clicks
      */
-    public EventItemAdapter(List<EventItem> eventItemList, ClickListener listener) {
+    public EventItemAdapter(List<EventItem> eventItemList, ClickListener listener, int day) {
         mEventItemList = eventItemList;
         mListener = listener;
+        mDay = day;
     }
 
     /**
@@ -61,7 +63,6 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
         EventItem eventItem = mEventItemList.get(position);
         holder.mEventItemName.setText(eventItem.getName());
         holder.mEventItemTimespan.setText(eventItem.getTimespan());
-
         holder.delete.setOnClickListener(view -> {
         // If the view clicked was the button, tell the DayViewHolder the index of the event to
         // be deleted. As the TaskViewHolder doesn't know the day index, this is -1, and will be
@@ -70,6 +71,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
             holder.mListenerRef.get().onButtonClick(position, -1, 2);
         }
         });
+        holder.mIndex = eventItem.getIndex();
     }
 
     /**
@@ -93,6 +95,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
         final WeakReference<ClickListener> mListenerRef;
         private final int DELETE_ID; // The ID of the delete button;
         ImageButton delete;
+        int mIndex; // Index into eventSchedule.get(day) for this event
 
         /**
          * Constructs a new EventViewHolder, setting its values to the views in the event_item
@@ -112,6 +115,5 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
             // data structures and refresh the recyclerview
             delete = itemView.findViewById(R.id.buttonDeleteEvent);
         }
-
     }
 }

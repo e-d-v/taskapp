@@ -105,8 +105,10 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         taskLayoutManager.setInitialPrefetchItemCount(dayItem.getTasks().size());
 
         // Initialize the Event/Task Item Adapters
-        EventItemAdapter eventItemAdapter = new EventItemAdapter(dayItem.getEvents(), holder);
-        TaskItemAdapter taskItemAdapter = new TaskItemAdapter(dayItem.getTasks(), holder);
+        EventItemAdapter eventItemAdapter = new EventItemAdapter(dayItem.getEvents(), holder,
+                dayItem.getIndex());
+        TaskItemAdapter taskItemAdapter = new TaskItemAdapter(dayItem.getTasks(), holder,
+                dayItem.getIndex());
         holder.mEventRecyclerView.setLayoutManager(eventLayoutManager);
         holder.mTaskRecyclerView.setLayoutManager(taskLayoutManager);
         holder.mEventRecyclerView.setAdapter(eventItemAdapter);

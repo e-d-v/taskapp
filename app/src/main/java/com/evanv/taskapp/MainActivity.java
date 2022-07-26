@@ -657,7 +657,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             events = EventItemList(i);
             tasks = TaskItemList(i);
 
-            itemList.add(new DayItem(dayString, events, tasks));
+            itemList.add(new DayItem(dayString, events, tasks, i));
         }
 
         return itemList;
@@ -696,7 +696,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 timespan = Event.timeFormat.format(eventTime) + "-" +
                         Event.timeFormat.format(endTime);
 
-                itemList.add(new EventItem(name, timespan));
+                itemList.add(new EventItem(name, timespan, j));
             }
         }
         return itemList;
@@ -727,7 +727,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 name = task.getName() + " (" + task.getTimeToComplete() +
                         " " + getString(R.string.minutes_to_complete) + ")";
 
-                itemList.add(new TaskItem(name));
+                itemList.add(new TaskItem(name, j));
             }
         }
 

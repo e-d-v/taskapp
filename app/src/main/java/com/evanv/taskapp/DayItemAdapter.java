@@ -67,8 +67,6 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         // Get the DayItem for the days position past today's date
         DayItem dayItem = mDayItemList.get(position);
 
-        holder.position = position;
-
         // Set the day header to the string inside DayItem
         holder.mDayItemDate.setText(dayItem.getDayString());
 
@@ -76,24 +74,6 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         Resources res = holder.itemView.getContext().getResources();
 
         // Hide/show headers depending on if any events/tasks are scheduled for that day
-        if (dayItem.getTasks().size() == 0) {
-            holder.mTaskHeader.setVisibility(View.INVISIBLE);
-            holder.mTaskHeader.setLayoutParams(
-                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 0));
-        }
-        else {
-            holder.mTaskHeader.setVisibility(View.VISIBLE);
-            holder.mTaskHeader.setHeight((int) res.getDimension(R.dimen.subheader_height));
-        }
-        if (dayItem.getEvents().size() == 0) {
-            holder.mEventHeader.setVisibility(View.INVISIBLE);
-            holder.mEventHeader.setLayoutParams(
-                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 0));
-        }
-        else {
-            holder.mEventHeader.setVisibility(View.VISIBLE);
-            holder.mEventHeader.setHeight((int) res.getDimension(R.dimen.subheader_height));
-        }
 
         // Initialize the LinearLayoutManagers for the child RecyclerViews
         LinearLayoutManager eventLayoutManager = new LinearLayoutManager(
@@ -109,9 +89,9 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
 
         // Initialize the Event/Task Item Adapters
         EventItemAdapter eventItemAdapter = new EventItemAdapter(dayItem.getEvents(), holder,
-                dayItem.getIndex());
+                dayItem.getIndex(), holder.mEventHeader, res);
         TaskItemAdapter taskItemAdapter = new TaskItemAdapter(dayItem.getTasks(), holder,
-                dayItem.getIndex());
+                dayItem.getIndex(), holder.mTaskHeader, res);
         holder.mEventRecyclerView.setLayoutManager(eventLayoutManager);
         holder.mTaskRecyclerView.setLayoutManager(taskLayoutManager);
         holder.mEventRecyclerView.setAdapter(eventItemAdapter);
@@ -144,7 +124,6 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         private final RecyclerView mTaskRecyclerView;
         // Listener that allows easy completion of tasks (see ClickListener)
         private final WeakReference<ClickListener> mListenerRef;
-        int position;
 
         /**
          * Constructs a new DayViewHolder, setting it's values to the views in the day_item
@@ -167,12 +146,12 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
          * Sends the Button Click information up from the TaskItemHolder to MainActivity. Adds the
          * day index, which is conveniently getAdapterPosition();
          *
-         * @param p The index into the taskSchedule.get(day) List that has the given Task
-         * @param d Ignored as TaskItemHolder does not know it's recycler's DayRecycler's index.
+         * @param position The index into the taskSchedule.get(day) List that has the given Task
+         * @param day Ignored as TaskItemHolder does not know it's recycler's DayRecycler's index.
          */
         @Override
-        public void onButtonClick(int p, int d, int action) {
-            mListenerRef.get().onButtonClick(p, position, action);
+        public void onButtonClick(int position, int day, int action) {
+            mListenerRef.get().onButtonClick(position, day, action);
         }
     }
 }

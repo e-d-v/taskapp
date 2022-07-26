@@ -1,9 +1,11 @@
 package com.evanv.taskapp;
 
+import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -29,11 +31,25 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
      * @param taskItemList the list of tasks for this day
      * @param listener ClickListener to handle button clicks
      * @param day Index into taskSchedule representing this day
+     * @param header Header for task list for this day
+     * @param res Resources for this project
      */
-    public TaskItemAdapter(List<TaskItem> taskItemList, ClickListener listener, int day) {
+    public TaskItemAdapter(List<TaskItem> taskItemList, ClickListener listener, int day,
+                           TextView header, Resources res) {
         mTaskItemList = taskItemList;
         mListener = listener;
         mDay = day;
+
+        if (taskItemList.size() == 0) {
+            header.setVisibility(View.INVISIBLE);
+            header.setLayoutParams(
+                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 0));
+        }
+        else {
+            header.setVisibility(View.VISIBLE);
+            header.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, (int) res.getDimension(R.dimen.subheader_height)));
+        }
     }
 
     /**
@@ -68,7 +84,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             // completed or deleted. As the TaskViewHolder doesn't know the day index, this is -1,
             // and will be filled in by the DayViewHolder
             if (view.getId() == holder.COMPLETE_ID) {
-                holder.mListenerRef.get().onButtonClick(position, -1, 0);
+                holder.mListenerRef.get().onButtonClick(holder.mIndex, mDay, 0);
             }
         });
         holder.delete.setOnClickListener(view -> {
@@ -76,7 +92,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             // completed or deleted. As the TaskViewHolder doesn't know the day index, this is -1,
             // and will be filled in by the DayViewHolder
             if (view.getId() == holder.DELETE_ID) {
-                holder.mListenerRef.get().onButtonClick(position, -1, 1);
+                holder.mListenerRef.get().onButtonClick(holder.mIndex, mDay, 1);
             }
         });
         holder.mIndex = taskItem.getIndex();

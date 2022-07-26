@@ -1,9 +1,11 @@
 package com.evanv.taskapp;
 
+import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -28,11 +30,26 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
      *
      * @param eventItemList the list of events for this day
      * @param listener ClickListener to handle button clicks
+     * @param header TextView representing the header whose visibility will be changed depending on
+     *               this adapter
+     * @param res Resources used to change style of header
      */
-    public EventItemAdapter(List<EventItem> eventItemList, ClickListener listener, int day) {
+    public EventItemAdapter(List<EventItem> eventItemList, ClickListener listener, int day,
+                            TextView header, Resources res) {
         mEventItemList = eventItemList;
         mListener = listener;
         mDay = day;
+
+        if (mEventItemList.size() == 0) {
+            header.setVisibility(View.INVISIBLE);
+            header.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, 0));
+        }
+        else {
+            header.setVisibility(View.VISIBLE);
+            header.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, (int) res.getDimension(R.dimen.subheader_height)));
+        }
     }
 
     /**
@@ -68,7 +85,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
         // be deleted. As the TaskViewHolder doesn't know the day index, this is -1, and will be
         // filled in by the DayViewHolder
         if (view.getId() == holder.DELETE_ID) {
-            holder.mListenerRef.get().onButtonClick(position, -1, 2);
+            holder.mListenerRef.get().onButtonClick(holder.mIndex, mDay, 2);
         }
         });
         holder.mIndex = eventItem.getIndex();

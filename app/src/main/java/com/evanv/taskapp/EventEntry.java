@@ -2,18 +2,28 @@ package com.evanv.taskapp;
 
 import static com.evanv.taskapp.Task.clearDate;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.ibm.icu.text.RuleBasedNumberFormat;
+
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
+
 
 /**
  * The fragment that handles data entry for new events
@@ -21,7 +31,18 @@ import java.util.Date;
  * @author Evan Voogd
  */
 public class EventEntry extends Fragment implements ItemEntry {
-    private ViewGroup mContainer; // The ViewGroup for the activity, allows easy access to views
+    private Bundle mRecur;        // The value returned by the recur activity.
+    private EditText mEditTextEventName; // EditText containing the name of the event
+    private EditText mEditTextECD;       // EditText containing the date/time of the event
+    private EditText mEditTextLength;    // EditText containing the length of the event
+    // The day the user has entered (e.g. 18)
+    public static final String EXTRA_DAY = "com.evanv.taskapp.EventEntry.extra.DAY";
+    // The day the user has entered (e.g. 3rd monday)
+    public static final String EXTRA_DESC = "com.evanv.taskapp.EventEntry.extra.DESC";
+    // The month the user has entered
+    public static final String EXTRA_MONTH = "com.evanv.taskapp.EventEntry.extra.MONTH";
+    // Allows data to be pulled from activity
+    private ActivityResultLauncher<Intent> mStartForResult;
 
     /**
      * Required empty public constructor
@@ -37,6 +58,17 @@ public class EventEntry extends Fragment implements ItemEntry {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mStartForResult = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> handleRecurInput(result.getResultCode(),
+                        result.getData()));
+    }
+
+    private void handleRecurInput(int resultCode, Intent data) {
+        if (resultCode == Activity.RESULT_OK) {
+            mRecur = data.getBundleExtra(RecurActivity.EXTRA_RECUR);
+        }
     }
 
     /**
@@ -46,17 +78,11 @@ public class EventEntry extends Fragment implements ItemEntry {
      */
     @SuppressWarnings("unused")
     public Bundle getItem() {
-        // Get needed views
-        EditText editTextEventName = mContainer.findViewById(R.id.editTextEventName);
-        EditText editTextECD = mContainer.findViewById(R.id.editTextECD);
-        EditText editTextLength = mContainer.findViewById(R.id.editTextLength);
-        EditText editTextRecur = mContainer.findViewById(R.id.editTextRecur);
 
         // Get user input from views
-        String eventName = editTextEventName.getText().toString();
-        String ecd = editTextECD.getText().toString();
-        String length = editTextLength.getText().toString();
-        String recur = editTextRecur.getText().toString();
+        String eventName = mEditTextEventName.getText().toString();
+        String ecd = mEditTextECD.getText().toString();
+        String length = mEditTextLength.getText().toString();
 
         boolean flag = false; // Allows us to Toast multiple errors at once.
 
@@ -151,24 +177,6 @@ public class EventEntry extends Fragment implements ItemEntry {
                 flag = true;
             }
         }
-        // Check if recur is valid
-        if (recur.length() == 0) {
-            Toast.makeText(getActivity(),
-                    R.string.recur_empty_event,
-                    Toast.LENGTH_LONG).show();
-            flag = true;
-        }
-        else {
-            try {
-                Integer.parseInt(recur);
-            }
-            catch (Exception e) {
-                Toast.makeText(getActivity(),
-                        R.string.recur_format_event,
-                        Toast.LENGTH_LONG).show();
-                flag = true;
-            }
-        }
 
         // If any required views are empty, return null to signify invalid input
         if (flag) {
@@ -181,14 +189,14 @@ public class EventEntry extends Fragment implements ItemEntry {
         bundle.putString(AddItem.EXTRA_NAME, eventName);
         bundle.putString(AddItem.EXTRA_START, ecd);
         bundle.putString(AddItem.EXTRA_TTC, length);
-        bundle.putString(AddItem.EXTRA_RECUR, recur);
+        bundle.putBundle(AddItem.EXTRA_RECUR, mRecur);
 
         // Return bundle containing user input
         return bundle;
     }
 
     /**
-     * Required empty onCreateView method
+     * Initializes recurrence button/recurrence related information.
      *
      * @param inflater not used
      * @param container not used
@@ -198,9 +206,66 @@ public class EventEntry extends Fragment implements ItemEntry {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mContainer = container;
+        View toReturn = inflater.inflate(R.layout.fragment_event_entry, container, false);
+
+        // Get needed views
+        mEditTextEventName = toReturn.findViewById(R.id.editTextEventName);
+        mEditTextECD = toReturn.findViewById(R.id.editTextECD);
+        mEditTextLength = toReturn.findViewById(R.id.editTextLength);
+
+        // Add the default recurrence interval (none)
+        mRecur = new Bundle();
+        mRecur.putString(RecurInput.EXTRA_TYPE, NoRecurFragment.EXTRA_VAL_TYPE);
+
+        // Add click handler to button
+        Button button = toReturn.findViewById(R.id.recurButton);
+        button.setOnClickListener(view -> intentRecur());
 
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_event_entry, container, false);
+        return toReturn;
+    }
+
+    private void intentRecur() {
+        // Create a new intent
+        Intent intent = new Intent(getActivity(), RecurActivity.class);
+
+        // Get the date information the user has entered
+        Calendar ecdCal = Calendar.getInstance();
+        try {
+            String ecdText = mEditTextECD.getText().toString();
+            Date ecd = Event.dateFormat.parse(ecdText);
+            ecdCal.setTime(ecd);
+        } catch (ParseException e) {
+            Toast.makeText(getActivity(),
+                    R.string.ecd_help_text_format,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // Pull the month/day/week
+        // Gets how many times this weekday has appeared in the month. (e.g. if it is the 3rd
+        // monday of february, this says "3".
+        int dayOfWeekInMonth = ecdCal.get(Calendar.DAY_OF_WEEK_IN_MONTH);
+        int weekday = ecdCal.get(Calendar.DAY_OF_WEEK);
+        int month = ecdCal.get(Calendar.MONTH);
+        int day = ecdCal.get(Calendar.DAY_OF_MONTH);
+
+        RuleBasedNumberFormat formatter = new RuleBasedNumberFormat(Locale.US, RuleBasedNumberFormat.ORDINAL);
+
+        // Get the day
+        String dayString = formatter.format(day);
+        intent.putExtra(EXTRA_DAY, dayString);
+
+        // Get the description (formatted "3rd Monday)"
+        String ordinalNumber = formatter.format(dayOfWeekInMonth);
+        String weekdayString = getResources().getStringArray(R.array.weekdays)[weekday - 1];
+        intent.putExtra(EXTRA_DESC, ordinalNumber + " " + weekdayString);
+
+        // Get the month
+        String monthString = getResources().getStringArray(R.array.months)[month];
+        intent.putExtra(EXTRA_MONTH, monthString);
+
+        // Launch RecurActivity
+        mStartForResult.launch(intent);
     }
 }

@@ -1,6 +1,7 @@
 package com.evanv.taskapp;
 
 import android.content.res.Resources;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -73,24 +74,6 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         Resources res = holder.itemView.getContext().getResources();
 
         // Hide/show headers depending on if any events/tasks are scheduled for that day
-        if (dayItem.getTasks().size() == 0) {
-            holder.mTaskHeader.setVisibility(View.INVISIBLE);
-            holder.mTaskHeader.setLayoutParams(
-                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 0));
-        }
-        else {
-            holder.mTaskHeader.setVisibility(View.VISIBLE);
-            holder.mTaskHeader.setHeight((int) res.getDimension(R.dimen.subheader_height));
-        }
-        if (dayItem.getEvents().size() == 0) {
-            holder.mEventHeader.setVisibility(View.INVISIBLE);
-            holder.mEventHeader.setLayoutParams(
-                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 0));
-        }
-        else {
-            holder.mEventHeader.setVisibility(View.VISIBLE);
-            holder.mEventHeader.setHeight((int) res.getDimension(R.dimen.subheader_height));
-        }
 
         // Initialize the LinearLayoutManagers for the child RecyclerViews
         LinearLayoutManager eventLayoutManager = new LinearLayoutManager(
@@ -105,8 +88,10 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         taskLayoutManager.setInitialPrefetchItemCount(dayItem.getTasks().size());
 
         // Initialize the Event/Task Item Adapters
-        EventItemAdapter eventItemAdapter = new EventItemAdapter(dayItem.getEvents(), holder);
-        TaskItemAdapter taskItemAdapter = new TaskItemAdapter(dayItem.getTasks(), holder);
+        EventItemAdapter eventItemAdapter = new EventItemAdapter(dayItem.getEvents(), holder,
+                dayItem.getIndex(), holder.mEventHeader, res);
+        TaskItemAdapter taskItemAdapter = new TaskItemAdapter(dayItem.getTasks(), holder,
+                dayItem.getIndex(), holder.mTaskHeader, res);
         holder.mEventRecyclerView.setLayoutManager(eventLayoutManager);
         holder.mTaskRecyclerView.setLayoutManager(taskLayoutManager);
         holder.mEventRecyclerView.setAdapter(eventItemAdapter);
@@ -166,7 +151,7 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
          */
         @Override
         public void onButtonClick(int position, int day, int action) {
-            mListenerRef.get().onButtonClick(position, getAdapterPosition(), action);
+            mListenerRef.get().onButtonClick(position, day, action);
         }
     }
 }

@@ -1,9 +1,11 @@
 package com.evanv.taskapp;
 
+import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,16 +23,33 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
     private final List<EventItem> mEventItemList; // List of events for this day
     // Listener that allows easy deletion of events (see ClickListener)
     private final ClickListener mListener;
+    private final int mDay; // How many days past today's date this Event list represents
 
     /**
      * Constructs an adapter for a given DayItem's event recyclerview
      *
      * @param eventItemList the list of events for this day
      * @param listener ClickListener to handle button clicks
+     * @param header TextView representing the header whose visibility will be changed depending on
+     *               this adapter
+     * @param res Resources used to change style of header
      */
-    public EventItemAdapter(List<EventItem> eventItemList, ClickListener listener) {
+    public EventItemAdapter(List<EventItem> eventItemList, ClickListener listener, int day,
+                            TextView header, Resources res) {
         mEventItemList = eventItemList;
         mListener = listener;
+        mDay = day;
+
+        if (mEventItemList.size() == 0) {
+            header.setVisibility(View.INVISIBLE);
+            header.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, 0));
+        }
+        else {
+            header.setVisibility(View.VISIBLE);
+            header.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, (int) res.getDimension(R.dimen.subheader_height)));
+        }
     }
 
     /**
@@ -61,6 +80,15 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
         EventItem eventItem = mEventItemList.get(position);
         holder.mEventItemName.setText(eventItem.getName());
         holder.mEventItemTimespan.setText(eventItem.getTimespan());
+        holder.delete.setOnClickListener(view -> {
+        // If the view clicked was the button, tell the DayViewHolder the index of the event to
+        // be deleted. As the TaskViewHolder doesn't know the day index, this is -1, and will be
+        // filled in by the DayViewHolder
+        if (view.getId() == holder.DELETE_ID) {
+            holder.mListenerRef.get().onButtonClick(holder.mIndex, mDay, 2);
+        }
+        });
+        holder.mIndex = eventItem.getIndex();
     }
 
     /**
@@ -77,12 +105,14 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
      * Holder that interfaces between the adapter and the event_item views
      */
     @SuppressWarnings("InnerClassMayBeStatic")
-    public class EventViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class EventViewHolder extends RecyclerView.ViewHolder {
         final TextView mEventItemName;     // The TextView representing the name in event_item
         final TextView mEventItemTimespan; // The TextView representing the timespan in event_item
         // Listener that allows easy completion of tasks (see ClickListener)
         final WeakReference<ClickListener> mListenerRef;
         private final int DELETE_ID; // The ID of the delete button;
+        ImageButton delete;
+        int mIndex; // Index into eventSchedule.get(day) for this event
 
         /**
          * Constructs a new EventViewHolder, setting its values to the views in the event_item
@@ -100,18 +130,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
             // Sets this as the OnClickListener for the button, so when the button is clicked, we
             // can move up the ClickListener chain to mark the event as deleted in MainActivity's
             // data structures and refresh the recyclerview
-            ImageButton delete = itemView.findViewById(R.id.buttonDeleteEvent);
-            delete.setOnClickListener(this);
-        }
-
-        @Override
-        public void onClick(View view) {
-            // If the view clicked was the button, tell the DayViewHolder the index of the event to
-            // be deleted. As the TaskViewHolder doesn't know the day index, this is -1, and will be
-            // filled in by the DayViewHolder
-            if (view.getId() == DELETE_ID) {
-                mListenerRef.get().onButtonClick(getAdapterPosition(), -1, 2);
-            }
+            delete = itemView.findViewById(R.id.buttonDeleteEvent);
         }
     }
 }

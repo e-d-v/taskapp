@@ -32,12 +32,15 @@ import android.widget.ViewFlipper;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Main Activity for the app. Display's the user's schedule of Tasks/Events, while allowing for
@@ -150,10 +153,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 String name = result.getString(AddItem.EXTRA_NAME);
                 int ttc = Integer.parseInt(result.getString(AddItem.EXTRA_TTC));
                 String startStr = result.getString(AddItem.EXTRA_START);
-                int recur = Integer.parseInt(result.getString(AddItem.EXTRA_RECUR));
-
-                // Makes sure recur works if the user enters 0 instead of 1
-                recur = (recur == 0) ? 1 : recur;
+                Bundle recur = result.getBundle(AddItem.EXTRA_RECUR);
 
                 // Convert the String start time into a MyTime
                 Date start;
@@ -177,26 +177,496 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 // index into eventSchedule
                 int diff = getDiff(start, mStartDate);
 
-                // As the eventSchedule's indices are based on how many days past the start day,
-                // we make sure to add enough lists to get to the needed index
-                for (int i = mEventSchedule.size(); i <= diff + (7*(recur-1)); i++) {
-                    mEventSchedule.add(new ArrayList<>());
-                }
-
                 // Add the new event to the data structure
-                Event toAdd = new Event(name, start, ttc);
-                mEventSchedule.get(diff).add(toAdd);
-                mNumEvents++;
+                if (!recur.get(RecurInput.EXTRA_TYPE).equals(NoRecurFragment.EXTRA_VAL_TYPE)) {
+                    boolean until = recur.get(RecurActivity.EXTRA_UNTIL_TYPE)
+                            .equals(RecurActivity.EXTRA_VAL_UNTIL);
 
-                // Recurring is only on a weekly basis until completion of issue #20, until then,
-                // this is how we achieve it.
-                for (int i = 1; i < recur; i++) {
-                    userStart.add(Calendar.DAY_OF_YEAR, 7);
-                    mEventSchedule.get(diff + (7*i)).add(
-                            new Event(name, clearTime(userStart.getTime()), ttc));
+                    // Initialize until holders. Only the one associated with the user's choice
+                    // of recurrence is used.
+                    int endIndex = -1;
+                    int numTimes = -1;
+                    Date endDate = new Date();
+
+                    // Recur until end date
+                    if (until) {
+                        try {
+                            endDate = Task.dateFormat.parse
+                                    (recur.getString(RecurActivity.EXTRA_UNTIL));
+                            endIndex = getDiff(endDate, mStartDate);
+                        } catch (ParseException e) {
+                            Log.e("TaskApp.MainActivity", e.getMessage());
+                        }
+                    }
+                    // Recur set number of times
+                    else {
+                        numTimes = Integer.parseInt(recur.getString(RecurActivity.EXTRA_UNTIL));
+                    }
+
+                    String recurType = recur.getString(RecurInput.EXTRA_TYPE);
+                    if (DailyRecurFragment.EXTRA_VAL_TYPE.equals(recurType)) {
+                        // Number of days between recurrences
+                        int interval = recur.getInt(DailyRecurFragment.EXTRA_INTERVAL);
+
+                        // Calculates the number of times recurrence occurs.
+                        numTimes = (until) ? ((endIndex - diff) / interval) + 1 : numTimes;
+
+                        // Make sure there is enough mEventSchedules.
+                        for (int i = mEventSchedule.size(); i <= diff + (numTimes * interval);
+                             i++) {
+                            mEventSchedule.add(new ArrayList<>());
+                        }
+
+                        // Add the event once every interval days.
+                        for (int i = 0; i < (numTimes * interval); i += interval) {
+                            // Calculate date to add event on.
+                            Calendar recurCal = Calendar.getInstance();
+                            recurCal.setTime(start);
+                            recurCal.add(Calendar.DAY_OF_YEAR, i);
+
+                            Event toAdd = new Event(name, recurCal.getTime(), ttc);
+                            mEventSchedule.get(diff + i).add(toAdd);
+                            mNumEvents++;
+                        }
+                    }
+                    else if (WeeklyRecurFragment.EXTRA_VAL_TYPE.equals(recurType)) {
+                        // Number of days between recurrences
+                        int interval = recur.getInt(WeeklyRecurFragment.EXTRA_INTERVAL);
+                        // day[0] = if recurs on sunday, day[6] if recurs on saturday
+                        boolean[] days = recur.getBooleanArray(WeeklyRecurFragment.EXTRA_DAYS);
+
+                        for (int i = 1; i <= 7; i++) {
+                            if (days[i - 1]) {
+                                Calendar recurCal = Calendar.getInstance();
+                                recurCal.setTime(start);
+
+                                // Calculates how many days we must add to recurCal to get next
+                                // day of week
+                                int currIndex = ((i - recurCal.get(Calendar.DAY_OF_WEEK)) + 7)
+                                        % 7;
+
+                                // oneLess shows us if this day occurs before the initial day of the
+                                // week. This is useful as it stops the days before from being
+                                // skewed away from the actual repetition
+                                boolean oneLess = (i - recurCal.get(Calendar.DAY_OF_WEEK)) < 0;
+
+                                recurCal.add(Calendar.DAY_OF_YEAR, currIndex);
+
+                                // Gets start index into eventSchedule
+                                currIndex += diff;
+
+                                if (until) {
+                                    numTimes = Integer.MAX_VALUE;
+                                }
+                                else {
+                                    endDate.setTime(Long.MAX_VALUE);
+                                }
+
+                                // This means that our week iterator is off by one.
+                                boolean offByOne = oneLess && (interval != 1);
+
+                                for (int j = 0; j < numTimes && !recurCal.getTime().after(endDate);
+                                     j++) {
+                                    // Add event to schedule
+                                    // Make sure an edge case isn't reached. oneLess only matters if
+                                    // interval == 1, as the offByOne if clause fixes it otherwise
+                                    if (!(j == 0 && offByOne) && !(j == numTimes - 1 && oneLess &&
+                                            !offByOne)) {
+                                        Event toAdd = new Event(name, recurCal.getTime(), ttc);
+
+                                        for (int k = mEventSchedule.size(); k <= currIndex; k++) {
+                                            mEventSchedule.add(new ArrayList<>());
+                                        }
+
+                                        mEventSchedule.get(currIndex).add(toAdd);
+                                        mNumEvents++;
+                                    }
+
+                                    // Calculate next date
+                                    recurCal.add(Calendar.WEEK_OF_YEAR, interval);
+                                    currIndex += (7 * interval);
+
+                                    // Fix the skew caused by an event recurring at a non-1 interval
+                                    if (j == 0 && offByOne) {
+                                        recurCal.add(Calendar.WEEK_OF_YEAR, -1);
+                                        currIndex -= 7;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if (MonthlyRecurFragment.EXTRA_VAL_TYPE.equals(recurType)) {
+                        int interval = recur.getInt(MonthlyRecurFragment.EXTRA_INTERVAL);
+                        String intervalType = recur.getString(MonthlyRecurFragment.EXTRA_RECUR_TYPE);
+
+                        Calendar recurCal = Calendar.getInstance();
+                        recurCal.setTime(start);
+
+                        int currIndex = diff;
+
+                        if (intervalType.equals(MonthlyRecurFragment.EXTRA_VAL_STATIC)) {
+                            if (!until) {
+                                Calendar endDateCal = Calendar.getInstance();
+                                endDateCal.setTime(start);
+                                endDateCal.add(Calendar.MONTH, interval * (numTimes - 1));
+                                endDate = endDateCal.getTime();
+                                endIndex = getDiff(endDate, mStartDate);
+                            }
+
+                            for (int i = mEventSchedule.size(); i <= endIndex; i++) {
+                                mEventSchedule.add(new ArrayList<>());
+                            }
+                            while (!recurCal.getTime().after(endDate)) {
+                                // Add event to schedule
+                                Event toAdd = new Event(name, recurCal.getTime(), ttc);
+                                mEventSchedule.get(currIndex).add(toAdd);
+                                mNumEvents++;
+
+                                // Calculate next date
+                                recurCal.add(Calendar.MONTH, interval);
+                                currIndex = getDiff(recurCal.getTime(), mStartDate);
+                            }
+                        }
+                        if (intervalType.equals(MonthlyRecurFragment.EXTRA_VAL_DYNAMIC)) {
+                            int dayOfWeek = recurCal.get(Calendar.DAY_OF_WEEK);
+                            int dayOfWeekInMonth = recurCal.get(Calendar.DAY_OF_WEEK_IN_MONTH);
+
+                            // We will repeat until the other clause (date after last day) is
+                            // reached
+                            if (until) {
+                                numTimes = Integer.MAX_VALUE;
+                            }
+                            else {
+                                Calendar endCal = Calendar.getInstance();
+                                // 2100 as this is when the display functionality breaks
+                                endCal.set(Calendar.YEAR, 2100);
+
+                                endDate = endCal.getTime();
+                            }
+
+                            for (int i = 0; i < numTimes && !recurCal.getTime().after(endDate); i++) {
+                                // Add event to schedule
+                                Event toAdd = new Event(name, recurCal.getTime(), ttc);
+
+                                for (int j = mEventSchedule.size(); j <= currIndex; j++) {
+                                    mEventSchedule.add(new ArrayList<>());
+                                }
+
+                                mEventSchedule.get(currIndex).add(toAdd);
+                                mNumEvents++;
+
+                                // Calculate next date
+                                recurCal.add(Calendar.MONTH, interval);
+                                recurCal.set(Calendar.DAY_OF_WEEK, dayOfWeek);
+                                recurCal.set(Calendar.DAY_OF_WEEK_IN_MONTH, dayOfWeekInMonth);
+                                currIndex = getDiff(recurCal.getTime(), mStartDate);
+                            }
+                        }
+                        if (intervalType.equals(MonthlyRecurFragment.EXTRA_VAL_SPECIFIC)) {
+                            String[] strs = recur.getString(MonthlyRecurFragment.EXTRA_DAYS)
+                                    .split(",");
+                            int[] days = new int[strs.length];
+
+                            for (int i = 0; i < strs.length; i++) {
+                                days[i] = Integer.parseInt(strs[i]);
+                            }
+
+                            Arrays.sort(days);
+
+                            for (int day : days) {
+                                recurCal.setTime(start);
+                                int daysInMonth = recurCal.getActualMaximum(Calendar.DAY_OF_MONTH);
+                                int dayDiff = (day - recurCal.get(Calendar.DAY_OF_MONTH)
+                                        + daysInMonth) % daysInMonth;
+
+                                boolean oneLess = (day - recurCal.get(Calendar.DAY_OF_MONTH)) < 0;
+                                boolean offByOne = oneLess && (interval != 1);
+
+                                recurCal.add(Calendar.DAY_OF_YEAR, dayDiff);
+                                currIndex = getDiff(recurCal.getTime(), mStartDate);
+
+                                // We will repeat until the other clause (date after last day) is
+                                // reached
+                                if (until) {
+                                    numTimes = Integer.MAX_VALUE;
+                                }
+                                else {
+                                    Calendar endCal = Calendar.getInstance();
+                                    // 2100 as this is when the display functionality breaks
+                                    endCal.set(Calendar.YEAR, 2100);
+
+                                    endDate = endCal.getTime();
+                                }
+
+                                for (int i = 0; i < numTimes && !recurCal.getTime().after(endDate);
+                                     i++) {
+                                    // Add event to schedule
+                                    if (!(i == 0 && offByOne) && !(i == numTimes - 1 && oneLess &&
+                                            !offByOne)) {
+                                        Event toAdd = new Event(name, recurCal.getTime(), ttc);
+                                        for (int k = mEventSchedule.size(); k <= currIndex; k++) {
+                                            mEventSchedule.add(new ArrayList<>());
+                                        }
+                                        mEventSchedule.get(currIndex).add(toAdd);
+                                        mNumEvents++;
+                                    }
+
+                                    // Calculate next date
+                                    if (i == 0 && offByOne) {
+                                        recurCal.add(Calendar.MONTH, -1);
+                                    }
+                                    recurCal.add(Calendar.MONTH, interval);
+                                    currIndex = getDiff(recurCal.getTime(), mStartDate);
+                                }
+                            }
+                        }
+                    }
+                    else if (YearlyRecurFragment.EXTRA_VAL_TYPE.equals(recurType)) {
+                        // How many years between each recurrence of this event.
+                        int interval = recur.getInt(YearlyRecurFragment.EXTRA_INTERVAL);
+                        // How the event will recur (the 18th, 3rd monday, 18/21st etc.)
+                        String intervalType = recur.getString(YearlyRecurFragment.EXTRA_RECUR_TYPE);
+                        // What months to recur on if necessary.
+                        boolean[] months = new boolean[12];
+
+
+
+                        if (intervalType.equals(YearlyRecurFragment.EXTRA_VAL_MULTIPLE_DYNAMIC)
+                                || intervalType.equals(YearlyRecurFragment.EXTRA_VAL_MULTIPLE_STATIC)
+                                || intervalType.equals(YearlyRecurFragment.EXTRA_VAL_SPECIFIC)) {
+                            List<String> monthsStr = Arrays.asList(
+                                    recur.getString(YearlyRecurFragment.EXTRA_MONTHS).split(","));
+
+                            months[0] = monthsStr.contains(getString(R.string.jan));
+                            months[1] = monthsStr.contains(getString(R.string.feb));
+                            months[2] = monthsStr.contains(getString(R.string.mar));
+                            months[3] = monthsStr.contains(getString(R.string.apr));
+                            months[4] = monthsStr.contains(getString(R.string.may));
+                            months[5] = monthsStr.contains(getString(R.string.jun));
+                            months[6] = monthsStr.contains(getString(R.string.jul));
+                            months[7] = monthsStr.contains(getString(R.string.aug));
+                            months[8] = monthsStr.contains(getString(R.string.sep));
+                            months[9] = monthsStr.contains(getString(R.string.oct));
+                            months[10] = monthsStr.contains(getString(R.string.nov));
+                            months[11] = monthsStr.contains(getString(R.string.dec));
+                        }
+
+                        Calendar recurCal = Calendar.getInstance();
+                        recurCal.setTime(start);
+
+                        int currIndex = diff;
+
+                        if (intervalType.equals(YearlyRecurFragment.EXTRA_VAL_STATIC)) {
+
+                            if (!until) {
+                                Calendar endDateCal = Calendar.getInstance();
+                                endDateCal.setTime(start);
+                                endDateCal.add(Calendar.YEAR, interval * (numTimes - 1));
+                                endDate = endDateCal.getTime();
+                            }
+
+                            for (int i = mEventSchedule.size(); i <= endIndex; i++) {
+                                mEventSchedule.add(new ArrayList<>());
+                            }
+
+                            while (!recurCal.getTime().after(endDate)) {
+                                // Add event to schedule
+                                Event toAdd = new Event(name, recurCal.getTime(), ttc);
+                                for (int k = mEventSchedule.size(); k <= currIndex; k++) {
+                                    mEventSchedule.add(new ArrayList<>());
+                                }
+                                mEventSchedule.get(currIndex).add(toAdd);
+                                mNumEvents++;
+
+                                // Calculate next date
+                                recurCal.add(Calendar.YEAR, interval);
+                                currIndex = getDiff(recurCal.getTime(), mStartDate);
+                            }
+                        }
+                        if (intervalType.equals(YearlyRecurFragment.EXTRA_VAL_DYNAMIC)) {
+                            int dayOfWeek = recurCal.get(Calendar.DAY_OF_WEEK);
+                            int dayOfWeekInMonth = recurCal.get(Calendar.DAY_OF_WEEK_IN_MONTH);
+
+                            if (until) {
+                                numTimes = Integer.MAX_VALUE;
+                            }
+                            else {
+                                endDate.setTime(Long.MAX_VALUE);
+                            }
+
+                            for (int i = 0; i < numTimes && !recurCal.getTime().after(endDate); i++) {
+                                // Add event to schedule
+                                Event toAdd = new Event(name, recurCal.getTime(), ttc);
+                                for (int k = mEventSchedule.size(); k <= currIndex; k++) {
+                                    mEventSchedule.add(new ArrayList<>());
+                                }
+                                mEventSchedule.get(currIndex).add(toAdd);
+                                mNumEvents++;
+
+                                // Calculate next date
+                                recurCal.add(Calendar.YEAR, interval);
+                                recurCal.set(Calendar.DAY_OF_WEEK, dayOfWeek);
+                                recurCal.set(Calendar.DAY_OF_WEEK_IN_MONTH, dayOfWeekInMonth);
+                                currIndex = getDiff(recurCal.getTime(), mStartDate);
+                            }
+                        }
+                        if (intervalType.equals(YearlyRecurFragment.EXTRA_VAL_MULTIPLE_STATIC)) {
+                            for (int i = 0; i < months.length; i++) {
+                                if (months[i]) {
+                                    boolean oneLess = (i - recurCal.get(Calendar.MONTH)) < 0;
+                                    boolean offByOne = oneLess && (interval != 1);
+                                    recurCal = Calendar.getInstance();
+                                    recurCal.setTime(start);
+                                    recurCal.add(Calendar.MONTH,
+                                            (i - recurCal.get(Calendar.MONTH) + 12) % 12);
+                                    currIndex = getDiff(recurCal.getTime(), mStartDate);
+
+                                    if (until) {
+                                        numTimes = Integer.MAX_VALUE;
+                                    }
+                                    else {
+                                        endDate.setTime(Long.MAX_VALUE);
+                                    }
+
+                                    for (int j = 0; j < numTimes && !recurCal.getTime()
+                                            .after(endDate); j++) {
+                                        // Add event to schedule
+                                        if (!(j == 0 && offByOne) && !(j == numTimes - 1 && oneLess &&
+                                                !offByOne)) {
+                                            Event toAdd = new Event(name, recurCal.getTime(), ttc);
+                                            for (int k = mEventSchedule.size(); k <= currIndex; k++) {
+                                                mEventSchedule.add(new ArrayList<>());
+                                            }
+                                            mEventSchedule.get(currIndex).add(toAdd);
+                                            mNumEvents++;
+                                        }
+
+                                        // Calculate next date
+                                        if (j == 0 && offByOne) {
+                                            recurCal.add(Calendar.YEAR, -1);
+                                        }
+                                        recurCal.add(Calendar.YEAR, interval);
+                                        currIndex = getDiff(recurCal.getTime(), mStartDate);
+                                    }
+                                }
+                            }
+                        }
+                        if (intervalType.equals(YearlyRecurFragment.EXTRA_VAL_MULTIPLE_DYNAMIC)) {
+                            int dayOfWeek = recurCal.get(Calendar.DAY_OF_WEEK);
+                            int dayOfWeekInMonth = recurCal.get(Calendar.DAY_OF_WEEK_IN_MONTH);
+
+                            for (int i = 0; i < months.length; i++) {
+                                if (months[i]) {
+                                    boolean oneLess = (i - recurCal.get(Calendar.MONTH)) < 0;
+                                    boolean offByOne = oneLess && (interval != 1);
+                                    recurCal = Calendar.getInstance();
+                                    recurCal.setTime(start);
+                                    recurCal.add(Calendar.MONTH,
+                                            (i - recurCal.get(Calendar.MONTH) + 12) % 12);
+                                    recurCal.set(Calendar.DAY_OF_WEEK, dayOfWeek);
+                                    recurCal.set(Calendar.DAY_OF_WEEK_IN_MONTH, dayOfWeekInMonth);
+                                    currIndex = getDiff(recurCal.getTime(), mStartDate);
+
+                                    if (until) {
+                                        numTimes = Integer.MAX_VALUE;
+                                    }
+                                    else {
+                                        endDate.setTime(Long.MAX_VALUE);
+                                    }
+
+                                    for (int j = 0; j < numTimes && !recurCal.getTime()
+                                            .after(endDate); j++) {
+                                        // Add event to schedule
+                                        if (!(j == 0 && offByOne) && !(j == numTimes - 1 && oneLess
+                                                && !offByOne)) {
+                                            Event toAdd = new Event(name, recurCal.getTime(), ttc);
+                                            for (int k = mEventSchedule.size(); k <= currIndex; k++) {
+                                                mEventSchedule.add(new ArrayList<>());
+                                            }
+                                            mEventSchedule.get(currIndex).add(toAdd);
+                                            mNumEvents++;
+                                        }
+
+                                        // Calculate next date
+                                        if (j == 0 && offByOne) {
+                                            recurCal.add(Calendar.YEAR, -1);
+                                        }
+                                        recurCal.add(Calendar.YEAR, interval);
+                                        recurCal.set(Calendar.DAY_OF_WEEK, dayOfWeek);
+                                        recurCal.set(Calendar.DAY_OF_WEEK_IN_MONTH, dayOfWeekInMonth);
+                                        currIndex = getDiff(recurCal.getTime(), mStartDate);
+                                    }
+                                }
+                            }
+                        }
+                        if (intervalType.equals(YearlyRecurFragment.EXTRA_VAL_SPECIFIC)) {
+                            String[] daysStrs = recur.getString(YearlyRecurFragment.EXTRA_DAYS)
+                                    .split(",");
+                            int[] days = new int[daysStrs.length];
+
+                            for (int i = 0; i < days.length; i++) {
+                                days[i] = Integer.parseInt(daysStrs[i]);
+                            }
+
+                            for (int i = 0; i < months.length; i++) {
+                                if (months[i]) {
+                                    boolean oneLess = (i - recurCal.get(Calendar.MONTH)) < 0;
+                                    boolean offByOne = oneLess && (interval != 1);
+                                    recurCal = Calendar.getInstance();
+                                    recurCal.setTime(start);
+                                    recurCal.add(Calendar.MONTH,
+                                            (i - recurCal.get(Calendar.MONTH) + 12) % 12);
+
+                                    if (until) {
+                                        numTimes = Integer.MAX_VALUE;
+                                    }
+                                    else {
+                                        endDate.setTime(Long.MAX_VALUE);
+                                    }
+
+                                    for (int j = 0; j < numTimes && !recurCal.getTime()
+                                            .after(endDate); j++) {
+                                        for (int day : days) {
+                                            if (day <= recurCal.getActualMaximum
+                                                    (Calendar.DAY_OF_MONTH)) {
+                                                recurCal.set(Calendar.DAY_OF_MONTH, day);
+                                                currIndex = getDiff(recurCal.getTime(), mStartDate);
+
+                                                if (!recurCal.getTime().before(start) &&
+                                                        !recurCal.getTime().after(endDate) &&
+                                                        !(j == 0 && offByOne) && !(j == numTimes - 1
+                                                        && oneLess && !offByOne)) {
+                                                    Event toAdd = new Event(name, recurCal.getTime(),
+                                                            ttc);
+                                                    for (int k = mEventSchedule.size(); k <=
+                                                            currIndex; k++) {
+                                                        mEventSchedule.add(new ArrayList<>());
+                                                    }
+                                                    mEventSchedule.get(currIndex).add(toAdd);
+                                                    mNumEvents++;
+                                                }
+                                            }
+                                        }
+
+                                        if (j == 0 && offByOne) {
+                                            recurCal.add(Calendar.YEAR, -1);
+                                        }
+                                        recurCal.add(Calendar.YEAR, interval);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else {
+                    for (int i = mEventSchedule.size(); i <= diff; i++) {
+                        mEventSchedule.add(new ArrayList<>());
+                    }
+
+                    Event toAdd = new Event(name, start, ttc);
+                    mEventSchedule.get(diff).add(toAdd);
                     mNumEvents++;
                 }
-
             }
             // If the item type is Task
             else if (type.equals(AddItem.EXTRA_VAL_TASK)) {
@@ -455,6 +925,27 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
         catch (Exception e) {
             Log.d("TaskApp.MainActivity", "Storage file empty/misformatted");
+            // Initialize the main recyclerview with data calculated in helper function DayItemList
+            RecyclerView dayRecyclerView = findViewById(R.id.main_recyclerview);
+            LinearLayoutManager layoutManager = new LinearLayoutManager(MainActivity.this);
+            mDayItemAdapter = new DayItemAdapter(DayItemList(), this);
+            dayRecyclerView.setAdapter(mDayItemAdapter);
+            dayRecyclerView.setLayoutManager(layoutManager);
+
+            // Adds the action bar at the top of the screen
+            setSupportActionBar(mBinding.toolbar);
+
+            // When the FAB is clicked, run intentAddItem to open the AddItem Activity
+            mBinding.fab.setOnClickListener(view -> intentAddItem());
+
+            // Make visible the main content
+            mVF = findViewById(R.id.vf);
+            mVF.setDisplayedChild(1);
+
+            mStartForResult = registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> MainActivity.this.onActivityResult(result.getResultCode(),
+                            result.getData()));
         }
     }
 
@@ -657,7 +1148,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             events = EventItemList(i);
             tasks = TaskItemList(i);
 
-            itemList.add(new DayItem(dayString, events, tasks));
+            itemList.add(new DayItem(dayString, events, tasks, i));
         }
 
         return itemList;
@@ -696,7 +1187,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 timespan = Event.timeFormat.format(eventTime) + "-" +
                         Event.timeFormat.format(endTime);
 
-                itemList.add(new EventItem(name, timespan));
+                itemList.add(new EventItem(name, timespan, j));
             }
         }
         return itemList;
@@ -727,7 +1218,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 name = task.getName() + " (" + task.getTimeToComplete() +
                         " " + getString(R.string.minutes_to_complete) + ")";
 
-                itemList.add(new TaskItem(name));
+                itemList.add(new TaskItem(name, j));
             }
         }
 
@@ -741,7 +1232,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * @return always true
      */
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
@@ -781,14 +1272,27 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // Remove the given task from the task dependency graph
         mVF.setDisplayedChild(0);
         if (action == 0) {
+            if (day == -1 || mTaskSchedule.get(day).size() <= position) {
+                mVF.setDisplayedChild(1);
+                return;
+            }
+
             Complete(mTaskSchedule.get(day).get(position), true, true);
         }
         // Remove the given task from the task dependency graph without completion time dialog
         if (action == 1) {
+            if (day == -1 || mTaskSchedule.get(day).size() <= position) {
+                mVF.setDisplayedChild(1);
+                return;
+            }
             Complete(mTaskSchedule.get(day).get(position), false, true);
         }
         // Remove the given event from the schedule and re-optimize.
         if (action == 2) {
+            if (day == -1 || mEventSchedule.get(day).size() <= position) {
+                mVF.setDisplayedChild(1);
+                return;
+            }
             mEventSchedule.get(day).remove(position);
             Optimize(true);
         }

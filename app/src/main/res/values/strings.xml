@@ -125,4 +125,6 @@
     <string name="no_days">Make sure to enter a list of days to recur on</string>
     <string name="date_list_format">Make sure dates formatted as \"1,2,3\"</string>
     <string name="months_format">Make sure to enter months in format \"Jan,Feb,Mar\"</string>
+    <string name="no_items">You have no tasks or events scheduled.\nWhy don\'t you add one using the plus button?</string>
+    <string name="empty_icon_desc">A calendar with a pencil in front of it.</string>
 </resources>

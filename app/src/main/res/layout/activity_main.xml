@@ -32,6 +32,7 @@
 
             <include android:id="@+id/loading" layout="@layout/activity_optimizing" />
             <include android:id="@+id/recycler_layout" layout="@layout/content_main" />
+            <include android:id="@+id/no_entries" layout="@layout/activity_no_entries" />
 
         </ViewFlipper>
     </LinearLayout>

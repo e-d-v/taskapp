@@ -938,6 +938,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             // When the FAB is clicked, run intentAddItem to open the AddItem Activity
             mBinding.fab.setOnClickListener(view -> intentAddItem());
 
+
+
             // Make visible the main content
             mVF = findViewById(R.id.vf);
             mVF.setDisplayedChild(1);

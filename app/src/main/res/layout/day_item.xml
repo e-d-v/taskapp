@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:padding="6dp"
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
     android:layout_height="wrap_content">
 
     <TextView
@@ -11,18 +13,21 @@
         android:layout_height="wrap_content"
         android:text="February 24th, 2022"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textSize="@dimen/subheader_height"
         android:textColor="@color/black"
-        android:layout_marginBottom="2dp"
-        android:textStyle="bold" />
+        android:layout_marginBottom="4dp"
+        android:textStyle="bold"
+        tools:ignore="HardcodedText" />
 
     <TextView
         android:id="@+id/eventHeader"
+        style="@style/subheader"
         android:text="@string/events"
-        android:visibility="visible"
-        style="@style/subheader"/>
+        android:visibility="visible" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/eventRecycler"
+        android:layout_marginBottom="8dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
@@ -34,6 +39,7 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/taskRecycler"
+        android:layout_marginBottom="8dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 

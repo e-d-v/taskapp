@@ -9,6 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -98,6 +99,11 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         holder.mTaskRecyclerView.setAdapter(taskItemAdapter);
         holder.mEventRecyclerView.setRecycledViewPool(mEventViewPool);
         holder.mTaskRecyclerView.setRecycledViewPool(mTaskViewPool);
+
+        holder.mTaskRecyclerView.addItemDecoration(new DividerItemDecoration
+                (holder.mTaskRecyclerView.getContext(), DividerItemDecoration.VERTICAL));
+        holder.mEventRecyclerView.addItemDecoration(new DividerItemDecoration
+                (holder.mEventRecyclerView.getContext(), DividerItemDecoration.VERTICAL));
     }
 
     /**

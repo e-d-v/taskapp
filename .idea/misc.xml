@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/drawable/ic_baseline_edit_calendar_48.xml" value="0.44" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/drawable/ic_checked_button.xml" value="0.4185" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/drawable/ic_delete_24.xml" value="0.474" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/drawable/ic_unchecked_button.xml" value="0.4185" />
@@ -23,7 +24,7 @@
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/fragment_task_entry.xml" value="0.5442708333333334" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/fragment_weekly_recur.xml" value="0.5583333333333333" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/fragment_yearly_recur.xml" value="0.5583333333333333" />
-        <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/task_item.xml" value="1.0" />
+        <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/task_item.xml" value="0.6458112407211029" />
       </map>
     </option>
   </component>

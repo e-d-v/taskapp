@@ -45,7 +45,7 @@
     <string name="complete_task">Complete Task</string>
     <string name="schedule_for">Schedule for\u0020</string>
     <string name="minutes">\u0020minutes)</string>
-    <string name="minutes_to_complete">minutes to complete</string>
+    <string name="minutes_to_complete">(%d minutes to complete)</string>
     <string name="ok">OK</string>
     <string name="name_empty_task">Make sure to enter a name for the task.</string>
     <string name="ecd_empty_task">Make sure to enter an earliest completion date for the task.</string>

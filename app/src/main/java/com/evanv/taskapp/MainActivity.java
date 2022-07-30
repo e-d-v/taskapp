@@ -1052,7 +1052,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // Make visible the main content
         mVF = findViewById(R.id.vf);
 
-        if (mTaskSchedule.size() != 0 && mEventSchedule.size() != 0) {
+        if (mTaskSchedule.size() != 0 || mEventSchedule.size() != 0) {
             mVF.setDisplayedChild(1);
         }
         else {
@@ -1253,8 +1253,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 Task task = mTaskSchedule.get(index).get(j);
 
                 // Create the name in the format NAME (TTC minutes to complete)
-                name = task.getName() + " (" + task.getTimeToComplete() +
-                        " " + getString(R.string.minutes_to_complete) + ")";
+//                name = task.getName() + " (" + task.getTimeToComplete() +
+//                        " " + getString(R.string.minutes_to_complete) + ")";
+
+                name = task.getName() + "\n" + String.format(getString(R.string.minutes_to_complete),
+                        task.getTimeToComplete());
 
                 itemList.add(new TaskItem(name, j));
             }
@@ -1335,7 +1338,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             Optimize(true);
         }
 
-        if (mTaskSchedule.size() != 0 && mEventSchedule.size() != 0) {
+        if (mTaskSchedule.size() != 0 || mEventSchedule.size() != 0) {
             mVF.setDisplayedChild(1);
         }
         else {

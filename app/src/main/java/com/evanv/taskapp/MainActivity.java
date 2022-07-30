@@ -18,10 +18,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
 
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.evanv.taskapp.databinding.ActivityMainBinding;
+import com.google.android.material.behavior.HideBottomViewOnScrollBehavior;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import android.view.Menu;
 import android.view.MenuItem;
@@ -69,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     private ViewFlipper mVF; // Swaps between loading screen and recycler
     // Allows data to be pulled from activity
     private ActivityResultLauncher<Intent> mStartForResult;
+    // Allows us to manually show FAB when task/event completed/deleted.
 
     /**
      * Removes a task from the task dependency graph, while asking the user how long it took to
@@ -732,6 +736,34 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         Optimizer opt = new Optimizer();
         opt.Optimize(mTasks, mTaskSchedule, mEventSchedule, mStartDate, mTodayTime);
 
+        // Delete any empty lists at the end of the taskSchedule.
+        int taskLowIndex = mTaskSchedule.size();
+        for (int i = mTaskSchedule.size() - 1; i >= 0; i--) {
+            if (mTaskSchedule.get(i).size() != 0) {
+                break;
+            }
+            else {
+                taskLowIndex--;
+            }
+        }
+        if (mTaskSchedule.size() > taskLowIndex) {
+            mTaskSchedule.subList(taskLowIndex, mTaskSchedule.size()).clear();
+        }
+
+        // Delete any empty lists at the end of the eventSchedule.
+        int eventLowIndex = mEventSchedule.size();
+        for (int i = mEventSchedule.size() - 1; i >= 0; i--) {
+            if (mEventSchedule.get(i).size() != 0) {
+                break;
+            }
+            else {
+                eventLowIndex--;
+            }
+        }
+        if (mEventSchedule.size() > eventLowIndex) {
+            mEventSchedule.subList(eventLowIndex, mEventSchedule.size()).clear();
+        }
+
         // As the Optimizer may have changed tasks' dates, we must refresh the recycler
         if (refresh) {
             mDayItemAdapter.mDayItemList = DayItemList();
@@ -1019,7 +1051,13 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
         // Make visible the main content
         mVF = findViewById(R.id.vf);
-        mVF.setDisplayedChild(1);
+
+        if (mTaskSchedule.size() != 0 || mEventSchedule.size() != 0) {
+            mVF.setDisplayedChild(1);
+        }
+        else {
+            mVF.setDisplayedChild(2);
+        }
 
         mStartForResult = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -1215,8 +1253,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 Task task = mTaskSchedule.get(index).get(j);
 
                 // Create the name in the format NAME (TTC minutes to complete)
-                name = task.getName() + " (" + task.getTimeToComplete() +
-                        " " + getString(R.string.minutes_to_complete) + ")";
+//                name = task.getName() + " (" + task.getTimeToComplete() +
+//                        " " + getString(R.string.minutes_to_complete) + ")";
+
+                name = task.getName() + "\n" + String.format(getString(R.string.minutes_to_complete),
+                        task.getTimeToComplete());
 
                 itemList.add(new TaskItem(name, j));
             }
@@ -1296,6 +1337,22 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             mEventSchedule.get(day).remove(position);
             Optimize(true);
         }
-        mVF.setDisplayedChild(1);
+
+        if (mTaskSchedule.size() != 0 || mEventSchedule.size() != 0) {
+            mVF.setDisplayedChild(1);
+        }
+        else {
+            mVF.setDisplayedChild(2);
+        }
+
+        //noinspection unchecked
+        HideBottomViewOnScrollBehavior<FloatingActionButton> fabBehavior =
+                (HideBottomViewOnScrollBehavior<FloatingActionButton>)
+                        ((CoordinatorLayout.LayoutParams) mBinding.fab.getLayoutParams())
+                                .getBehavior();
+
+        if (fabBehavior != null) {
+            fabBehavior.slideUp(mBinding.fab);
+        }
     }
 }

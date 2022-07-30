@@ -48,7 +48,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
         else {
             header.setVisibility(View.VISIBLE);
             header.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT, (int) res.getDimension(R.dimen.subheader_height)));
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         }
     }
 

@@ -6,8 +6,10 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -144,6 +147,38 @@ public class TaskEntry extends Fragment implements ItemEntry {
                 builder.create();
                 builder.show();
             }
+        });
+
+        EditText editTextECD = view.findViewById(R.id.editTextECD);
+        EditText editTextDueDate = view.findViewById(R.id.editTextDueDate);
+
+        editTextECD.setOnClickListener(view1 -> {
+            Date maxDate = null;
+            if (!editTextDueDate.getText().toString().equals("")) {
+                try {
+                    maxDate = Task.dateFormat.parse(editTextDueDate.getText().toString());
+                } catch (ParseException e) {
+                    Log.e(this.getTag(), e.getMessage());
+                }
+            }
+
+            DialogFragment newFragment = new DatePickerFragment(editTextECD, getString(R.string.ecd),
+                    new Date(), maxDate);
+            newFragment.show(getParentFragmentManager(), "datePicker");
+        });
+        editTextDueDate.setOnClickListener(view1 -> {
+            Date minDate = new Date();
+            if (!editTextECD.getText().toString().equals("")) {
+                try {
+                    minDate = Task.dateFormat.parse(editTextECD.getText().toString());
+                } catch (ParseException e) {
+                    Log.e(this.getTag(), e.getMessage());
+                }
+            }
+
+            DialogFragment newFragment = new DatePickerFragment(editTextDueDate,
+                    getString(R.string.due_date), minDate, null);
+            newFragment.show(getParentFragmentManager(), "datePicker");
         });
 
         // Inflate the layout for this fragment
@@ -329,4 +364,5 @@ public class TaskEntry extends Fragment implements ItemEntry {
 
         return toReturn;
     }
+
 }

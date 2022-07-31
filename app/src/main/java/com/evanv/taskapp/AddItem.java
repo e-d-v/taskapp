@@ -3,6 +3,8 @@ package com.evanv.taskapp;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -74,7 +76,7 @@ public class AddItem extends AppCompatActivity {
 
         // If task was displayed, set the title and the buttons properly.
         if (mTaskDisplayed) {
-            getSupportActionBar().setTitle(getString(R.string.add_event));
+            Objects.requireNonNull(getSupportActionBar()).setTitle(getString(R.string.add_event));
             mTaskDisplayed = false;
 
             ignoreCheckedChanged = true;
@@ -84,7 +86,7 @@ public class AddItem extends AppCompatActivity {
         }
         // If event was displayed, set the title and the buttons properly.
         else {
-            getSupportActionBar().setTitle(getString(R.string.add_task));
+            Objects.requireNonNull(getSupportActionBar()).setTitle(getString(R.string.add_task));
             mTaskDisplayed = true;
 
             ignoreCheckedChanged = true;

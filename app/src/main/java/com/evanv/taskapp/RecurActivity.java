@@ -1,6 +1,7 @@
 package com.evanv.taskapp;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -8,6 +9,7 @@ import androidx.fragment.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -19,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.ParseException;
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -41,6 +44,7 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
     public static final String EXTRA_VAL_NUM = "com.evanv.taskapp.RecurActivity.extra.val.NUM";
     // Key for the value representing the date the event stops recurring on / number of recurrences
     public static final String EXTRA_UNTIL = "com.evanv.taskapp.RecurActivity.extra.UNTIL";
+    private long time; // The time the user has entered
 
     /**
      * Runs on activity creation. Initializes fragment, spinner, and their interaction.
@@ -52,12 +56,17 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recur);
 
+        time = getIntent().getLongExtra(EventEntry.EXTRA_TIME, (new Date()).getTime());
+
         // Set the displayed fragment to no recurrence
         Fragment fragment = new NoRecurFragment();
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
         transaction.replace(R.id.contentFragment, fragment);
         transaction.commit();
+
+        Objects.requireNonNull(getSupportActionBar()).setTitle(R.string.set_recur_interval);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Set up the spinner to change fragments on user input
         Spinner spinner = findViewById(R.id.reoccurSpinner);
@@ -191,13 +200,27 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
 
             if (pos == 0) {
                 et.setHint(R.string.recur_times);
-                et.setInputType(InputType.TYPE_CLASS_NUMBER);
                 inputShown = true;
+
+                et.setCursorVisible(true);
+                et.setFocusable(true);
+                et.setInputType(InputType.TYPE_CLASS_NUMBER);
+                et.setOnClickListener(null);
             }
             else if (pos == 1) {
-                et.setHint(getString(R.string.recur_until) + " " + getString(R.string.recur_until_2));
-                et.setInputType(InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE);
+                et.setHint(getString(R.string.recur_until));
                 inputShown = false;
+
+                et.setCursorVisible(false);
+                et.setFocusable(false);
+                et.setInputType(InputType.TYPE_NULL);
+                et.setOnClickListener(v -> {
+                    Date minDate = new Date(time);
+
+                    DialogFragment newFragment = new DatePickerFragment(et,
+                            getString(R.string.recur_until), minDate, null);
+                    newFragment.show(getSupportFragmentManager(), "datePicker");
+                });
             }
         }
     }

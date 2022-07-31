@@ -48,7 +48,6 @@
         android:inputType="number"
         android:id="@+id/recurTSET"/>
 
-
     <FrameLayout
         app:layout_constraintTop_toBottomOf="@id/recurTSET"
         app:layout_constraintBottom_toTopOf="@id/submitButton"

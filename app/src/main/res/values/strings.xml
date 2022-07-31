@@ -14,8 +14,8 @@
     <string name="tasks">Tasks</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="task_name">Task Name</string>
-    <string name="ecd">Earliest Completion Date (MM/DD/YY)</string>
-    <string name="due_date">Due Date (MM/DD/YY)</string>
+    <string name="ecd">Earliest Completion Date</string>
+    <string name="due_date">Due Date</string>
     <string name="ttc">Time to Complete (in minutes)</string>
     <string name="parent_tasks">Parent Tasks:</string>
     <string name="number_of_reoccurrences">Number of Recurrences</string>
@@ -116,7 +116,7 @@
     <string name="recur_on">Recur on %s %s</string>
     <string name="recur_on_of">Recur on the %s of %s</string>
     <string name="recur_times">Recur _ times</string>
-    <string name="recur_until">Recur until _</string>
+    <string name="recur_until">Recur until</string>
     <string name="recur_until_2">(MM/DD/YY)</string>
     <string name="days">days</string>
     <string name="no_day_selected">Make sure to choose at least one day to recur on.</string>
@@ -129,4 +129,6 @@
     <string name="empty_icon_desc">A calendar with a pencil in front of it.</string>
     <string name="add_task">Add Task</string>
     <string name="add_event">Add Event</string>
+    <string name="set_recur_interval">Set Recurrence Interval</string>
+    <string name="generic_date">%d/%d/%d</string>
 </resources>

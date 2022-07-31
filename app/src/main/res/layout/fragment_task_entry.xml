@@ -21,7 +21,9 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="@string/ecd"
-        android:inputType="date" />
+        android:cursorVisible="false"
+        android:focusable="false"
+        android:inputType="none"/>
 
     <EditText
         android:id="@+id/editTextDueDate"
@@ -29,7 +31,9 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="@string/due_date"
-        android:inputType="date" />
+        android:cursorVisible="false"
+        android:focusable="false"
+        android:inputType="none"/>
 
     <EditText
         android:id="@+id/editTextTTC"

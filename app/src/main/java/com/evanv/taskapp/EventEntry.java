@@ -219,12 +219,6 @@ public class EventEntry extends Fragment implements ItemEntry {
         mEditTextECD = toReturn.findViewById(R.id.editTextECD);
         mEditTextLength = toReturn.findViewById(R.id.editTextLength);
 
-        if (savedInstanceState != null) {
-            mEditTextEventName.setText(savedInstanceState.getString(AddItem.EXTRA_NAME));
-            mEditTextECD.setText(savedInstanceState.getString(AddItem.EXTRA_START));
-            mEditTextLength.setText(savedInstanceState.getString(AddItem.EXTRA_TTC));
-        }
-
         // Add the default recurrence interval (none)
         mRecur = new Bundle();
         mRecur.putString(RecurInput.EXTRA_TYPE, NoRecurFragment.EXTRA_VAL_TYPE);
@@ -235,20 +229,6 @@ public class EventEntry extends Fragment implements ItemEntry {
 
         // Inflate the layout for this fragment
         return toReturn;
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        // Get user input from views
-        String eventName = mEditTextEventName.getText().toString();
-        String ecd = mEditTextECD.getText().toString();
-        String length = mEditTextLength.getText().toString();
-
-        outState.putString(AddItem.EXTRA_NAME, eventName);
-        outState.putString(AddItem.EXTRA_START, ecd);
-        outState.putString(AddItem.EXTRA_TTC, length);
     }
 
     private void intentRecur() {
@@ -292,7 +272,6 @@ public class EventEntry extends Fragment implements ItemEntry {
         // Get the month
         String monthString = getResources().getStringArray(R.array.months)[month];
         intent.putExtra(EXTRA_MONTH, monthString);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         // Get the time
         intent.putExtra(EXTRA_TIME, time);

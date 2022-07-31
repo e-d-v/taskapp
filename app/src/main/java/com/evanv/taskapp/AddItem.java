@@ -3,11 +3,14 @@ package com.evanv.taskapp;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
+import androidx.appcompat.widget.Toolbar;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
@@ -57,6 +60,40 @@ public class AddItem extends AppCompatActivity {
     // Key for the number of reoccurrences for the task being added
     public static final String EXTRA_RECUR = "com.evanv.taskapp.extra.RECUR";
 
+    private boolean mTaskDisplayed;       // true if TaskEntry fragment is displayed
+    private RadioGroup mRGroup;           // Task/Event selector
+    private boolean ignoreCheckedChanged; // If check was changed by back press
+
+    /**
+     * When back button is pressed, change views that are impacted by the change in fragment to
+     * have the correct values.
+     */
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        // If task was displayed, set the title and the buttons properly.
+        if (mTaskDisplayed) {
+            getSupportActionBar().setTitle(getString(R.string.add_event));
+            mTaskDisplayed = false;
+
+            ignoreCheckedChanged = true;
+            ((RadioButton)mRGroup.getChildAt(0)).setChecked(false);
+            ((RadioButton)mRGroup.getChildAt(1)).setChecked(true);
+            ignoreCheckedChanged = false;
+        }
+        // If event was displayed, set the title and the buttons properly.
+        else {
+            getSupportActionBar().setTitle(getString(R.string.add_task));
+            mTaskDisplayed = true;
+
+            ignoreCheckedChanged = true;
+            ((RadioButton)mRGroup.getChildAt(0)).setChecked(true);
+            ((RadioButton)mRGroup.getChildAt(1)).setChecked(false);
+            ignoreCheckedChanged = false;
+        }
+    }
+
     /**
      * Runs when Activity starts. Most importantly initializes the fragments and sets up the radio
      * group to change fragment when a different task/event is selected.
@@ -79,27 +116,41 @@ public class AddItem extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController,
                 mAppBarConfiguration);
 
+        binding.toolbar.setTitle(getString(R.string.add_task));
+
         // When FAB is clicked, run submit() method
         binding.fab.setOnClickListener(view -> submit());
 
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+
+        mTaskDisplayed = true;
+        ignoreCheckedChanged = false;
+
         // When radio button is changed, switch to respective fragment
-        RadioGroup rGroup = findViewById(R.id.radioGroupTaskEvent);
-        rGroup.setOnCheckedChangeListener((group, checkedId) -> {
+        mRGroup = findViewById(R.id.radioGroupTaskEvent);
+        mRGroup.setOnCheckedChangeListener((group, checkedId) -> {
             RadioButton checkedRadioButton = group.findViewById(checkedId);
             boolean isChecked = checkedRadioButton.isChecked();
-            if (isChecked)
+            if (isChecked && !ignoreCheckedChanged)
             {
                 // If event button is checked, switch from taskEntry to eventEntry
                 if (checkedRadioButton.getId() == R.id.radioButtonEvent) {
                     navController.navigate(R.id.action_taskEntry_to_eventEntry);
+                    binding.toolbar.setTitle(getString(R.string.add_event));
+
+                    mTaskDisplayed = false;
                 }
                 // If task button is checked, switch from eventEntry to taskEntry
                 else {
                     navController.navigate(R.id.action_eventEntry_to_taskEntry);
+                    binding.toolbar.setTitle(getString(R.string.add_task));
+
+                    mTaskDisplayed = true;
                 }
             }
+            // Make sure up button still pressed
+            Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         });
-
     }
 
     /**
@@ -123,18 +174,5 @@ public class AddItem extends AppCompatActivity {
             setResult(RESULT_OK, replyIntent);
             finish();
         }
-    }
-
-    /**
-     * When navigated up, use the navController instead of default android behavior
-     *
-     * @return the value returned by the support library's navigation functions
-     */
-    @Override
-    public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this,
-                R.id.nav_host_fragment_content_add_item);
-        return NavigationUI.navigateUp(navController, mAppBarConfiguration)
-                || super.onSupportNavigateUp();
     }
 }

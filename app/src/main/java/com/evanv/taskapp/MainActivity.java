@@ -723,6 +723,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             // Show recycler as Optimize is finished
             mVF.setDisplayedChild(1);
         }
+        else {
+            if (mTaskSchedule.size() != 0 || mEventSchedule.size() != 0) {
+                mVF.setDisplayedChild(1);
+            }
+            else {
+                mVF.setDisplayedChild(2);
+            }
+        }
     }
 
     /**
@@ -774,7 +782,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     /**
      * Runs on the start of the app. Most importantly it loads the user data from the file.
      *
-     * @param savedInstanceState Not used. (Except internally by Android support libraries maybe)
+     * @param savedInstanceState Not used.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -972,7 +980,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
             // Make visible the main content
             mVF = findViewById(R.id.vf);
-            mVF.setDisplayedChild(1);
+            if (mTaskSchedule.size() != 0 || mEventSchedule.size() != 0) {
+                mVF.setDisplayedChild(1);
+            }
+            else {
+                mVF.setDisplayedChild(2);
+            }
 
             mStartForResult = registerForActivityResult(
                     new ActivityResultContracts.StartActivityForResult(),

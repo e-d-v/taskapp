@@ -127,4 +127,6 @@
     <string name="months_format">Make sure to enter months in format \"Jan,Feb,Mar\"</string>
     <string name="no_items">You have no tasks or events scheduled.\nWhy don\'t you add one using the plus button?</string>
     <string name="empty_icon_desc">A calendar with a pencil in front of it.</string>
+    <string name="add_task">Add Task</string>
+    <string name="add_event">Add Event</string>
 </resources>

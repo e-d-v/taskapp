@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import java.text.ParseException;
@@ -179,6 +180,29 @@ public class TaskEntry extends Fragment implements ItemEntry {
             DialogFragment newFragment = new DatePickerFragment(editTextDueDate,
                     getString(R.string.due_date), minDate, null, false);
             newFragment.show(getParentFragmentManager(), "datePicker");
+        });
+
+        // Initialize the information buttons to help the user understand the fields.
+        ImageButton infoECD = view.findViewById(R.id.ecdInfoButton);
+        ImageButton infoDD = view.findViewById(R.id.ddInfoButton);
+        ImageButton infoTTC = view.findViewById(R.id.ttcInfoButton);
+        infoECD.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(R.string.task_ecd_info);
+            builder.setTitle(R.string.ecd);
+            builder.show();
+        });
+        infoDD.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(R.string.task_dd_info);
+            builder.setTitle(R.string.due_date);
+            builder.show();
+        });
+        infoTTC.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(R.string.task_ttc_info);
+            builder.setTitle(R.string.ttc);
+            builder.show();
         });
 
         // Inflate the layout for this fragment

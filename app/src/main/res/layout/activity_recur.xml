@@ -24,18 +24,22 @@
         app:layout_constraintTop_toBottomOf="@id/reoccurHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+
         <Spinner
-            android:layout_marginTop="4dp"
-            android:entries="@array/reoccur_names"
             android:id="@+id/reoccurSpinner"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <Spinner
+            android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:entries="@array/timespans"
+            android:entries="@array/reoccur_names"
+            tools:ignore="TouchTargetSizeCheck" />
+
+        <Spinner
             android:id="@+id/reoccurSpanSpinner"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:entries="@array/timespans"
+            tools:ignore="TouchTargetSizeCheck" />
     </LinearLayout>
 
     <EditText
@@ -46,7 +50,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="number"
-        android:id="@+id/recurTSET"/>
+        android:id="@+id/recurTSET"
+        android:importantForAutofill="no" />
 
     <FrameLayout
         app:layout_constraintTop_toBottomOf="@id/recurTSET"
@@ -63,6 +68,6 @@
         app:layout_constraintStart_toStartOf="parent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Submit"/>
+        android:text="@string/submit"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

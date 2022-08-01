@@ -12,7 +12,8 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:padding="6dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        tools:ignore="UselessParent">
         <ProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -3,6 +3,7 @@ package com.evanv.taskapp;
 import static com.evanv.taskapp.Task.clearDate;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
@@ -17,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.ibm.icu.text.RuleBasedNumberFormat;
@@ -230,6 +232,22 @@ public class EventEntry extends Fragment implements ItemEntry {
         mEditTextECD.setOnClickListener(v -> {
             new DatePickerFragment(mEditTextECD, getString(R.string.start_time), new Date(),
                     null, true).show(getParentFragmentManager(), getTag());
+        });
+
+        // Initialize the information buttons to help the user understand the fields.
+        ImageButton infoECD = toReturn.findViewById(R.id.ecdInfoButton);
+        ImageButton infoLength = toReturn.findViewById(R.id.lengthInfoButton);
+        infoECD.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(R.string.event_ecd_info);
+            builder.setTitle(R.string.start_time);
+            builder.show();
+        });
+        infoLength.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(R.string.event_length_info);
+            builder.setTitle(R.string.length);
+            builder.show();
         });
 
         // Inflate the layout for this fragment

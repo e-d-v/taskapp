@@ -13,26 +13,67 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
+        android:textColorHint="#757575"
         android:hint="@string/event_name"
-        android:inputType="textShortMessage" />
+        android:inputType="textShortMessage"
+        android:minHeight="48dp"
+        android:importantForAutofill="no" />
 
-    <EditText
-        android:id="@+id/editTextECD"
+    <LinearLayout
+        android:gravity="center_vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="@string/start_time"
-        android:cursorVisible="false"
-        android:focusable="false"
-        android:inputType="none"/>
+        android:layout_height="wrap_content">
 
-    <EditText
-        android:id="@+id/editTextLength"
+        <EditText
+            android:id="@+id/editTextECD"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:cursorVisible="false"
+            android:ems="10"
+            android:focusable="false"
+            android:hint="@string/start_time"
+            android:inputType="none"
+            android:textColorHint="#757575"
+            tools:ignore="TouchTargetSizeCheck"
+            android:importantForAutofill="no" />
+
+        <ImageButton
+            android:id="@+id/ecdInfoButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_weight="0"
+            android:backgroundTint="@color/white"
+            android:contentDescription="@string/info_button"
+            android:src="@drawable/ic_outline_info_24"
+            tools:ignore="DuplicateSpeakableTextCheck" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:gravity="center_vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="@string/length"
-        android:inputType="number" />
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/editTextLength"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:hint="@string/length"
+            android:inputType="number"
+            android:minHeight="48dp"
+            android:textColorHint="#757575"
+            android:importantForAutofill="no" />
+        <ImageButton
+            android:backgroundTint="@color/white"
+            android:src="@drawable/ic_outline_info_24"
+            android:id="@+id/lengthInfoButton"
+            android:layout_weight="0"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/info_button"/>
+    </LinearLayout>
 
     <Button
         android:layout_width="wrap_content"

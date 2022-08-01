@@ -218,7 +218,7 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
                     Date minDate = new Date(time);
 
                     DialogFragment newFragment = new DatePickerFragment(et,
-                            getString(R.string.recur_until), minDate, null);
+                            getString(R.string.recur_until), minDate, null, false);
                     newFragment.show(getSupportFragmentManager(), "datePicker");
                 });
             }

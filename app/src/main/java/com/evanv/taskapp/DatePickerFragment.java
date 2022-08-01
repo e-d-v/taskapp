@@ -24,6 +24,8 @@ public class DatePickerFragment extends DialogFragment
     private final String mTitle; // The text for the title of the dialog
     private final Date mMinDate; // The earliest date user can choose
     private final Date mMaxDate; // The latest date user can choose
+    // True if time is needed, false if not.
+    private final boolean mTP;
 
     /**
      * Creates a DatePickerFragment for a dialog that puts its output in the given EditText,
@@ -33,12 +35,14 @@ public class DatePickerFragment extends DialogFragment
      * @param title The text for the title of the dialog.
      * @param minDate The minimum date to allow user to select
      * @param maxDate The latest date to allow user to select, null if not needed
+     * @param tp true if timepicker should be shown
      */
-    public DatePickerFragment(EditText et, String title, Date minDate, Date maxDate) {
+    public DatePickerFragment(EditText et, String title, Date minDate, Date maxDate, boolean tp) {
         mET = et;
         mTitle = title;
         mMinDate = minDate;
         mMaxDate = maxDate;
+        mTP = tp;
     }
 
     /**
@@ -72,5 +76,10 @@ public class DatePickerFragment extends DialogFragment
         // Do something with the date chosen by the user
 
         mET.setText(String.format(getString(R.string.generic_date), month + 1, day, year - 2000));
+
+        if (mTP) {
+            new TimePickerFragment(mET, "Choose start time").show(getParentFragmentManager(),
+                    getTag());
+        }
     }
 }

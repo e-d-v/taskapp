@@ -163,7 +163,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
             }
 
             DialogFragment newFragment = new DatePickerFragment(editTextECD, getString(R.string.ecd),
-                    new Date(), maxDate);
+                    new Date(), maxDate, false);
             newFragment.show(getParentFragmentManager(), "datePicker");
         });
         editTextDueDate.setOnClickListener(view1 -> {
@@ -177,7 +177,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
             }
 
             DialogFragment newFragment = new DatePickerFragment(editTextDueDate,
-                    getString(R.string.due_date), minDate, null);
+                    getString(R.string.due_date), minDate, null, false);
             newFragment.show(getParentFragmentManager(), "datePicker");
         });
 

@@ -22,7 +22,9 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="@string/start_time"
-        android:inputType="textShortMessage" />
+        android:cursorVisible="false"
+        android:focusable="false"
+        android:inputType="none"/>
 
     <EditText
         android:id="@+id/editTextLength"

@@ -20,7 +20,7 @@
     <string name="parent_tasks">Parent Tasks:</string>
     <string name="number_of_reoccurrences">Number of Recurrences</string>
     <string name="length">Length (in minutes)</string>
-    <string name="start_time">Start Time (MM/DD/YY hh:mm AM/PM)</string>
+    <string name="start_time">Start Time</string>
     <string name="event_name">Event Name</string>
     <string name="title_activity_add_item">AddItem</string>
     <string name="task">Task</string>
@@ -131,4 +131,5 @@
     <string name="add_event">Add Event</string>
     <string name="set_recur_interval">Set Recurrence Interval</string>
     <string name="generic_date">%d/%d/%d</string>
+    <string name="two_words">%s %s</string>
 </resources>

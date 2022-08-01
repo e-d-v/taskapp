@@ -3,15 +3,15 @@ package com.evanv.taskapp;
 import static com.evanv.taskapp.Task.clearDate;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -227,17 +227,25 @@ public class EventEntry extends Fragment implements ItemEntry {
         Button button = toReturn.findViewById(R.id.recurButton);
         button.setOnClickListener(view -> intentRecur());
 
+        mEditTextECD.setOnClickListener(v -> {
+            new DatePickerFragment(mEditTextECD, getString(R.string.start_time), new Date(),
+                    null, true).show(getParentFragmentManager(), getTag());
+        });
+
         // Inflate the layout for this fragment
         return toReturn;
     }
 
+    /**
+     * Launch a new intent to the RecurActivity, and give it the needed information
+     */
     private void intentRecur() {
         // Create a new intent
         Intent intent = new Intent(getActivity(), RecurActivity.class);
 
         // Get the date information the user has entered
         Calendar ecdCal = Calendar.getInstance();
-        long time = 0;
+        long time;
         try {
             String ecdText = mEditTextECD.getText().toString();
             Date ecd = Event.dateFormat.parse(ecdText);
@@ -279,4 +287,5 @@ public class EventEntry extends Fragment implements ItemEntry {
         // Launch RecurActivity
         mStartForResult.launch(intent);
     }
+
 }

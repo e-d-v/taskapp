@@ -3,6 +3,9 @@ package com.evanv.taskapp;
 import static com.evanv.taskapp.Task.clearDate;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -15,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.ibm.icu.text.RuleBasedNumberFormat;
@@ -23,6 +27,7 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 
 
 /**
@@ -41,6 +46,8 @@ public class EventEntry extends Fragment implements ItemEntry {
     public static final String EXTRA_DESC = "com.evanv.taskapp.EventEntry.extra.DESC";
     // The month the user has entered
     public static final String EXTRA_MONTH = "com.evanv.taskapp.EventEntry.extra.MONTH";
+    // The time the user has entered
+    public static final String EXTRA_TIME = "com.evanv.taskapp.EventEntry.extra.TIME";
     // Allows data to be pulled from activity
     private ActivityResultLauncher<Intent> mStartForResult;
 
@@ -63,6 +70,7 @@ public class EventEntry extends Fragment implements ItemEntry {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> handleRecurInput(result.getResultCode(),
                         result.getData()));
+
     }
 
     private void handleRecurInput(int resultCode, Intent data) {
@@ -221,20 +229,46 @@ public class EventEntry extends Fragment implements ItemEntry {
         Button button = toReturn.findViewById(R.id.recurButton);
         button.setOnClickListener(view -> intentRecur());
 
+        mEditTextECD.setOnClickListener(v -> {
+            new DatePickerFragment(mEditTextECD, getString(R.string.start_time), new Date(),
+                    null, true).show(getParentFragmentManager(), getTag());
+        });
+
+        // Initialize the information buttons to help the user understand the fields.
+        ImageButton infoECD = toReturn.findViewById(R.id.ecdInfoButton);
+        ImageButton infoLength = toReturn.findViewById(R.id.lengthInfoButton);
+        infoECD.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(R.string.event_ecd_info);
+            builder.setTitle(R.string.start_time);
+            builder.show();
+        });
+        infoLength.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(R.string.event_length_info);
+            builder.setTitle(R.string.length);
+            builder.show();
+        });
+
         // Inflate the layout for this fragment
         return toReturn;
     }
 
+    /**
+     * Launch a new intent to the RecurActivity, and give it the needed information
+     */
     private void intentRecur() {
         // Create a new intent
         Intent intent = new Intent(getActivity(), RecurActivity.class);
 
         // Get the date information the user has entered
         Calendar ecdCal = Calendar.getInstance();
+        long time;
         try {
             String ecdText = mEditTextECD.getText().toString();
             Date ecd = Event.dateFormat.parse(ecdText);
-            ecdCal.setTime(ecd);
+            time = Objects.requireNonNull(ecd).getTime();
+            ecdCal.setTime(Objects.requireNonNull(ecd));
         } catch (ParseException e) {
             Toast.makeText(getActivity(),
                     R.string.ecd_help_text_format,
@@ -265,7 +299,11 @@ public class EventEntry extends Fragment implements ItemEntry {
         String monthString = getResources().getStringArray(R.array.months)[month];
         intent.putExtra(EXTRA_MONTH, monthString);
 
+        // Get the time
+        intent.putExtra(EXTRA_TIME, time);
+
         // Launch RecurActivity
         mStartForResult.launch(intent);
     }
+
 }

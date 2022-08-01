@@ -15,11 +15,16 @@
         tools:targetApi="31">
         <activity
             android:name=".RecurActivity"
-            android:exported="false" />
+            android:exported="false">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.evanv.taskapp.AddItem" />
+        </activity>
         <activity
             android:name=".OptimizingActivity"
             android:exported="false" />
         <activity
+            android:launchMode="singleTop"
             android:name=".AddItem"
             android:exported="false"
             android:label="@string/title_activity_add_item"

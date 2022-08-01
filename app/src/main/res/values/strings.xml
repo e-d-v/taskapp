@@ -14,13 +14,13 @@
     <string name="tasks">Tasks</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="task_name">Task Name</string>
-    <string name="ecd">Earliest Completion Date (MM/DD/YY)</string>
-    <string name="due_date">Due Date (MM/DD/YY)</string>
+    <string name="ecd">Earliest Completion Date</string>
+    <string name="due_date">Due Date</string>
     <string name="ttc">Time to Complete (in minutes)</string>
     <string name="parent_tasks">Parent Tasks:</string>
     <string name="number_of_reoccurrences">Number of Recurrences</string>
     <string name="length">Length (in minutes)</string>
-    <string name="start_time">Start Time (MM/DD/YY hh:mm AM/PM)</string>
+    <string name="start_time">Start Time</string>
     <string name="event_name">Event Name</string>
     <string name="title_activity_add_item">AddItem</string>
     <string name="task">Task</string>
@@ -116,7 +116,7 @@
     <string name="recur_on">Recur on %s %s</string>
     <string name="recur_on_of">Recur on the %s of %s</string>
     <string name="recur_times">Recur _ times</string>
-    <string name="recur_until">Recur until _</string>
+    <string name="recur_until">Recur until</string>
     <string name="recur_until_2">(MM/DD/YY)</string>
     <string name="days">days</string>
     <string name="no_day_selected">Make sure to choose at least one day to recur on.</string>
@@ -127,4 +127,17 @@
     <string name="months_format">Make sure to enter months in format \"Jan,Feb,Mar\"</string>
     <string name="no_items">You have no tasks or events scheduled.\nWhy don\'t you add one using the plus button?</string>
     <string name="empty_icon_desc">A calendar with a pencil in front of it.</string>
+    <string name="add_task">Add Task</string>
+    <string name="add_event">Add Event</string>
+    <string name="set_recur_interval">Set Recurrence Interval</string>
+    <string name="generic_date">%d/%d/%d</string>
+    <string name="two_words">%s %s</string>
+    <string name="submit">Submit</string>
+    <string name="info_button">info</string>
+    <string name="plus">plus</string>
+    <string name="event_ecd_info">This is the time and date this event starts at.</string>
+    <string name="event_length_info">This is how long the event should last (how many minutes between the start and end of the event).</string>
+    <string name="task_ecd_info">This is the earliest date you can complete this task. For instance, if you can\'t complete this task until after a specific meeting, put the date of that meeting.</string>
+    <string name="task_dd_info">This is the latest date this task can be scheduled for. If this task is due by a specific date, set this to that date.</string>
+    <string name="task_ttc_info">This is your best estimate on how long the task will take to complete. It doesn\'t have to be perfect, a rough estimate is good enough for the algorithm, although the more precise, the better the schedule.</string>
 </resources>

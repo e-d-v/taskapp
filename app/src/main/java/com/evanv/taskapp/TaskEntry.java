@@ -6,15 +6,19 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -144,6 +148,61 @@ public class TaskEntry extends Fragment implements ItemEntry {
                 builder.create();
                 builder.show();
             }
+        });
+
+        EditText editTextECD = view.findViewById(R.id.editTextECD);
+        EditText editTextDueDate = view.findViewById(R.id.editTextDueDate);
+
+        editTextECD.setOnClickListener(view1 -> {
+            Date maxDate = null;
+            if (!editTextDueDate.getText().toString().equals("")) {
+                try {
+                    maxDate = Task.dateFormat.parse(editTextDueDate.getText().toString());
+                } catch (ParseException e) {
+                    Log.e(this.getTag(), e.getMessage());
+                }
+            }
+
+            DialogFragment newFragment = new DatePickerFragment(editTextECD, getString(R.string.ecd),
+                    new Date(), maxDate, false);
+            newFragment.show(getParentFragmentManager(), "datePicker");
+        });
+        editTextDueDate.setOnClickListener(view1 -> {
+            Date minDate = new Date();
+            if (!editTextECD.getText().toString().equals("")) {
+                try {
+                    minDate = Task.dateFormat.parse(editTextECD.getText().toString());
+                } catch (ParseException e) {
+                    Log.e(this.getTag(), e.getMessage());
+                }
+            }
+
+            DialogFragment newFragment = new DatePickerFragment(editTextDueDate,
+                    getString(R.string.due_date), minDate, null, false);
+            newFragment.show(getParentFragmentManager(), "datePicker");
+        });
+
+        // Initialize the information buttons to help the user understand the fields.
+        ImageButton infoECD = view.findViewById(R.id.ecdInfoButton);
+        ImageButton infoDD = view.findViewById(R.id.ddInfoButton);
+        ImageButton infoTTC = view.findViewById(R.id.ttcInfoButton);
+        infoECD.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(R.string.task_ecd_info);
+            builder.setTitle(R.string.ecd);
+            builder.show();
+        });
+        infoDD.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(R.string.task_dd_info);
+            builder.setTitle(R.string.due_date);
+            builder.show();
+        });
+        infoTTC.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(R.string.task_ttc_info);
+            builder.setTitle(R.string.ttc);
+            builder.show();
         });
 
         // Inflate the layout for this fragment
@@ -329,4 +388,5 @@ public class TaskEntry extends Fragment implements ItemEntry {
 
         return toReturn;
     }
+
 }

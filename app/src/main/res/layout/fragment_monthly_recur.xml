@@ -22,11 +22,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
+            android:importantForAutofill="no"
             android:inputType="number"
+            android:minWidth="48dp"
             android:text="1"
             android:textSize="@dimen/subheader_height"
-            tools:ignore="HardcodedText,SpUsage"
-            android:importantForAutofill="no" />
+            tools:ignore="HardcodedText,SpUsage,DuplicateSpeakableTextCheck" />
     </LinearLayout>
 
     <RadioGroup

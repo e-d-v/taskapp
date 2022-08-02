@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -12,16 +13,18 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:padding="6dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        tools:ignore="UseCompoundDrawables,UselessParent">
         <ImageView
             android:src="@drawable/ic_baseline_edit_calendar_48"
             android:layout_width="96dp"
             android:layout_height="96dp"
             android:paddingBottom="6dp"
-            android:contentDescription="@string/empty_icon_desc" />
+            android:contentDescription="@string/empty_icon_desc"
+            app:tint="@color/text_primary" />
 
         <TextView
-            android:textColor="@color/black"
+            android:textColor="@color/text_primary"
             android:textSize="17sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

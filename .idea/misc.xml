@@ -6,10 +6,12 @@
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/drawable/ic_baseline_edit_calendar_48.xml" value="0.44" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/drawable/ic_checked_button.xml" value="0.4185" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/drawable/ic_delete_24.xml" value="0.474" />
+        <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/drawable/ic_outline_info_24.xml" value="0.44" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/drawable/ic_unchecked_button.xml" value="0.4185" />
-        <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/activity_add_item.xml" value="0.25" />
+        <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout-v23/fragment_event_entry.xml" value="0.5583333333333333" />
+        <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/activity_add_item.xml" value="0.5583333333333333" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/activity_main.xml" value="0.4499494438827098" />
-        <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/activity_no_entries.xml" value="0.25" />
+        <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/activity_no_entries.xml" value="0.5583333333333333" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/activity_optimizing.xml" value="0.5583333333333333" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/activity_recur.xml" value="0.5" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/activity_reoccur.xml" value="0.5583333333333333" />

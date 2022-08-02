@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/eventEntryFrag"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -43,7 +44,8 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_weight="0"
-            android:backgroundTint="@color/white"
+            app:tint="@color/text_primary"
+            android:background="@null"
             android:contentDescription="@string/info_button"
             android:src="@drawable/ic_outline_info_24"
             tools:ignore="DuplicateSpeakableTextCheck" />
@@ -66,13 +68,14 @@
             android:textColorHint="#757575"
             android:importantForAutofill="no" />
         <ImageButton
-            android:backgroundTint="@color/white"
+            android:background="@null"
             android:src="@drawable/ic_outline_info_24"
             android:id="@+id/lengthInfoButton"
             android:layout_weight="0"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:contentDescription="@string/info_button"/>
+            android:contentDescription="@string/info_button"
+            app:tint="@color/text_primary" />
     </LinearLayout>
 
     <Button

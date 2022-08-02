@@ -7,6 +7,7 @@
         <item name="android:visibility">visible</item>
         <item name="android:textSize">@dimen/subheader_height</item>
         <item name="android:textAppearance">@style/TextAppearance.AppCompat.Body2</item>
+        <item name="android:textColor">@color/text_primary</item>
     </style>
 
     <style name="item_name">
@@ -15,6 +16,7 @@
         <item name="android:layout_gravity">center_vertical</item>
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/text_primary</item>
     </style>
 
 </resources>

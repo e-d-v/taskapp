@@ -7,6 +7,13 @@ import static com.evanv.taskapp.Task.getDiff;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.EditText;
+import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -14,10 +21,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.text.InputType;
-import android.util.Log;
-
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,12 +28,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.evanv.taskapp.databinding.ActivityMainBinding;
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.EditText;
-import android.widget.Toast;
-import android.widget.ViewFlipper;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -43,7 +40,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Main Activity for the app. Display's the user's schedule of Tasks/Events, while allowing for
@@ -879,8 +875,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 for (int i = 0; i < overdueNames.length; i++) {
                     Task t = overdueTasks.get(i);
                     Date tDate = t.getDueDate();
-                    overdueNames[i] = t.getName() + getString(R.string.due_when) +
-                            Task.dateFormat.format(tDate) + ")";
+                    overdueNames[i] = String.format(getString(R.string.due_when), t.getName(),
+                            Task.dateFormat.format(tDate));
                 }
 
                 // List of indices to tasks that were completed.
@@ -1089,7 +1085,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         ArrayList<String> taskNames = new ArrayList<>();
         for (Task t : mTasks) {
             Date tDate = t.getDueDate();
-            taskNames.add(t.getName() + getString(R.string.due_when) + Task.dateFormat.format(tDate) + ")");
+            taskNames.add(String.format(getString(R.string.due_when), t.getName(),
+                    Task.dateFormat.format(tDate)));
         }
 
         intent.putStringArrayListExtra(EXTRA_TASKS, taskNames);
@@ -1194,8 +1191,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             }
 
             // Set the fields
-            dayString = getString(R.string.schedule_for) + Task.dateFormat.format(curr) + " (" + totalTime +
-                    getString(R.string.minutes) + ":";
+            dayString = String.format(getString(R.string.schedule_for), Task.dateFormat.format(curr),
+                    totalTime);
             events = EventItemList(i);
             tasks = TaskItemList(i);
 
@@ -1266,9 +1263,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 Task task = mTaskSchedule.get(index).get(j);
 
                 // Create the name in the format NAME (TTC minutes to complete)
-//                name = task.getName() + " (" + task.getTimeToComplete() +
-//                        " " + getString(R.string.minutes_to_complete) + ")";
-
                 name = task.getName() + "\n" + String.format(getString(R.string.minutes_to_complete),
                         task.getTimeToComplete());
 

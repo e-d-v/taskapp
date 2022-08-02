@@ -2,17 +2,10 @@ package com.evanv.taskapp;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.TextView;
 
-import androidx.appcompat.widget.Toolbar;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
@@ -30,8 +23,6 @@ import java.util.Objects;
  */
 @SuppressWarnings("unused")
 public class AddItem extends AppCompatActivity {
-    @SuppressWarnings("unused")
-    private AppBarConfiguration mAppBarConfiguration;
 
     // Extras used in the Bundle:
     // Used by both
@@ -82,7 +73,6 @@ public class AddItem extends AppCompatActivity {
             ignoreCheckedChanged = true;
             ((RadioButton)mRGroup.getChildAt(0)).setChecked(false);
             ((RadioButton)mRGroup.getChildAt(1)).setChecked(true);
-            ignoreCheckedChanged = false;
         }
         // If event was displayed, set the title and the buttons properly.
         else {
@@ -92,8 +82,8 @@ public class AddItem extends AppCompatActivity {
             ignoreCheckedChanged = true;
             ((RadioButton)mRGroup.getChildAt(0)).setChecked(true);
             ((RadioButton)mRGroup.getChildAt(1)).setChecked(false);
-            ignoreCheckedChanged = false;
         }
+        ignoreCheckedChanged = false;
     }
 
     /**
@@ -114,7 +104,7 @@ public class AddItem extends AppCompatActivity {
         // Set up fragments/get them to work with the app bar
         NavController navController =
                 Navigation.findNavController(this, R.id.nav_host_fragment_content_add_item);
-        mAppBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
+        AppBarConfiguration mAppBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController,
                 mAppBarConfiguration);
 

@@ -1,6 +1,5 @@
 package com.evanv.taskapp;
 
-import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,15 +26,13 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
 
     /**
      * Constructs an adapter for a given DayItem's task recyclerview
-     *
-     * @param taskItemList the list of tasks for this day
+     *  @param taskItemList the list of tasks for this day
      * @param listener ClickListener to handle button clicks
      * @param day Index into taskSchedule representing this day
      * @param header Header for task list for this day
-     * @param res Resources for this project
      */
     public TaskItemAdapter(List<TaskItem> taskItemList, ClickListener listener, int day,
-                           TextView header, Resources res) {
+                           TextView header) {
         mTaskItemList = taskItemList;
         mListener = listener;
         mDay = day;
@@ -118,8 +115,8 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         private final int DELETE_ID; // ID of the deletion button.
         // Listener that allows easy completion of tasks (see ClickListener)
         final WeakReference<ClickListener> mListenerRef;
-        ImageButton complete;
-        ImageButton delete;
+        final ImageButton complete;
+        final ImageButton delete;
         int mIndex; // Index into taskSchedule.get(day) for this event
 
 

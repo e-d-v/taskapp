@@ -13,7 +13,7 @@ public class DayItem {
     private String mDayString;       // String of the day this DayItem represents
     private List<EventItem> mEvents; // List of EventItems to be displayed in recyclerview
     private List<TaskItem> mTasks;   // List of TaskItems to be displayed in recyclerview
-    private int mIndex;              // Index into task/eventSchedule for this day
+    private final int mIndex;              // Index into task/eventSchedule for this day
 
     /**
      * Returns how many days past today's date this DayItem represents, which can be used as an

@@ -1,11 +1,8 @@
 package com.evanv.taskapp;
 
-import android.content.res.Resources;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -71,11 +68,6 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         // Set the day header to the string inside DayItem
         holder.mDayItemDate.setText(dayItem.getDayString());
 
-        // Allows us to look up height of subheaders
-        Resources res = holder.itemView.getContext().getResources();
-
-        // Hide/show headers depending on if any events/tasks are scheduled for that day
-
         // Initialize the LinearLayoutManagers for the child RecyclerViews
         LinearLayoutManager eventLayoutManager = new LinearLayoutManager(
                 holder.mEventRecyclerView.getContext(), LinearLayoutManager.VERTICAL,
@@ -90,9 +82,9 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
 
         // Initialize the Event/Task Item Adapters
         EventItemAdapter eventItemAdapter = new EventItemAdapter(dayItem.getEvents(), holder,
-                dayItem.getIndex(), holder.mEventHeader, res);
+                dayItem.getIndex(), holder.mEventHeader);
         TaskItemAdapter taskItemAdapter = new TaskItemAdapter(dayItem.getTasks(), holder,
-                dayItem.getIndex(), holder.mTaskHeader, res);
+                dayItem.getIndex(), holder.mTaskHeader);
         holder.mEventRecyclerView.setLayoutManager(eventLayoutManager);
         holder.mTaskRecyclerView.setLayoutManager(taskLayoutManager);
         holder.mEventRecyclerView.setAdapter(eventItemAdapter);

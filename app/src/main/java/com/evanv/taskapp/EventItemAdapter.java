@@ -1,6 +1,5 @@
 package com.evanv.taskapp;
 
-import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,15 +26,13 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
 
     /**
      * Constructs an adapter for a given DayItem's event recyclerview
-     *
-     * @param eventItemList the list of events for this day
+     *  @param eventItemList the list of events for this day
      * @param listener ClickListener to handle button clicks
      * @param header TextView representing the header whose visibility will be changed depending on
-     *               this adapter
-     * @param res Resources used to change style of header
+ *               this adapter
      */
     public EventItemAdapter(List<EventItem> eventItemList, ClickListener listener, int day,
-                            TextView header, Resources res) {
+                            TextView header) {
         mEventItemList = eventItemList;
         mListener = listener;
         mDay = day;
@@ -111,7 +108,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
         // Listener that allows easy completion of tasks (see ClickListener)
         final WeakReference<ClickListener> mListenerRef;
         private final int DELETE_ID; // The ID of the delete button;
-        ImageButton delete;
+        final ImageButton delete;
         int mIndex; // Index into eventSchedule.get(day) for this event
 
         /**

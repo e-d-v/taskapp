@@ -2,9 +2,6 @@ package com.evanv.taskapp;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +10,8 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
+
+import androidx.fragment.app.Fragment;
 
 import java.util.Objects;
 
@@ -114,32 +113,29 @@ public class YearlyRecurFragment extends Fragment implements RecurInput {
         rbMD.setText(String.format(getString(R.string.recur_specific_months), desc));
 
         RadioGroup rg = toReturn.findViewById(R.id.yearlyRadioGroup);
-        rg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                int index = radioGroup.indexOfChild(toReturn.findViewById(i));
-                if (currSelection == 2 || currSelection == 3 || currSelection == 4) {
-                    LinearLayout ll = toReturn.findViewById(R.id.recurMonthsLayout);
-                    ll.setVisibility(View.INVISIBLE);
-                }
-
-                if (currSelection == 4) {
-                    LinearLayout ll = toReturn.findViewById(R.id.recurDaysLayout);
-                    ll.setVisibility(View.INVISIBLE);
-                }
-
-                if (index == 2 || index == 3 || index == 4) {
-                    LinearLayout ll = toReturn.findViewById(R.id.recurMonthsLayout);
-                    ll.setVisibility(View.VISIBLE);
-                }
-
-                if (index == 4) {
-                    LinearLayout ll = toReturn.findViewById(R.id.recurDaysLayout);
-                    ll.setVisibility(View.VISIBLE);
-                }
-
-                currSelection = index;
+        rg.setOnCheckedChangeListener((radioGroup, i) -> {
+            int index = radioGroup.indexOfChild(toReturn.findViewById(i));
+            if (currSelection == 2 || currSelection == 3 || currSelection == 4) {
+                LinearLayout ll = toReturn.findViewById(R.id.recurMonthsLayout);
+                ll.setVisibility(View.INVISIBLE);
             }
+
+            if (currSelection == 4) {
+                LinearLayout ll = toReturn.findViewById(R.id.recurDaysLayout);
+                ll.setVisibility(View.INVISIBLE);
+            }
+
+            if (index == 2 || index == 3 || index == 4) {
+                LinearLayout ll = toReturn.findViewById(R.id.recurMonthsLayout);
+                ll.setVisibility(View.VISIBLE);
+            }
+
+            if (index == 4) {
+                LinearLayout ll = toReturn.findViewById(R.id.recurDaysLayout);
+                ll.setVisibility(View.VISIBLE);
+            }
+
+            currSelection = index;
         });
 
         // Inflate the layout for this fragment

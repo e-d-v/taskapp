@@ -1,24 +1,21 @@
 package com.evanv.taskapp;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -92,7 +89,6 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
 
     private void submit() {
         // Get the information from the displayed fragment
-        FragmentManager fm = getSupportFragmentManager();
         RecurInput input = (RecurInput) getSupportFragmentManager().findFragmentByTag(TAG_CURR_FRAG);
         Bundle toReturn = Objects.requireNonNull(input).getRecurInfo();
 

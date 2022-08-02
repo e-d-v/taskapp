@@ -1,12 +1,11 @@
 package com.evanv.taskapp;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.fragment.app.Fragment;
 
 /**
  * Fragment that represents no recurrences
@@ -26,6 +25,7 @@ public class NoRecurFragment extends Fragment implements RecurInput {
     /**
      * Creates a new NoRecurFragment
      */
+    @SuppressWarnings("unused")
     public static NoRecurFragment newInstance() {
         NoRecurFragment fragment = new NoRecurFragment();
         Bundle args = new Bundle();

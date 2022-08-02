@@ -10,12 +10,12 @@ import android.os.Bundle;
  */
 public interface RecurInput {
     // Represents the field representing the type of recurrence this is.
-    public static final String EXTRA_TYPE = "com.evanv.taskapp.RecurInput.extra.TYPE";
+    String EXTRA_TYPE = "com.evanv.taskapp.RecurInput.extra.TYPE";
 
     /**
      * A function that gets the user input about recurrence.
      *
      * @return A bundle containing user input about recurrence.
      */
-    public Bundle getRecurInfo();
+    Bundle getRecurInfo();
 }

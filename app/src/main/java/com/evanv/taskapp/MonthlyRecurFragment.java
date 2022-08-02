@@ -2,9 +2,6 @@ package com.evanv.taskapp;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +10,8 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
+
+import androidx.fragment.app.Fragment;
 
 import java.util.Objects;
 
@@ -54,6 +53,7 @@ public class MonthlyRecurFragment extends Fragment implements RecurInput {
      *
      * @return A new instance of fragment MonthlyRecurFragment.
      */
+    @SuppressWarnings("unused")
     public static MonthlyRecurFragment newInstance(String param1, String param2) {
         MonthlyRecurFragment fragment = new MonthlyRecurFragment();
         Bundle args = new Bundle();
@@ -89,7 +89,7 @@ public class MonthlyRecurFragment extends Fragment implements RecurInput {
         mRecurTypes = Objects.requireNonNull(toReturn).findViewById(R.id.monthlyRadioGroup);
         mDaysET = Objects.requireNonNull(toReturn).findViewById(R.id.recurDaysEditText);
 
-        Intent intent = getActivity().getIntent();
+        Intent intent = requireActivity().getIntent();
         String day = intent.getStringExtra(EventEntry.EXTRA_DAY);
         String desc = intent.getStringExtra(EventEntry.EXTRA_DESC);
 
@@ -102,20 +102,17 @@ public class MonthlyRecurFragment extends Fragment implements RecurInput {
         currSelection = 0;
 
         RadioGroup rg = toReturn.findViewById(R.id.monthlyRadioGroup);
-        rg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                if (currSelection == 2) {
-                    LinearLayout ll = toReturn.findViewById(R.id.recurDaysLayout);
-                    ll.setVisibility(View.INVISIBLE);
-                    currSelection = i;
-                }
+        rg.setOnCheckedChangeListener((radioGroup, i) -> {
+            if (currSelection == 2) {
+                LinearLayout ll = toReturn.findViewById(R.id.recurDaysLayout);
+                ll.setVisibility(View.INVISIBLE);
+                currSelection = i;
+            }
 
-                if (radioGroup.indexOfChild(toReturn.findViewById(i)) == 2) {
-                    LinearLayout ll = toReturn.findViewById(R.id.recurDaysLayout);
-                    ll.setVisibility(View.VISIBLE);
-                    currSelection = 2;
-                }
+            if (radioGroup.indexOfChild(toReturn.findViewById(i)) == 2) {
+                LinearLayout ll = toReturn.findViewById(R.id.recurDaysLayout);
+                ll.setVisibility(View.VISIBLE);
+                currSelection = 2;
             }
         });
 

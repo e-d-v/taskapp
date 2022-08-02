@@ -1,15 +1,14 @@
 package com.evanv.taskapp;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.fragment.app.Fragment;
 
 import java.util.Objects;
 
@@ -40,6 +39,7 @@ public class WeeklyRecurFragment extends Fragment implements RecurInput {
      *
      * @return A new instance of fragment WeeklyRecurFragment.
      */
+    @SuppressWarnings("unused")
     public static WeeklyRecurFragment newInstance() {
         WeeklyRecurFragment fragment = new WeeklyRecurFragment();
         Bundle args = new Bundle();

@@ -4,15 +4,8 @@ import static com.evanv.taskapp.Task.clearDate;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +13,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.fragment.app.Fragment;
 
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
@@ -229,10 +226,9 @@ public class EventEntry extends Fragment implements ItemEntry {
         Button button = toReturn.findViewById(R.id.recurButton);
         button.setOnClickListener(view -> intentRecur());
 
-        mEditTextECD.setOnClickListener(v -> {
-            new DatePickerFragment(mEditTextECD, getString(R.string.start_time), new Date(),
-                    null, true).show(getParentFragmentManager(), getTag());
-        });
+        mEditTextECD.setOnClickListener(v -> new DatePickerFragment(mEditTextECD,
+                getString(R.string.start_time), new Date(), null, true)
+                .show(getParentFragmentManager(), getTag()));
 
         // Initialize the information buttons to help the user understand the fields.
         ImageButton infoECD = toReturn.findViewById(R.id.ecdInfoButton);

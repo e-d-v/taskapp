@@ -7,6 +7,13 @@ import static com.evanv.taskapp.Task.getDiff;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.EditText;
+import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -14,10 +21,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.text.InputType;
-import android.util.Log;
-
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,12 +28,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.evanv.taskapp.databinding.ActivityMainBinding;
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.EditText;
-import android.widget.Toast;
-import android.widget.ViewFlipper;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -43,7 +40,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Main Activity for the app. Display's the user's schedule of Tasks/Events, while allowing for
@@ -1267,9 +1263,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 Task task = mTaskSchedule.get(index).get(j);
 
                 // Create the name in the format NAME (TTC minutes to complete)
-//                name = task.getName() + " (" + task.getTimeToComplete() +
-//                        " " + getString(R.string.minutes_to_complete) + ")";
-
                 name = task.getName() + "\n" + String.format(getString(R.string.minutes_to_complete),
                         task.getTimeToComplete());
 

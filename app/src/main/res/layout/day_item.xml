@@ -14,8 +14,8 @@
         android:text="February 24th, 2022"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:textSize="@dimen/subheader_height"
-        android:textColor="@color/black"
         android:layout_marginBottom="4dp"
+        android:textColor="@color/text_primary"
         android:textStyle="bold"
         tools:ignore="HardcodedText" />
 

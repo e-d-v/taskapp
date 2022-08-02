@@ -1,33 +1,20 @@
 <resources>
     <string name="app_name">taskapp</string>
     <string name="action_settings">Settings</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
-
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="unchecked_button_desc">Empty, unfilled circle.</string>
     <string name="events">Events</string>
     <string name="tasks">Tasks</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="task_name">Task Name</string>
     <string name="ecd">Earliest Completion Date</string>
     <string name="due_date">Due Date</string>
     <string name="ttc">Time to Complete (in minutes)</string>
-    <string name="parent_tasks">Parent Tasks:</string>
-    <string name="number_of_reoccurrences">Number of Recurrences</string>
     <string name="length">Length (in minutes)</string>
     <string name="start_time">Start Time</string>
     <string name="event_name">Event Name</string>
     <string name="title_activity_add_item">AddItem</string>
     <string name="task">Task</string>
     <string name="event">Event</string>
-    <string name="title_activity_main2">MainActivity2</string>
     <string name="optimizing">Optimizing…</string>
-    <string name="main_fab_desc">Button with plus symbol</string>
     <string name="complete_dialog_message">How long (in minutes) did %s take to complete?</string>
     <string name="complete_dialog_title">Complete Task</string>
     <string name="parents_button">Choose prerequisite tasks</string>
@@ -40,11 +27,9 @@
     <string name="am">AM</string>
     <string name="pm">PM</string>
     <string name="ttc_format_event">Make sure to enter a whole number (in minutes) for completion time.</string>
-    <string name="recur_empty_event">Make sure to enter a number of recurrences for this event</string>
     <string name="recur_format_event">Make sure to enter a whole number for the number of %s between recurrences.</string>
     <string name="complete_task">Complete Task</string>
-    <string name="schedule_for">Schedule for\u0020</string>
-    <string name="minutes">\u0020minutes)</string>
+    <string name="schedule_for">Schedule for %s (%d minutes):</string>
     <string name="minutes_to_complete">(%d minutes to complete)</string>
     <string name="ok">OK</string>
     <string name="name_empty_task">Make sure to enter a name for the task.</string>
@@ -52,9 +37,8 @@
     <string name="ecd_early_task">Make sure earliest completion date is today or later.</string>
     <string name="date_format_task">Make sure dates are formatted MM/DD/YY</string>
     <string name="due_empty_task">Make sure to enter a due date for the task.</string>
-    <string name="due_early_task">Make sure due date is today or later.</string>
     <string name="due_before_task">Make sure due date is on or after earliest completion date.</string>
-    <string name="due_when">\u0020(due\u0020</string>
+    <string name="due_when">%s (Due %s)</string>
     <string name="overdue_dialog_title">Check if overdue task was completed</string>
     <string name="overdue_dialog_button">Mark selections as complete</string>
     <string name="desc_delete_button">Trash can</string>
@@ -117,7 +101,6 @@
     <string name="recur_on_of">Recur on the %s of %s</string>
     <string name="recur_times">Recur _ times</string>
     <string name="recur_until">Recur until</string>
-    <string name="recur_until_2">(MM/DD/YY)</string>
     <string name="days">days</string>
     <string name="no_day_selected">Make sure to choose at least one day to recur on.</string>
     <string name="weeks">weeks</string>

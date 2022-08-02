@@ -879,8 +879,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 for (int i = 0; i < overdueNames.length; i++) {
                     Task t = overdueTasks.get(i);
                     Date tDate = t.getDueDate();
-                    overdueNames[i] = t.getName() + getString(R.string.due_when) +
-                            Task.dateFormat.format(tDate) + ")";
+                    overdueNames[i] = String.format(getString(R.string.due_when), t.getName(),
+                            Task.dateFormat.format(tDate));
                 }
 
                 // List of indices to tasks that were completed.
@@ -1089,7 +1089,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         ArrayList<String> taskNames = new ArrayList<>();
         for (Task t : mTasks) {
             Date tDate = t.getDueDate();
-            taskNames.add(t.getName() + getString(R.string.due_when) + Task.dateFormat.format(tDate) + ")");
+            taskNames.add(String.format(getString(R.string.due_when), t.getName(),
+                    Task.dateFormat.format(tDate)));
         }
 
         intent.putStringArrayListExtra(EXTRA_TASKS, taskNames);
@@ -1194,8 +1195,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             }
 
             // Set the fields
-            dayString = getString(R.string.schedule_for) + Task.dateFormat.format(curr) + " (" + totalTime +
-                    getString(R.string.minutes) + ":";
+            dayString = String.format(getString(R.string.schedule_for), Task.dateFormat.format(curr),
+                    totalTime);
             events = EventItemList(i);
             tasks = TaskItemList(i);
 

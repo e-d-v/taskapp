@@ -1,8 +1,17 @@
 package com.evanv.taskapp;
 
+import android.annotation.SuppressLint;
+
+import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Represents a single event, e.g. something that has a set date/time
@@ -10,16 +19,42 @@ import java.util.Date;
  * @author Evan Voogd
  */
 @SuppressWarnings("unused")
+@Entity(tableName = "event_table")
+@TypeConverters(Converters.class)
 public final class Event {
+    @PrimaryKey
+    @ColumnInfo(name = "id")
+    private int mID;              // PrimaryKey for Event. Used as duplicate event names is allowed.
+    @NonNull
+    @ColumnInfo(name = "name")
     private final String mName;   // The name of the event to display in the schedule
+    @ColumnInfo(name = "length")
     private final int mLength;    // How long the event lasts
     // The start time for the event. Called "doDate" with consistency to Task
+    @NonNull
+    @ColumnInfo(name = "do_date")
     private final Date mDoDate;
     // SimpleDateFormat that formats date in the style "08/20/22 08:12 PM"
+    @SuppressLint("SimpleDateFormat")
     public static final SimpleDateFormat dateFormat =
             new SimpleDateFormat("MM/dd/yy hh:mm aa");
     // SimpleDateFormat that formats time in the style "08:12 PM"
+    @SuppressLint("SimpleDateFormat")
     public static final SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm aa");
+
+    public Event(@NonNull String name, int length, @NonNull Date doDate) {
+        mName = name;
+        mLength = length;
+        mDoDate = doDate;
+    }
+
+    public int getID() {
+        return mID;
+    }
+
+    public void setID(int mID) {
+        this.mID = mID;
+    }
 
     /**
      * Returns the name of the event
@@ -55,11 +90,27 @@ public final class Event {
      * @param start The start time for the event
      * @param length The time to complete for the event
      */
-    public Event(String event, Date start, int length) {
+    public Event(@NonNull String event, Date start, int length) {
+        this.mName = event;
+        this.mDoDate = clearTime(start);
+        this.mLength = length;
+        this.mID = Objects.hashCode(this);
+    }
+
+    /**
+     * Initializes an object representing an event
+     *
+     * @param event The name of the event
+     * @param start The start time for the event
+     * @param length The time to complete for the event
+     */
+    public Event(int id, @NonNull String event, Date start, int length) {
+        this.mID = id;
         this.mName = event;
         this.mDoDate = clearTime(start);
         this.mLength = length;
     }
+
 
     /**
      * Clears second/ms information from Date. Very useful for Events as Events have no information

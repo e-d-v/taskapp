@@ -5,6 +5,7 @@ import static com.evanv.taskapp.Task.getDiff;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.PriorityQueue;
 
 /**
@@ -31,8 +32,8 @@ public class Optimizer {
         for (int j = 0; j < t.getChildren().size(); j++) {
             Task child = t.getChildren().get(j);
 
-            if (currLateDate.after(child.getDoDate())) {
-                currLateDate = child.getDoDate();
+            if (currLateDate.after(child.getWorkingDoDate())) {
+                currLateDate = child.getWorkingDoDate();
             }
         }
 
@@ -57,8 +58,8 @@ public class Optimizer {
         for (int j = 0; j < t.getParents().size(); j++) {
             Task parent = t.getParents().get(j);
 
-            if (currEarlyDate.before(parent.getDoDate())) {
-                currEarlyDate = parent.getDoDate();
+            if (currEarlyDate.before(parent.getWorkingDoDate())) {
+                currEarlyDate = parent.getWorkingDoDate();
             }
         }
 
@@ -74,10 +75,12 @@ public class Optimizer {
      * @param eventSchedule A list of lists of events. eventSchedule[i] refers to the list of events
      *                      occurring i days past the current day
      * @param startDate The current date
+     *
+     * @return An ArrayList of tasks whose dates were changed.
      */
-    public void Optimize(ArrayList<Task> tasks, ArrayList<ArrayList<Task>> taskSchedule,
-                         ArrayList<ArrayList<Event>> eventSchedule, Date startDate,
-                         int todayTime) {
+    public ArrayList<Task> Optimize(List<Task> tasks, ArrayList<ArrayList<Task>> taskSchedule,
+                                    ArrayList<ArrayList<Event>> eventSchedule, Date startDate,
+                                    int todayTime) {
         taskSchedule.clear();
 
         Date lateDate = startDate;
@@ -118,10 +121,10 @@ public class Optimizer {
         // the date i days past today's date. We start with only using events, as they can't be
         // rescheduled, so we should schedule tasks around them
         int[] time = new int[taskSchedule.size()];
-        for (int i = 0; i < taskSchedule.size() && i < eventSchedule.size(); i++) {
+        for (int i = 0; i < taskSchedule.size(); i++) {
             time[i] = (i == 0) ? todayTime : 0;
 
-            for (int j = 0; j < eventSchedule.get(i).size(); j++) {
+            for (int j = 0; i < eventSchedule.size() && j < eventSchedule.get(i).size(); j++) {
                 time[i] += eventSchedule.get(i).get(j).getLength();
             }
         }
@@ -151,7 +154,7 @@ public class Optimizer {
             Calendar doCal = Calendar.getInstance();
             doCal.setTime(startDate);
             doCal.add(Calendar.DAY_OF_YEAR, minIndex);
-            t.setDoDate(doCal.getTime());
+            t.setWorkingDoDate(doCal.getTime());
 
             // Remove it as a dependency for it's children in the working task dependency graph so
             // we can schedule tasks that now have all their prerequisite tasks scheduled
@@ -161,8 +164,8 @@ public class Optimizer {
                 child.removeWorkingParent(t);
 
                 // Change the workingEarlyDate so tasks aren't scheduled for before their parent(s)
-                if (child.getWorkingEarlyDate().before(t.getDoDate())) {
-                    child.setWorkingEarlyDate(t.getDoDate());
+                if (child.getWorkingEarlyDate().before(t.getWorkingDoDate())) {
+                    child.setWorkingEarlyDate(t.getWorkingDoDate());
                 }
 
                 // If the child has no unscheduled prerequisites, add it to the priority queue so
@@ -193,7 +196,7 @@ public class Optimizer {
 
                 // Get the indices into the taskSchedule/tasks
                 int earlyDateIndex = getDiff(curr.getWorkingEarlyDate(), startDate);
-                int doDateIndex = getDiff(curr.getDoDate(), startDate);
+                int doDateIndex = getDiff(curr.getWorkingDoDate(), startDate);
 
                 // Update the end date in case this loop has changed it's children around
                 Date currLateDate = FindTrueEndDate(curr);
@@ -220,7 +223,7 @@ public class Optimizer {
                         Calendar doCal = Calendar.getInstance();
                         doCal.setTime(startDate);
                         doCal.add(Calendar.DAY_OF_YEAR, j);
-                        curr.setDoDate(doCal.getTime());
+                        curr.setWorkingDoDate(doCal.getTime());
                         taskSchedule.get(doDateIndex).remove(curr);
                         taskSchedule.get(j).add(curr);
                         time[doDateIndex] -= curr.getTimeToComplete();
@@ -245,7 +248,7 @@ public class Optimizer {
                         // Makes sure this reschedule wouldn't reschedule the other task too late
                         // or too early for it's parents/children
                         Date otherLateDate = FindTrueEndDate(other);
-                        if (otherLateDate.before(curr.getDoDate())) {
+                        if (otherLateDate.before(curr.getWorkingDoDate())) {
                             continue;
                         }
 
@@ -262,11 +265,11 @@ public class Optimizer {
                         // Swaps the tasks if it creates a more optimal schedule
                         if (newDiff < currDiff) {
                             changed = true;
-                            other.setDoDate(curr.getDoDate());
+                            other.setWorkingDoDate(curr.getWorkingDoDate());
                             Calendar doCal = Calendar.getInstance();
                             doCal.setTime(startDate);
                             doCal.add(Calendar.DAY_OF_YEAR, j);
-                            curr.setDoDate(doCal.getTime());
+                            curr.setWorkingDoDate(doCal.getTime());
                             taskSchedule.get(doDateIndex).remove(curr);
                             taskSchedule.get(doDateIndex).add(other);
                             taskSchedule.get(j).add(curr);
@@ -281,5 +284,18 @@ public class Optimizer {
                 }
             }
         }
+
+
+        // With the schedule finalized, we will create a list of all the changed do dates. This list
+        // is used to update the recycler more efficiently and allow for easy updating in the DB. We
+        // don't change the actual doDate here, as we need it in MainActivity to update the Recycler.
+        ArrayList<Task> changedTasks = new ArrayList<>();
+        for (Task t : tasks) {
+            if (!t.getWorkingDoDate().equals(t.getDoDate())) {
+                changedTasks.add(t);
+            }
+        }
+
+        return changedTasks;
     }
 }

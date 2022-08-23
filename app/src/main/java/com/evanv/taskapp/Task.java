@@ -1,4 +1,13 @@
 package com.evanv.taskapp;
+import android.annotation.SuppressLint;
+
+import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -15,18 +24,42 @@ import java.util.concurrent.TimeUnit;
  * @author Evan Voogd
  */
 @SuppressWarnings("unused")
+@Entity(tableName = "task_table")
+@TypeConverters(Converters.class)
 public class Task implements Comparable<Task> {
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")                  // PrimaryKey for Task. Used as duplicate task names
+    private long mID;                         // is allowed.
+    @NonNull
+    @ColumnInfo(name = "name")
     private final String mName;               // Name of the task
+    @NonNull
+    @ColumnInfo(name = "earlyDate")
     private Date mEarlyDate;                  // Earliest date to complete
+    @ColumnInfo(name = "doDate")
     private Date mDoDate;                     // Date to do the task
+    @NonNull
+    @ColumnInfo(name = "dueDate")
     private Date mDueDate;                    // Date the task is due
+    @ColumnInfo(name = "ttc")
     private int mTimeToComplete;              // Time (in minutes) to complete the tasks
+    @NonNull
+    @ColumnInfo(name = "parents_list")
+    private final ArrayList<Long> mParentArr; // List of parent ids to be stored in Room.
+    @Ignore
     private final ArrayList<Task> mParents;   // Tasks this task depends on
+    @Ignore
     private final ArrayList<Task> mChildren;  // Tasks that depend on this task
+    @Ignore
     private ArrayList<Task> mWorkingParents;  // Working copy of parents for optimizer
+    @Ignore
     private ArrayList<Task> mWorkingChildren; // Working copy of children for optimizer
+    @Ignore
     private Date mWorkingEarlyDate;           // Working copy of earlyDate for optimizer.
+    @Ignore
+    private Date mWorkingDoDate;              // Working copy of doDate for optimizer.
     // SimpleDateFormat that formats date in the style "08/20/22"
+    @SuppressLint("SimpleDateFormat")
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy");
 
     /**
@@ -36,13 +69,46 @@ public class Task implements Comparable<Task> {
      * @param early The earliest possible day to complete the task (e.g. when it's assigned)
      * @param due When the task is due
      */
-    public Task(String name, Date early, Date due, int time) {
+    public Task(@NonNull String name, Date early, Date due, int time) {
         this.mName = name;
         this.mEarlyDate = clearDate(early);
+        this.mDoDate = new Date(0); // To stop null pointer exceptions
         this.mDueDate = clearDate(due);
         this.mTimeToComplete = time;
         mParents = new ArrayList<>();
         mChildren = new ArrayList<>();
+        mParentArr = new ArrayList<>();
+        mParentArr.add(-1L);
+    }
+
+    public Task(@NonNull String name, @NonNull Date earlyDate, @NonNull Date dueDate,
+                Date doDate, int timeToComplete, @NonNull ArrayList<Long> parentArr) {
+        mName = name;
+        mEarlyDate = earlyDate;
+        mDueDate = dueDate;
+        mDoDate = doDate;
+        mTimeToComplete = timeToComplete;
+        mParents = new ArrayList<>();
+        mChildren = new ArrayList<>();
+        mParentArr = parentArr;
+    }
+
+    /**
+     * Returns the id of this task.
+     *
+     * @return id of the task
+     */
+    public long getID() {
+        return mID;
+    }
+
+    /**
+     * Sets the id of this task.
+     *
+     * @param id id of the task
+     */
+    public void setID(long id) {
+        mID = id;
     }
 
     /**
@@ -190,6 +256,7 @@ public class Task implements Comparable<Task> {
      */
     public void addParent(Task parent) {
         this.mParents.add(parent);
+        this.mParentArr.add(parent.getID());
     }
 
     /**
@@ -199,6 +266,7 @@ public class Task implements Comparable<Task> {
      */
     public void removeParent(Task parent) {
         this.mParents.remove(parent);
+        this.mParentArr.remove(parent.getID());
     }
 
     /**
@@ -287,6 +355,27 @@ public class Task implements Comparable<Task> {
     }
 
     public static int getDiff(Date endDate, Date startDate) {
-        return (int) ((clearDate(endDate).getTime() - clearDate(startDate).getTime()) / TimeUnit.DAYS.toMillis(1));
+        endDate = clearDate(endDate);
+        startDate = clearDate(startDate);
+        return (int) ((endDate.getTime() - startDate.getTime()) / TimeUnit.DAYS.toMillis(1));
     }
+
+    public Date getWorkingDoDate() {
+        return mWorkingDoDate;
+    }
+
+    public void setWorkingDoDate(Date mWorkingDoDate) {
+        this.mWorkingDoDate = mWorkingDoDate;
+    }
+
+    /**
+     * Get list of parent ids
+     *
+     * @return parent array
+     */
+    @NonNull
+    public ArrayList<Long> getParentArr() {
+        return mParentArr;
+    }
+
 }

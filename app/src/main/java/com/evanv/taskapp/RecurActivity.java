@@ -202,6 +202,7 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
                 et.setFocusable(true);
                 et.setInputType(InputType.TYPE_CLASS_NUMBER);
                 et.setOnClickListener(null);
+                et.getText().clear();
             }
             else if (pos == 1) {
                 et.setHint(getString(R.string.recur_until));
@@ -210,6 +211,7 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
                 et.setCursorVisible(false);
                 et.setFocusable(false);
                 et.setInputType(InputType.TYPE_NULL);
+                et.getText().clear();
                 et.setOnClickListener(v -> {
                     Date minDate = new Date(time);
 

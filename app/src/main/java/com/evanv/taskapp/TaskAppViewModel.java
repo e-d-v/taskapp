@@ -3,15 +3,14 @@ package com.evanv.taskapp;
 import android.app.Application;
 
 import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.LiveData;
 
 import java.util.List;
 
 public class TaskAppViewModel extends AndroidViewModel {
-    private TaskAppRepository mRepository;
+    private final TaskAppRepository mRepository;
 
-    private List<Task> mAllTasks;
-    private List<Event> mAllEvents;
+    private final List<Task> mAllTasks;
+    private final List<Event> mAllEvents;
 
     public TaskAppViewModel (Application application) {
         super(application);

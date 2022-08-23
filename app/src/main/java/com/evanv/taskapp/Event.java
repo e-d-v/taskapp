@@ -11,7 +11,6 @@ import androidx.room.TypeConverters;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Objects;
 
 /**
  * Represents a single event, e.g. something that has a set date/time
@@ -22,9 +21,9 @@ import java.util.Objects;
 @Entity(tableName = "event_table")
 @TypeConverters(Converters.class)
 public final class Event {
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    private int mID;              // PrimaryKey for Event. Used as duplicate event names is allowed.
+    private long mID;             // PrimaryKey for Event. Used as duplicate event names is allowed.
     @NonNull
     @ColumnInfo(name = "name")
     private final String mName;   // The name of the event to display in the schedule
@@ -48,11 +47,11 @@ public final class Event {
         mDoDate = doDate;
     }
 
-    public int getID() {
+    public long getID() {
         return mID;
     }
 
-    public void setID(int mID) {
+    public void setID(long mID) {
         this.mID = mID;
     }
 
@@ -94,7 +93,6 @@ public final class Event {
         this.mName = event;
         this.mDoDate = clearTime(start);
         this.mLength = length;
-        this.mID = Objects.hashCode(this);
     }
 
     /**

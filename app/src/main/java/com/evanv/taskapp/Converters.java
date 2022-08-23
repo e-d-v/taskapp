@@ -23,24 +23,24 @@ public class Converters {
     }
 
     @TypeConverter
-    public static ArrayList<Integer> fromString(String value) {
-        String[] stringInts = value.split(",");
+    public static ArrayList<Long> fromString(String value) {
+        String[] stringLongs = value.split(",");
 
-        ArrayList<Integer> toReturn = new ArrayList<>();
+        ArrayList<Long> toReturn = new ArrayList<>();
 
-        for (String s : stringInts) {
-            toReturn.add(Integer.parseInt(s));
+        for (String s : stringLongs) {
+            toReturn.add(Long.parseLong(s));
         }
 
         return toReturn;
     }
 
     @TypeConverter
-    public static String fromArrayList(ArrayList<Integer> list) {
+    public static String fromArrayList(ArrayList<Long> list) {
         StringBuilder sb = new StringBuilder();
 
-        for (int i : list) {
-            sb.append(i).append(",");
+        for (long l: list) {
+            sb.append(l).append(",");
         }
 
         return sb.toString();

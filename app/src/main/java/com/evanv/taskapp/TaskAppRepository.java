@@ -3,19 +3,13 @@ package com.evanv.taskapp;
 import android.app.Application;
 import android.util.Log;
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Observer;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class TaskAppRepository {
-    private TaskDao mTaskDao;                 // Dao for the task table
-    private EventDao mEventDao;               // Dao for the event table
-    private List<Task> mAllTasks;   // List of all tasks
-    private List<Event> mAllEvents; // List of all events
+    private final TaskDao mTaskDao;                 // Dao for the task table
+    private final EventDao mEventDao;               // Dao for the event table
+    private final List<Task> mAllTasks;   // List of all tasks
+    private final List<Event> mAllEvents; // List of all events
 
     TaskAppRepository(Application application) {
         TaskAppRoomDatabase db = TaskAppRoomDatabase.getDatabase(application);
@@ -65,12 +59,13 @@ public class TaskAppRepository {
             t.join();
         }
         catch (Exception e) {
+            Log.e(TaskAppRepository.class.getSimpleName(), e.toString());
         }
         return task.getEvents();
     }
 
     private static class todayTimesAsyncTask implements Runnable {
-        private EventDao mEventDao;
+        private final EventDao mEventDao;
         private List<Event> mEvents;
 
         todayTimesAsyncTask(EventDao dao) {
@@ -87,8 +82,8 @@ public class TaskAppRepository {
     }
 
     private static class deleteTaskAsyncTask implements Runnable {
-        private TaskDao mTaskDao;
-        private Task mTask;
+        private final TaskDao mTaskDao;
+        private final Task mTask;
 
         deleteTaskAsyncTask(TaskDao dao, Task task) {
             mTaskDao = dao;
@@ -102,8 +97,8 @@ public class TaskAppRepository {
     }
 
     private static class deleteEventAsyncTask implements Runnable {
-        private EventDao mEventDao;
-        private Event mEvent;
+        private final EventDao mEventDao;
+        private final Event mEvent;
 
         deleteEventAsyncTask(EventDao dao, Event event) {
             mEventDao = dao;
@@ -116,9 +111,9 @@ public class TaskAppRepository {
         }
     }
 
-    private class insertTaskAsyncTask implements Runnable {
-        private TaskDao mAsyncTaskDao;
-        private Task mTask;
+    private static class insertTaskAsyncTask implements Runnable {
+        private final TaskDao mAsyncTaskDao;
+        private final Task mTask;
 
         insertTaskAsyncTask(TaskDao dao, Task task) {
             mAsyncTaskDao = dao;
@@ -127,13 +122,14 @@ public class TaskAppRepository {
 
         @Override
         public void run() {
-            mAsyncTaskDao.insert(mTask);
+            long id = mAsyncTaskDao.insert(mTask);
+            mTask.setID(id);
         }
     }
 
     private static class insertEventAsyncTask implements Runnable {
-        private EventDao mAsyncEventDao;
-        private Event mEvent;
+        private final EventDao mAsyncEventDao;
+        private final Event mEvent;
 
         insertEventAsyncTask(EventDao dao, Event event) {
             mAsyncEventDao = dao;
@@ -142,13 +138,14 @@ public class TaskAppRepository {
 
         @Override
         public void run() {
-            mAsyncEventDao.insert(mEvent);
+            long id = mAsyncEventDao.insert(mEvent);
+            mEvent.setID(id);
         }
     }
 
     private static class updateTaskAsyncTask implements Runnable {
-        private TaskDao mAsyncTaskDao;
-        private Task mTask;
+        private final TaskDao mAsyncTaskDao;
+        private final Task mTask;
 
         updateTaskAsyncTask(TaskDao dao, Task task) {
             mAsyncTaskDao = dao;
@@ -162,8 +159,8 @@ public class TaskAppRepository {
     }
 
     private static class updateEventAsyncTask implements Runnable {
-        private EventDao mAsyncEventDao;
-        private Event mEvent;
+        private final EventDao mAsyncEventDao;
+        private final Event mEvent;
 
         updateEventAsyncTask(EventDao dao, Event event) {
             mAsyncEventDao = dao;

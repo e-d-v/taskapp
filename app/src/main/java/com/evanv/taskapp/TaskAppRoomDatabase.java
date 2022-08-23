@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase;
 
 @Database(entities = {Task.class, Event.class}, version = 1, exportSchema = false)
 public abstract class TaskAppRoomDatabase extends RoomDatabase {
-    private static TaskAppRoomDatabase INSTANCE;
+    private static volatile TaskAppRoomDatabase INSTANCE;
 
     public static TaskAppRoomDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {

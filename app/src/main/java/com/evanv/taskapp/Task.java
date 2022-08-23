@@ -12,7 +12,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,37 +27,37 @@ import java.util.concurrent.TimeUnit;
 @Entity(tableName = "task_table")
 @TypeConverters(Converters.class)
 public class Task implements Comparable<Task> {
-    @PrimaryKey
-    @ColumnInfo(name = "id")                     // PrimaryKey for Task. Used as duplicate task
-    private int mID;                             // names is allowed.
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")                  // PrimaryKey for Task. Used as duplicate task names
+    private long mID;                         // is allowed.
     @NonNull
     @ColumnInfo(name = "name")
-    private final String mName;                  // Name of the task
+    private final String mName;               // Name of the task
     @NonNull
     @ColumnInfo(name = "earlyDate")
-    private Date mEarlyDate;                     // Earliest date to complete
+    private Date mEarlyDate;                  // Earliest date to complete
     @ColumnInfo(name = "doDate")
-    private Date mDoDate;                        // Date to do the task
+    private Date mDoDate;                     // Date to do the task
     @NonNull
     @ColumnInfo(name = "dueDate")
-    private Date mDueDate;                       // Date the task is due
+    private Date mDueDate;                    // Date the task is due
     @ColumnInfo(name = "ttc")
-    private int mTimeToComplete;                 // Time (in minutes) to complete the tasks
+    private int mTimeToComplete;              // Time (in minutes) to complete the tasks
     @NonNull
     @ColumnInfo(name = "parents_list")
-    private final ArrayList<Integer> mParentArr; // List of parent ids to be stored in Room.
+    private final ArrayList<Long> mParentArr; // List of parent ids to be stored in Room.
     @Ignore
-    private final ArrayList<Task> mParents;      // Tasks this task depends on
+    private final ArrayList<Task> mParents;   // Tasks this task depends on
     @Ignore
-    private final ArrayList<Task> mChildren;     // Tasks that depend on this task
+    private final ArrayList<Task> mChildren;  // Tasks that depend on this task
     @Ignore
-    private ArrayList<Task> mWorkingParents;     // Working copy of parents for optimizer
+    private ArrayList<Task> mWorkingParents;  // Working copy of parents for optimizer
     @Ignore
-    private ArrayList<Task> mWorkingChildren;    // Working copy of children for optimizer
+    private ArrayList<Task> mWorkingChildren; // Working copy of children for optimizer
     @Ignore
-    private Date mWorkingEarlyDate;              // Working copy of earlyDate for optimizer.
+    private Date mWorkingEarlyDate;           // Working copy of earlyDate for optimizer.
     @Ignore
-    private Date mWorkingDoDate;                 // Working copy of doDate for optimizer.
+    private Date mWorkingDoDate;              // Working copy of doDate for optimizer.
     // SimpleDateFormat that formats date in the style "08/20/22"
     @SuppressLint("SimpleDateFormat")
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy");
@@ -79,12 +78,11 @@ public class Task implements Comparable<Task> {
         mParents = new ArrayList<>();
         mChildren = new ArrayList<>();
         mParentArr = new ArrayList<>();
-        mParentArr.add(-1);
-        this.mID = Objects.hashCode(this);
+        mParentArr.add(-1L);
     }
 
     public Task(@NonNull String name, @NonNull Date earlyDate, @NonNull Date dueDate,
-                Date doDate, int timeToComplete, @NonNull ArrayList<Integer> parentArr) {
+                Date doDate, int timeToComplete, @NonNull ArrayList<Long> parentArr) {
         mName = name;
         mEarlyDate = earlyDate;
         mDueDate = dueDate;
@@ -93,7 +91,6 @@ public class Task implements Comparable<Task> {
         mParents = new ArrayList<>();
         mChildren = new ArrayList<>();
         mParentArr = parentArr;
-        this.mID = Objects.hashCode(this);
     }
 
     /**
@@ -101,8 +98,17 @@ public class Task implements Comparable<Task> {
      *
      * @return id of the task
      */
-    public int getID() {
+    public long getID() {
         return mID;
+    }
+
+    /**
+     * Sets the id of this task.
+     *
+     * @param id id of the task
+     */
+    public void setID(long id) {
+        mID = id;
     }
 
     /**
@@ -263,10 +269,6 @@ public class Task implements Comparable<Task> {
         this.mParentArr.remove(parent.getID());
     }
 
-    public void setID(int ID) {
-        this.mID = ID;
-    }
-
     /**
      * Remove a prerequisite task for this task in the optimizer's working task dependency graph
      *
@@ -372,7 +374,7 @@ public class Task implements Comparable<Task> {
      * @return parent array
      */
     @NonNull
-    public ArrayList<Integer> getParentArr() {
+    public ArrayList<Long> getParentArr() {
         return mParentArr;
     }
 

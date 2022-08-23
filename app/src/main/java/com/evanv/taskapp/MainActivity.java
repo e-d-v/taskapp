@@ -6,6 +6,7 @@ import static com.evanv.taskapp.Task.getDiff;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -22,8 +23,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -40,8 +39,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Main Activity for the app. Display's the user's schedule of Tasks/Events, while allowing for
@@ -72,6 +69,10 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     // Allows us to manually show FAB when task/event completed/deleted.
     private TaskAppViewModel mTaskAppViewModel; // ViewModel to interact with Database
     private Event mTodayTimeEvent;              // Allows replacing todayTime event.
+    // Keys into SharedPrefs to store todayTime
+    private static final String PREF_FILE = "taskappPrefs";
+    private static final String PREF_DAY = "taskappDay";   // Day for todayTime
+    private static final String PREF_TIME = "taskappTime"; // Time for todayTime
 
     /**
      * Removes a task from the task dependency graph, while asking the user how long it took to
@@ -227,6 +228,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                     for (int i = mEventSchedule.size(); i <= diff + (numTimes * interval);
                          i++) {
                         mEventSchedule.add(new ArrayList<>());
+                        mDayItemAdapter.notifyItemChanged(i);
                     }
 
                     // Add the event once every interval days.
@@ -239,6 +241,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                         Event toAdd = new Event(name, recurCal.getTime(), ttc);
                         mEventSchedule.get(diff + i).add(toAdd);
                         mTaskAppViewModel.insert(toAdd);
+                        mDayItemAdapter.notifyItemChanged(diff + i);
                     }
                 }
                 else if (WeeklyRecurFragment.EXTRA_VAL_TYPE.equals(recurType)) {
@@ -288,10 +291,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                                     for (int k = mEventSchedule.size(); k <= currIndex; k++) {
                                         mEventSchedule.add(new ArrayList<>());
+                                        mDayItemAdapter.notifyItemChanged(k);
                                     }
 
                                     mEventSchedule.get(currIndex).add(toAdd);
                                     mTaskAppViewModel.insert(toAdd);
+                                    mDayItemAdapter.notifyItemChanged(currIndex);
                                 }
 
                                 // Calculate next date
@@ -327,12 +332,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                         for (int i = mEventSchedule.size(); i <= endIndex; i++) {
                             mEventSchedule.add(new ArrayList<>());
+                            mDayItemAdapter.notifyItemChanged(i);
                         }
                         while (!recurCal.getTime().after(endDate)) {
                             // Add event to schedule
                             Event toAdd = new Event(name, recurCal.getTime(), ttc);
                             mEventSchedule.get(currIndex).add(toAdd);
                             mTaskAppViewModel.insert(toAdd);
+                            mDayItemAdapter.notifyItemChanged(currIndex);
 
                             // Calculate next date
                             recurCal.add(Calendar.MONTH, interval);
@@ -362,10 +369,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                             for (int j = mEventSchedule.size(); j <= currIndex; j++) {
                                 mEventSchedule.add(new ArrayList<>());
+                                mDayItemAdapter.notifyItemChanged(j);
                             }
 
                             mEventSchedule.get(currIndex).add(toAdd);
                             mTaskAppViewModel.insert(toAdd);
+                            mDayItemAdapter.notifyItemChanged(currIndex);
 
                             // Calculate next date
                             recurCal.add(Calendar.MONTH, interval);
@@ -418,9 +427,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                                     Event toAdd = new Event(name, recurCal.getTime(), ttc);
                                     for (int k = mEventSchedule.size(); k <= currIndex; k++) {
                                         mEventSchedule.add(new ArrayList<>());
+                                        mDayItemAdapter.notifyItemChanged(k);
                                     }
                                     mEventSchedule.get(currIndex).add(toAdd);
                                     mTaskAppViewModel.insert(toAdd);
+                                    mDayItemAdapter.notifyItemChanged(currIndex);
                                 }
 
                                 // Calculate next date
@@ -479,6 +490,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                         for (int i = mEventSchedule.size(); i <= endIndex; i++) {
                             mEventSchedule.add(new ArrayList<>());
+                            mDayItemAdapter.notifyItemChanged(i);
                         }
 
                         while (!recurCal.getTime().after(endDate)) {
@@ -486,9 +498,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                             Event toAdd = new Event(name, recurCal.getTime(), ttc);
                             for (int k = mEventSchedule.size(); k <= currIndex; k++) {
                                 mEventSchedule.add(new ArrayList<>());
+                                mDayItemAdapter.notifyItemChanged(k);
                             }
                             mEventSchedule.get(currIndex).add(toAdd);
                             mTaskAppViewModel.insert(toAdd);
+                            mDayItemAdapter.notifyItemChanged(currIndex);
 
                             // Calculate next date
                             recurCal.add(Calendar.YEAR, interval);
@@ -511,9 +525,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                             Event toAdd = new Event(name, recurCal.getTime(), ttc);
                             for (int k = mEventSchedule.size(); k <= currIndex; k++) {
                                 mEventSchedule.add(new ArrayList<>());
+                                mDayItemAdapter.notifyItemChanged(k);
                             }
                             mEventSchedule.get(currIndex).add(toAdd);
                             mTaskAppViewModel.insert(toAdd);
+                            mDayItemAdapter.notifyItemChanged(currIndex);
 
                             // Calculate next date
                             recurCal.add(Calendar.YEAR, interval);
@@ -548,9 +564,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                                         Event toAdd = new Event(name, recurCal.getTime(), ttc);
                                         for (int k = mEventSchedule.size(); k <= currIndex; k++) {
                                             mEventSchedule.add(new ArrayList<>());
+                                            mDayItemAdapter.notifyItemChanged(k);
                                         }
                                         mEventSchedule.get(currIndex).add(toAdd);
                                         mTaskAppViewModel.insert(toAdd);
+                                        mDayItemAdapter.notifyItemChanged(currIndex);
                                     }
 
                                     // Calculate next date
@@ -594,9 +612,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                                         Event toAdd = new Event(name, recurCal.getTime(), ttc);
                                         for (int k = mEventSchedule.size(); k <= currIndex; k++) {
                                             mEventSchedule.add(new ArrayList<>());
+                                            mDayItemAdapter.notifyItemChanged(k);
                                         }
                                         mEventSchedule.get(currIndex).add(toAdd);
                                         mTaskAppViewModel.insert(toAdd);
+                                        mDayItemAdapter.notifyItemChanged(currIndex);
                                     }
 
                                     // Calculate next date
@@ -653,9 +673,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                                                 for (int k = mEventSchedule.size(); k <=
                                                         currIndex; k++) {
                                                     mEventSchedule.add(new ArrayList<>());
+                                                    mDayItemAdapter.notifyItemChanged(k);
                                                 }
                                                 mEventSchedule.get(currIndex).add(toAdd);
                                                 mTaskAppViewModel.insert(toAdd);
+                                                mDayItemAdapter.notifyItemChanged(currIndex);
                                             }
                                         }
                                     }
@@ -673,11 +695,13 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             else {
                 for (int i = mEventSchedule.size(); i <= diff; i++) {
                     mEventSchedule.add(new ArrayList<>());
+                    mDayItemAdapter.notifyItemChanged(i);
                 }
 
                 Event toAdd = new Event(name, start, ttc);
                 mEventSchedule.get(diff).add(toAdd);
                 mTaskAppViewModel.insert(toAdd);
+                mDayItemAdapter.notifyItemChanged(diff);
             }
         }
         // If the item type is Task
@@ -715,8 +739,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             // where each nx is an index to a Task in tasks that should be used as a parent
             // for the task to be added.
             String[] parentIndices = parents.split(",");
-            if (!parentIndices[0].equals("-1")) {
-                for (String parentIndex : parentIndices) {
+            for (String parentIndex : parentIndices) {
+                if (!parentIndex.equals("-1")) {
                     Task parent = mTasks.get(Integer.parseInt(parentIndex));
                     toAdd.addParent(parent);
                     parent.addChild(toAdd);
@@ -769,8 +793,17 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 eventLowIndex--;
             }
         }
-        if (mEventSchedule.size() > eventLowIndex) {
-            mEventSchedule.subList(eventLowIndex, mEventSchedule.size()).clear();
+
+        int eventScheduleSize = mEventSchedule.size();
+
+        if (eventScheduleSize > eventLowIndex) {
+            mEventSchedule.subList(eventLowIndex, eventScheduleSize).clear();
+
+            // Remove hanging days from adapter as well
+            eventLowIndex = Math.max(eventLowIndex, taskLowIndex);
+            if (eventScheduleSize > eventLowIndex) {
+                mDayItemAdapter.notifyItemRangeRemoved(eventLowIndex, eventScheduleSize);
+            }
         }
 
         // As the Optimizer may have changed tasks' dates, we must refresh the recycler
@@ -821,6 +854,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         mStartDate = clearDate(new Date());
 
         mTodayTime = 0;
+
+        // Get todayTime from shared preferences
+        SharedPreferences sp = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
+        Date todayTimeDate = new Date(sp.getLong(PREF_DAY, -1L));
+
+        if (!todayTimeDate.before(mStartDate)) {
+            mTodayTime = sp.getInt(PREF_TIME, 0);
+        }
 
         ViewModelStoreOwner vmso = this;
 
@@ -983,14 +1024,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
         // Add events from the database into the eventSchedule
         for (Event e : events) {
-            // We store todayTime in an event with the name "". This is a special value, as the
-            // EventEntry screen does not allow adding a blank event name.
-            if (e.getName().equals("") && !e.getDoDate().before(mStartDate)) {
-                mTodayTime = e.getLength();
-                mTaskAppViewModel.delete(e);
-                continue;
-            }
-
             // Calculate how many days past today's date this event is scheduled for. Used to
             // index into eventSchedule
             Date doDate = e.getDoDate();
@@ -1057,16 +1090,18 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     }
 
     /**
-     * Updates todayTime in event table DB
-     *
-     * @param outState unused, required by override
+     * Updates todayTime in SharedPreferences
      */
     @Override
     protected void onPause() {
         super.onPause();
 
-        // Update todayTime in event list
-        mTaskAppViewModel.insert(new Event("", mStartDate, mTodayTime));
+        // Update todayTime in SharedPreferences
+        SharedPreferences sp = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
+        SharedPreferences.Editor edit = sp.edit();
+        edit.putLong(PREF_DAY, mStartDate.getTime());
+        edit.putInt(PREF_TIME, mTodayTime);
+        edit.apply();
     }
 
     /**

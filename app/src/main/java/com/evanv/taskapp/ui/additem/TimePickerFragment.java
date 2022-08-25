@@ -1,4 +1,4 @@
-package com.evanv.taskapp;
+package com.evanv.taskapp.ui.additem;
 
 import android.app.Dialog;
 import android.app.TimePickerDialog;
@@ -9,6 +9,7 @@ import android.widget.TimePicker;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 
+import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.Event;
 
 import java.util.Calendar;

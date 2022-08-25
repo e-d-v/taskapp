@@ -1,4 +1,4 @@
-package com.evanv.taskapp;
+package com.evanv.taskapp.ui.main;
 
 import static com.evanv.taskapp.logic.Event.clearTime;
 import static com.evanv.taskapp.logic.Task.clearDate;
@@ -28,11 +28,24 @@ import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.evanv.taskapp.R;
 import com.evanv.taskapp.databinding.ActivityMainBinding;
 import com.evanv.taskapp.db.TaskAppViewModel;
 import com.evanv.taskapp.logic.Event;
 import com.evanv.taskapp.logic.Optimizer;
 import com.evanv.taskapp.logic.Task;
+import com.evanv.taskapp.ui.additem.AddItem;
+import com.evanv.taskapp.ui.additem.recur.DailyRecurFragment;
+import com.evanv.taskapp.ui.additem.recur.MonthlyRecurFragment;
+import com.evanv.taskapp.ui.additem.recur.NoRecurFragment;
+import com.evanv.taskapp.ui.additem.recur.RecurActivity;
+import com.evanv.taskapp.ui.additem.recur.RecurInput;
+import com.evanv.taskapp.ui.additem.recur.WeeklyRecurFragment;
+import com.evanv.taskapp.ui.additem.recur.YearlyRecurFragment;
+import com.evanv.taskapp.ui.main.recycler.DayItem;
+import com.evanv.taskapp.ui.main.recycler.DayItemAdapter;
+import com.evanv.taskapp.ui.main.recycler.EventItem;
+import com.evanv.taskapp.ui.main.recycler.TaskItem;
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 

@@ -1,4 +1,4 @@
-package com.evanv.taskapp;
+package com.evanv.taskapp.ui.main.recycler;
 
 import java.util.List;
 

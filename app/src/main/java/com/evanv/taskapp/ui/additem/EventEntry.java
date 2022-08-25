@@ -1,4 +1,4 @@
-package com.evanv.taskapp;
+package com.evanv.taskapp.ui.additem;
 
 import static com.evanv.taskapp.logic.Task.clearDate;
 
@@ -18,7 +18,12 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.Fragment;
 
+import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.Event;
+import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
+import com.evanv.taskapp.ui.additem.recur.NoRecurFragment;
+import com.evanv.taskapp.ui.additem.recur.RecurActivity;
+import com.evanv.taskapp.ui.additem.recur.RecurInput;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
 import java.text.ParseException;
@@ -39,13 +44,13 @@ public class EventEntry extends Fragment implements ItemEntry {
     private EditText mEditTextECD;       // EditText containing the date/time of the event
     private EditText mEditTextLength;    // EditText containing the length of the event
     // The day the user has entered (e.g. 18)
-    public static final String EXTRA_DAY = "com.evanv.taskapp.EventEntry.extra.DAY";
+    public static final String EXTRA_DAY = "com.evanv.taskapp.ui.additem.EventEntry.extra.DAY";
     // The day the user has entered (e.g. 3rd monday)
-    public static final String EXTRA_DESC = "com.evanv.taskapp.EventEntry.extra.DESC";
+    public static final String EXTRA_DESC = "com.evanv.taskapp.ui.additem.EventEntry.extra.DESC";
     // The month the user has entered
-    public static final String EXTRA_MONTH = "com.evanv.taskapp.EventEntry.extra.MONTH";
+    public static final String EXTRA_MONTH = "com.evanv.taskapp.ui.additem.EventEntry.extra.MONTH";
     // The time the user has entered
-    public static final String EXTRA_TIME = "com.evanv.taskapp.EventEntry.extra.TIME";
+    public static final String EXTRA_TIME = "com.evanv.taskapp.ui.additem.EventEntry.extra.TIME";
     // Allows data to be pulled from activity
     private ActivityResultLauncher<Intent> mStartForResult;
 

@@ -1,4 +1,4 @@
-package com.evanv.taskapp;
+package com.evanv.taskapp.ui.main.recycler;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +9,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.evanv.taskapp.R;
+import com.evanv.taskapp.ui.main.ClickListener;
 
 import java.lang.ref.WeakReference;
 import java.util.List;

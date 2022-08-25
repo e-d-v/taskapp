@@ -1,4 +1,4 @@
-package com.evanv.taskapp;
+package com.evanv.taskapp.ui.main.recycler;
 
 /**
  * Class representing an Event for use in the DayItem's recyclerview

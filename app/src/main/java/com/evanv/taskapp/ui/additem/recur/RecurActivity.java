@@ -1,4 +1,4 @@
-package com.evanv.taskapp;
+package com.evanv.taskapp.ui.additem.recur;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,7 +17,9 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.Task;
+import com.evanv.taskapp.ui.additem.EventEntry;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -31,18 +33,18 @@ import java.util.Objects;
  */
 public class RecurActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     // Key for the value representing a bundle containing the user's input on recurrence
-    public static final String EXTRA_RECUR = "com.evanv.taskapp.RecurActivity.extra.RECUR";
+    public static final String EXTRA_RECUR = "com.evanv.taskapp.ui.additem.recur.RecurActivity.extra.RECUR";
     // Tag for the currently displayed fragment.
-    private static final String TAG_CURR_FRAG = "com.evanv.taskapp.RecurActivity.tag.CURR_FRAG";
+    private static final String TAG_CURR_FRAG = "com.evanv.taskapp.ui.additem.recur.RecurActivity.tag.CURR_FRAG";
     boolean inputShown; // true if recur_n_times, false if recur_until
     // Key for the value representing the type of until statement (number or until)
-    public static final String EXTRA_UNTIL_TYPE = "com.evanv.taskapp.RecurActivity.extra.UNTIL_TYPE";
+    public static final String EXTRA_UNTIL_TYPE = "com.evanv.taskapp.ui.additem.recur.RecurActivity.extra.UNTIL_TYPE";
     // Value representing an event that recurs until a specific date.
-    public static final String EXTRA_VAL_UNTIL = "com.evanv.taskapp.RecurActivity.extra.val.UNTIL";
+    public static final String EXTRA_VAL_UNTIL = "com.evanv.taskapp.ui.additem.recur.RecurActivity.extra.val.UNTIL";
     // Value representing an event that recurs a set number of times.
-    public static final String EXTRA_VAL_NUM = "com.evanv.taskapp.RecurActivity.extra.val.NUM";
+    public static final String EXTRA_VAL_NUM = "com.evanv.taskapp.ui.additem.recur.RecurActivity.extra.val.NUM";
     // Key for the value representing the date the event stops recurring on / number of recurrences
-    public static final String EXTRA_UNTIL = "com.evanv.taskapp.RecurActivity.extra.UNTIL";
+    public static final String EXTRA_UNTIL = "com.evanv.taskapp.ui.additem.recur.RecurActivity.extra.UNTIL";
     private long time; // The time the user has entered
 
     /**

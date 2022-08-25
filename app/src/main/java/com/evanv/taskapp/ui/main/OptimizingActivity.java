@@ -1,8 +1,10 @@
-package com.evanv.taskapp;
+package com.evanv.taskapp.ui.main;
 
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.evanv.taskapp.R;
 
 /**
  * Loading screen that appears while the task schedule is being optimized/loaded from file

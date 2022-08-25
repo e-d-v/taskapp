@@ -6,7 +6,7 @@
     app:startDestination="@id/taskEntry">
     <fragment
         android:id="@+id/taskEntry"
-        android:name="com.evanv.taskapp.TaskEntry"
+        android:name="com.evanv.taskapp.ui.additem.TaskEntry"
         android:label="fragment_task_entry"
         tools:layout="@layout/fragment_task_entry" >
         <action
@@ -15,7 +15,7 @@
     </fragment>
     <fragment
         android:id="@+id/eventEntry"
-        android:name="com.evanv.taskapp.EventEntry"
+        android:name="com.evanv.taskapp.ui.additem.EventEntry"
         android:label="fragment_event_entry"
         tools:layout="@layout/fragment_event_entry" >
         <action

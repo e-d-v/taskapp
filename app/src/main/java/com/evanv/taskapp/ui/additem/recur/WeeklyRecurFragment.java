@@ -1,4 +1,4 @@
-package com.evanv.taskapp;
+package com.evanv.taskapp.ui.additem.recur;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,6 +10,8 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import com.evanv.taskapp.R;
+
 import java.util.Objects;
 
 /**
@@ -19,11 +21,11 @@ import java.util.Objects;
  */
 public class WeeklyRecurFragment extends Fragment implements RecurInput {
     // Value for a Bundle extra that represents weekly recurrence happening.
-    public static final String EXTRA_VAL_TYPE = "com.evanv.taskapp.WeeklyRecurFragment.extra.val.TYPE";
+    public static final String EXTRA_VAL_TYPE = "com.evanv.taskapp.ui.additem.recur.WeeklyRecurFragment.extra.val.TYPE";
     // Extra key for a value containing how many weeks between each recurrence of this event.
-    public static final String EXTRA_INTERVAL = "com.evanv.taskapp.WeeklyRecurFragment.extra.INTERVAL";
+    public static final String EXTRA_INTERVAL = "com.evanv.taskapp.ui.additem.recur.WeeklyRecurFragment.extra.INTERVAL";
     // Extra key for a value containing an array of booleans representing if events occur these days
-    public static final String EXTRA_DAYS = "com.evanv.taskapp.WeeklyRecurFragment.extra.DAYS";
+    public static final String EXTRA_DAYS = "com.evanv.taskapp.ui.additem.recur.WeeklyRecurFragment.extra.DAYS";
     private EditText mIntervalET;  // Edit text containing the interval value
     private CheckBox[] checkBoxes; // Array of the CheckBoxes representing the weeks
 

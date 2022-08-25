@@ -1,4 +1,4 @@
-package com.evanv.taskapp;
+package com.evanv.taskapp.ui.additem.recur;
 
 import android.os.Bundle;
 
@@ -10,7 +10,7 @@ import android.os.Bundle;
  */
 public interface RecurInput {
     // Represents the field representing the type of recurrence this is.
-    String EXTRA_TYPE = "com.evanv.taskapp.RecurInput.extra.TYPE";
+    String EXTRA_TYPE = "com.evanv.taskapp.ui.additem.recur.RecurInput.extra.TYPE";
 
     /**
      * A function that gets the user input about recurrence.

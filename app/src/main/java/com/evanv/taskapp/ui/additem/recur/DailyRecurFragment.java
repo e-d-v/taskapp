@@ -1,4 +1,4 @@
-package com.evanv.taskapp;
+package com.evanv.taskapp.ui.additem.recur;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,6 +9,8 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import com.evanv.taskapp.R;
+
 import java.util.Objects;
 
 /**
@@ -18,9 +20,9 @@ import java.util.Objects;
  */
 public class DailyRecurFragment extends Fragment implements RecurInput {
     // Value for a Bundle extra that represents daily recurrence happening.
-    public static final String EXTRA_VAL_TYPE = "com.evanv.taskapp.DailyRecurFragment.extra.val.TYPE";
+    public static final String EXTRA_VAL_TYPE = "com.evanv.taskapp.ui.additem.recur.DailyRecurFragment.extra.val.TYPE";
     // Extra key for a value containing how many days between each recurrence of this event.
-    public static final String EXTRA_INTERVAL = "com.evanv.taskapp.DailyRecurFragment.extra.INTERVAL";
+    public static final String EXTRA_INTERVAL = "com.evanv.taskapp.ui.additem.recur.DailyRecurFragment.extra.INTERVAL";
     private EditText mIntervalET; // Edit text containing the interval value
 
     /**

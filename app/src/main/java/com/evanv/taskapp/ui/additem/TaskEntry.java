@@ -1,4 +1,4 @@
-package com.evanv.taskapp;
+package com.evanv.taskapp.ui.additem;
 
 import static com.evanv.taskapp.logic.Task.clearDate;
 
@@ -17,7 +17,10 @@ import android.widget.Toast;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
+import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.Task;
+import com.evanv.taskapp.ui.main.MainActivity;
+import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
 
 import java.text.ParseException;
 import java.util.ArrayList;

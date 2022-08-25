@@ -1,4 +1,4 @@
-package com.evanv.taskapp;
+package com.evanv.taskapp.ui.additem.recur;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,6 +13,9 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import com.evanv.taskapp.R;
+import com.evanv.taskapp.ui.additem.EventEntry;
+
 import java.util.Objects;
 
 /**
@@ -22,28 +25,28 @@ import java.util.Objects;
  */
 public class YearlyRecurFragment extends Fragment implements RecurInput {
     // Value for a Bundle extra that represents yearly recurrence happening.
-    public static final String EXTRA_VAL_TYPE = "com.evanv.taskapp.YearlyRecurFragment.extra.val.TYPE";
+    public static final String EXTRA_VAL_TYPE = "com.evanv.taskapp.ui.additem.recur.YearlyRecurFragment.extra.val.TYPE";
     // Extra key for a value containing how many years between each recurrence of this event.
-    public static final String EXTRA_INTERVAL = "com.evanv.taskapp.YearlyRecurFragment.extra.INTERVAL";
+    public static final String EXTRA_INTERVAL = "com.evanv.taskapp.ui.additem.recur.YearlyRecurFragment.extra.INTERVAL";
     // Extra key for a value containing how the event will recur (the 18th, 3rd monday, 18/21st etc.)
-    public static final String EXTRA_RECUR_TYPE = "com.evanv.taskapp.YearlyRecurFragment.extra.RECUR_TYPE";
+    public static final String EXTRA_RECUR_TYPE = "com.evanv.taskapp.ui.additem.recur.YearlyRecurFragment.extra.RECUR_TYPE";
     // Value for a Bundle extra that represents an event occurring the same day every year.
-    public static final String EXTRA_VAL_STATIC = "com.evanv.taskapp.YearlyRecurFragment.extra.val.STATIC";
+    public static final String EXTRA_VAL_STATIC = "com.evanv.taskapp.ui.additem.recur.YearlyRecurFragment.extra.val.STATIC";
     // Value for a Bundle extra that represents an event occurring the same location every year
     // (e.g. 3rd monday of july).
-    public static final String EXTRA_VAL_DYNAMIC = "com.evanv.taskapp.YearlyRecurFragment.extra.val.DYNAMIC";
+    public static final String EXTRA_VAL_DYNAMIC = "com.evanv.taskapp.ui.additem.recur.YearlyRecurFragment.extra.val.DYNAMIC";
     // Value for a Bundle extra that represents an event occurring the same month/day every year
-    public static final String EXTRA_VAL_MULTIPLE_STATIC = "com.evanv.taskapp.YearlyRecurFragment.extra.val.MULTIPLE_STATIC";
+    public static final String EXTRA_VAL_MULTIPLE_STATIC = "com.evanv.taskapp.ui.additem.recur.YearlyRecurFragment.extra.val.MULTIPLE_STATIC";
     // Value for a Bundle extra that represents an event occurring the same location every year
     // (e.g. 3rd monday of july and august).
-    public static final String EXTRA_VAL_MULTIPLE_DYNAMIC = "com.evanv.taskapp.YearlyRecurFragment.extra.val.MULTIPLE_DYNAMIC";
+    public static final String EXTRA_VAL_MULTIPLE_DYNAMIC = "com.evanv.taskapp.ui.additem.recur.YearlyRecurFragment.extra.val.MULTIPLE_DYNAMIC";
     // Value for a Bundle extra that represents an event occurring specific days/months (e.g. the 20th
     // and 21st of May and October)
-    public static final String EXTRA_VAL_SPECIFIC = "com.evanv.taskapp.YearlyRecurFragment.extra.val.SPECIFIC";
+    public static final String EXTRA_VAL_SPECIFIC = "com.evanv.taskapp.ui.additem.recur.YearlyRecurFragment.extra.val.SPECIFIC";
     // Extra key for a value containing what days to recur on if specific is selected.
-    public static final String EXTRA_DAYS = "com.evanv.taskapp.YearlyRecurFragment.extra.DAYS";
+    public static final String EXTRA_DAYS = "com.evanv.taskapp.ui.additem.recur.YearlyRecurFragment.extra.DAYS";
     // Extra key for a value containing what months to recur on if specific is selected.
-    public static final String EXTRA_MONTHS = "com.evanv.taskapp.YearlyRecurFragment.extra.MONTHS";
+    public static final String EXTRA_MONTHS = "com.evanv.taskapp.ui.additem.recur.YearlyRecurFragment.extra.MONTHS";
     private EditText mIntervalET;   // Edit text containing the interval value
     private RadioGroup mRecurTypes; // RadioGroup representing the type of recurrence the user chooses
     private EditText mDaysET;       // EditText containing what days to increment on

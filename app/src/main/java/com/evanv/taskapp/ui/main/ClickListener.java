@@ -1,4 +1,4 @@
-package com.evanv.taskapp;
+package com.evanv.taskapp.ui.main;
 
 /**
  * Defines a ClickListener, which reacts to one of the completion buttons being clicked. It's

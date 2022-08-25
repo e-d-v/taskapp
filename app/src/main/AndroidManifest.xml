@@ -14,27 +14,27 @@
         android:theme="@style/Theme.Taskapp"
         tools:targetApi="31">
         <activity
-            android:name=".RecurActivity"
+            android:name=".ui.additem.recur.RecurActivity"
             android:exported="false">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.evanv.taskapp.AddItem" />
+                android:value="com.evanv.taskapp.ui.additem.AddItem" />
         </activity>
         <activity
-            android:name=".OptimizingActivity"
+            android:name=".ui.main.OptimizingActivity"
             android:exported="false" />
         <activity
             android:launchMode="singleTop"
-            android:name=".AddItem"
+            android:name=".ui.additem.AddItem"
             android:exported="false"
             android:label="@string/title_activity_add_item"
             android:theme="@style/Theme.Taskapp.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.evanv.taskapp.MainActivity" />
+                android:value="com.evanv.taskapp.ui.main.MainActivity" />
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.main.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Taskapp.NoActionBar">
             <intent-filter>

@@ -1,6 +1,6 @@
 package com.evanv.taskapp;
 
-import static com.evanv.taskapp.Task.clearDate;
+import static com.evanv.taskapp.logic.Task.clearDate;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -16,6 +16,8 @@ import android.widget.Toast;
 
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+
+import com.evanv.taskapp.logic.Task;
 
 import java.text.ParseException;
 import java.util.ArrayList;

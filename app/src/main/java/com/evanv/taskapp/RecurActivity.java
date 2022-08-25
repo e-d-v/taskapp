@@ -17,6 +17,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.evanv.taskapp.logic.Task;
+
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Objects;

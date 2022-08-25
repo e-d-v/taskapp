@@ -1,8 +1,8 @@
 package com.evanv.taskapp;
 
-import static com.evanv.taskapp.Event.clearTime;
-import static com.evanv.taskapp.Task.clearDate;
-import static com.evanv.taskapp.Task.getDiff;
+import static com.evanv.taskapp.logic.Event.clearTime;
+import static com.evanv.taskapp.logic.Task.clearDate;
+import static com.evanv.taskapp.logic.Task.getDiff;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -30,6 +30,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.evanv.taskapp.databinding.ActivityMainBinding;
 import com.evanv.taskapp.db.TaskAppViewModel;
+import com.evanv.taskapp.logic.Event;
+import com.evanv.taskapp.logic.Optimizer;
+import com.evanv.taskapp.logic.Task;
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 

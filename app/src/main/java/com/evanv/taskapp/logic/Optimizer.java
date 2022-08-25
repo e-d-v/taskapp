@@ -1,6 +1,6 @@
-package com.evanv.taskapp;
+package com.evanv.taskapp.logic;
 
-import static com.evanv.taskapp.Task.getDiff;
+import static com.evanv.taskapp.logic.Task.getDiff;
 
 import java.util.ArrayList;
 import java.util.Calendar;

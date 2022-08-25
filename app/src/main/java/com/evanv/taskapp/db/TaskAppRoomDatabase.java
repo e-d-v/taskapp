@@ -6,8 +6,8 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-import com.evanv.taskapp.Event;
-import com.evanv.taskapp.Task;
+import com.evanv.taskapp.logic.Event;
+import com.evanv.taskapp.logic.Task;
 
 @Database(entities = {Task.class, Event.class}, version = 1, exportSchema = false)
 public abstract class TaskAppRoomDatabase extends RoomDatabase {

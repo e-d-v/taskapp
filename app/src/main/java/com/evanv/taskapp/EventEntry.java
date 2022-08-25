@@ -1,6 +1,6 @@
 package com.evanv.taskapp;
 
-import static com.evanv.taskapp.Task.clearDate;
+import static com.evanv.taskapp.logic.Task.clearDate;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -18,6 +18,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.Fragment;
 
+import com.evanv.taskapp.logic.Event;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
 import java.text.ParseException;

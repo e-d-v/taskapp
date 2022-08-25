@@ -9,6 +9,8 @@ import android.widget.TimePicker;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 
+import com.evanv.taskapp.logic.Event;
+
 import java.util.Calendar;
 
 /**

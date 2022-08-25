@@ -4,8 +4,8 @@ import android.app.Application;
 
 import androidx.lifecycle.AndroidViewModel;
 
-import com.evanv.taskapp.Event;
-import com.evanv.taskapp.Task;
+import com.evanv.taskapp.logic.Event;
+import com.evanv.taskapp.logic.Task;
 
 import java.util.List;
 

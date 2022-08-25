@@ -3,8 +3,8 @@ package com.evanv.taskapp.db;
 import android.app.Application;
 import android.util.Log;
 
-import com.evanv.taskapp.Event;
-import com.evanv.taskapp.Task;
+import com.evanv.taskapp.logic.Event;
+import com.evanv.taskapp.logic.Task;
 
 import java.util.List;
 

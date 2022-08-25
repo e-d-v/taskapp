@@ -6,7 +6,7 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
 
-import com.evanv.taskapp.Event;
+import com.evanv.taskapp.logic.Event;
 
 import java.util.List;
 

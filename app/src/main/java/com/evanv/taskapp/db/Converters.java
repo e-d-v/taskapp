@@ -1,4 +1,4 @@
-package com.evanv.taskapp;
+package com.evanv.taskapp.db;
 
 import androidx.room.TypeConverter;
 

@@ -8,6 +8,8 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
+import com.evanv.taskapp.db.Converters;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;

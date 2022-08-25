@@ -1,8 +1,11 @@
-package com.evanv.taskapp;
+package com.evanv.taskapp.db;
 
 import android.app.Application;
 
 import androidx.lifecycle.AndroidViewModel;
+
+import com.evanv.taskapp.Event;
+import com.evanv.taskapp.Task;
 
 import java.util.List;
 
@@ -27,9 +30,9 @@ public class TaskAppViewModel extends AndroidViewModel {
 
     public void delete(Event event) { mRepository.delete(event); }
 
-    List<Task> getAllTasks() { return mAllTasks; }
+    public List<Task> getAllTasks() { return mAllTasks; }
 
-    List<Event> getAllEvents() { return mAllEvents; }
+    public List<Event> getAllEvents() { return mAllEvents; }
 
     public void insert(Task task) { mRepository.insert(task); }
 

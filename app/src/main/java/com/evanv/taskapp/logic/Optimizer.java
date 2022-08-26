@@ -3,7 +3,9 @@ package com.evanv.taskapp.logic;
 import static com.evanv.taskapp.logic.Task.getDiff;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -23,7 +25,7 @@ public class Optimizer {
      * @param t The task to find the true end date for
      * @return The latest date this task should be rescheduled for
      */
-    private Date FindTrueEndDate(Task t) {
+    private Date findTrueEndDate(Task t) {
         // B) the actual due date for the given task
         Date currLateDate = t.getDueDate();
 
@@ -49,7 +51,7 @@ public class Optimizer {
      * @param t The task to find the true early date for
      * @return The earliest date this task should be rescheduled for
      */
-    private Date FindTrueEarlyDate(Task t) {
+    private Date findTrueEarlyDate(Task t) {
         // B) the actual earliest completion date for the given task
         Date currEarlyDate = t.getEarlyDate();
 
@@ -64,6 +66,42 @@ public class Optimizer {
         }
 
         return currEarlyDate;
+    }
+
+    /**
+     * Schedules task for the date index days past startDate.
+     *
+     * @param t The task to be scheduled
+     * @param index How many days past startDate to be scheduled
+     * @param startDate The Date representing taskSchedule[0]
+     * @param taskSchedule ArrayList where taskSchedule[i] is a list of tasks scheduled for i days
+     *                     past the start date
+     * @param time Array of ints where time[i] is the number of minutes scheduled for i days past
+     *             the start date
+     */
+    private void schedule(Task t, int index, Date startDate, ArrayList<ArrayList<Task>> taskSchedule
+            , int[] time) {
+        taskSchedule.get(index).add(t);
+        time[index] += t.getTimeToComplete();
+        Calendar doCal = Calendar.getInstance();
+        doCal.setTime(startDate);
+        doCal.add(Calendar.DAY_OF_YEAR, index);
+        t.setWorkingDoDate(doCal.getTime());
+    }
+
+    /**
+     * Removes task from taskSchedule/time for the given index.
+     *
+     * @param t The task to be removed
+     * @param index Index into taskSchedule where task is located
+     * @param taskSchedule ArrayList where taskSchedule[i] is a list of tasks scheduled for i days
+     *                     past the start date
+     * @param time Array of ints where time[i] is the number of minutes scheduled for i days past
+     *             the start date
+     */
+    private void remove(Task t, int index, ArrayList<ArrayList<Task>> taskSchedule, int[] time) {
+        taskSchedule.get(index).remove(t);
+        time[index] -= t.getTimeToComplete();
     }
 
     /**
@@ -149,12 +187,7 @@ public class Optimizer {
             }
 
             // Schedule the task for this date
-            taskSchedule.get(minIndex).add(t);
-            time[minIndex] += t.getTimeToComplete();
-            Calendar doCal = Calendar.getInstance();
-            doCal.setTime(startDate);
-            doCal.add(Calendar.DAY_OF_YEAR, minIndex);
-            t.setWorkingDoDate(doCal.getTime());
+            schedule(t, minIndex, startDate, taskSchedule, time);
 
             // Remove it as a dependency for it's children in the working task dependency graph so
             // we can schedule tasks that now have all their prerequisite tasks scheduled
@@ -192,14 +225,14 @@ public class Optimizer {
                 Task curr = tasks.get(i);
 
                 // Update the earlyDate in case this loop has changed it's parents around
-                curr.setWorkingEarlyDate(FindTrueEarlyDate(curr));
+                curr.setWorkingEarlyDate(findTrueEarlyDate(curr));
 
                 // Get the indices into the taskSchedule/tasks
                 int earlyDateIndex = getDiff(curr.getWorkingEarlyDate(), startDate);
                 int doDateIndex = getDiff(curr.getWorkingDoDate(), startDate);
 
                 // Update the end date in case this loop has changed it's children around
-                Date currLateDate = FindTrueEndDate(curr);
+                Date currLateDate = findTrueEndDate(curr);
 
                 // Get the index into tasks/taskSchedule
                 int lateDateIndex = getDiff(currLateDate, startDate);
@@ -220,14 +253,8 @@ public class Optimizer {
                     // If this further optimizes the schedule, implement the task reschedule
                     if (newDiff < currDiff) {
                         changed = true;
-                        Calendar doCal = Calendar.getInstance();
-                        doCal.setTime(startDate);
-                        doCal.add(Calendar.DAY_OF_YEAR, j);
-                        curr.setWorkingDoDate(doCal.getTime());
-                        taskSchedule.get(doDateIndex).remove(curr);
-                        taskSchedule.get(j).add(curr);
-                        time[doDateIndex] -= curr.getTimeToComplete();
-                        time[j] += curr.getTimeToComplete();
+                        schedule(curr, j, startDate, taskSchedule, time);
+                        remove(curr, doDateIndex, taskSchedule, time);
                         doDateIndex = j;
                     }
                 }
@@ -247,7 +274,7 @@ public class Optimizer {
 
                         // Makes sure this reschedule wouldn't reschedule the other task too late
                         // or too early for it's parents/children
-                        Date otherLateDate = FindTrueEndDate(other);
+                        Date otherLateDate = findTrueEndDate(other);
                         if (otherLateDate.before(curr.getWorkingDoDate())) {
                             continue;
                         }
@@ -265,19 +292,10 @@ public class Optimizer {
                         // Swaps the tasks if it creates a more optimal schedule
                         if (newDiff < currDiff) {
                             changed = true;
-                            other.setWorkingDoDate(curr.getWorkingDoDate());
-                            Calendar doCal = Calendar.getInstance();
-                            doCal.setTime(startDate);
-                            doCal.add(Calendar.DAY_OF_YEAR, j);
-                            curr.setWorkingDoDate(doCal.getTime());
-                            taskSchedule.get(doDateIndex).remove(curr);
-                            taskSchedule.get(doDateIndex).add(other);
-                            taskSchedule.get(j).add(curr);
-                            taskSchedule.get(j).remove(other);
-                            time[doDateIndex] -= curr.getTimeToComplete();
-                            time[doDateIndex] += other.getTimeToComplete();
-                            time[j] += curr.getTimeToComplete();
-                            time[j] -= other.getTimeToComplete();
+                            schedule(curr, j, startDate, taskSchedule, time);
+                            schedule(other, doDateIndex, startDate, taskSchedule, time);
+                            remove(curr, doDateIndex, taskSchedule, time);
+                            remove(other, j, taskSchedule, time);
                             doDateIndex = j;
                         }
                     }

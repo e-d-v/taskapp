@@ -33,7 +33,6 @@ import java.util.Date;
  * @author Evan Voogd
  */
 public class TaskEntry extends Fragment implements ItemEntry {
-
     private ViewGroup mContainer;  // The ViewGroup for the activity, allows easy access to views
     private String mCurrentParents; // The list of parents for task, returned when fab is clicked
 
@@ -154,10 +153,14 @@ public class TaskEntry extends Fragment implements ItemEntry {
             }
         });
 
+        // Get the EditTexts for dates`
         EditText editTextECD = view.findViewById(R.id.editTextECD);
         EditText editTextDueDate = view.findViewById(R.id.editTextDueDate);
 
+        // Set the onClickListener so clicking the EditTexts opens a Date Picker dialog instead of
+        // a keyboard
         editTextECD.setOnClickListener(view1 -> {
+            // Set the max date so the early date can't be set as later than the due date
             Date maxDate = null;
             if (!editTextDueDate.getText().toString().equals("")) {
                 try {
@@ -167,11 +170,13 @@ public class TaskEntry extends Fragment implements ItemEntry {
                 }
             }
 
+            // Generate and show the DatePicker
             DialogFragment newFragment = new DatePickerFragment(editTextECD, getString(R.string.ecd),
                     new Date(), maxDate, false);
             newFragment.show(getParentFragmentManager(), "datePicker");
         });
         editTextDueDate.setOnClickListener(view1 -> {
+            // Set the min date so the due date can't be before the early date.
             Date minDate = new Date();
             if (!editTextECD.getText().toString().equals("")) {
                 try {
@@ -181,6 +186,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
                 }
             }
 
+            // Generate and show the DatePicker
             DialogFragment newFragment = new DatePickerFragment(editTextDueDate,
                     getString(R.string.due_date), minDate, null, false);
             newFragment.show(getParentFragmentManager(), "datePicker");
@@ -293,6 +299,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
                 ecdFlag = true;
             }
 
+            // If there was an error with the user's input for the ECD, inform them with a Toast
             if (ecdFlag) {
                 Toast.makeText(getActivity(),
                         R.string.date_format_task,
@@ -300,14 +307,17 @@ public class TaskEntry extends Fragment implements ItemEntry {
                 flag = true;
             }
         }
+        // Ensure the user entered a dueDate
         if (dueDate.length() == 0) {
             Toast.makeText(getActivity(),
                     R.string.due_empty_task,
                     Toast.LENGTH_LONG).show();
             flag = true;
         }
+        // Ensure the user entered a valid due date. (Probably) not necessary as the DatePicker
+        // should handle this, but kept just in case.
         else {
-            boolean ddFlag= false; // true if there is an issue with ecd input
+            boolean ddFlag = false; // true if there is an issue with dd input
 
             // Check if Due Date follows format mm/dd/yy
             String[] dateTokens = dueDate.split("/");
@@ -327,6 +337,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
                     // Make sure we're not scheduling an event for before today.
                     Date rightNow = clearDate(new Date());
 
+                    // Make sure the due date isn't before right now or the earlyDate.
                     Calendar userCal = Calendar.getInstance();
                     userCal.set(2000+year, month - 1, day);
                     Date dueDateTime = clearDate(userCal.getTime());
@@ -352,6 +363,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
                 ddFlag = true;
             }
 
+            // If there was an issue with the user's input for the due date, inform them here.
             if (ddFlag) {
                 Toast.makeText(getActivity(),
                         R.string.date_format_task,
@@ -364,6 +376,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
             Toast.makeText(getActivity(), R.string.ttc_error_empty_task, Toast.LENGTH_LONG).show();
             flag = true;
         }
+        // Check if user entered length is a number.
         else {
             try {
                 Integer.parseInt(ttc);

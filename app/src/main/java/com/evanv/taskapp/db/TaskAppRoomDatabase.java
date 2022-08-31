@@ -9,15 +9,27 @@ import androidx.room.RoomDatabase;
 import com.evanv.taskapp.logic.Event;
 import com.evanv.taskapp.logic.Task;
 
+/**
+ * The Room DB for TaskApp. Uses singleton design pattern to ensure only one DB exists so data
+ * inconsistencies don't emerge.
+ *
+ * @author Evan Voogd
+ */
 @Database(entities = {Task.class, Event.class}, version = 1, exportSchema = false)
 public abstract class TaskAppRoomDatabase extends RoomDatabase {
-    private static volatile TaskAppRoomDatabase INSTANCE;
+    private static volatile TaskAppRoomDatabase INSTANCE; // The singleton of the Room DB
 
+    /**
+     * Get the database for the app. Generates the singleton if it hasn't been already.
+     *
+     * @param context Context for the app
+     * @return Returns the singleton of the Room DB
+     */
     public static TaskAppRoomDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
             synchronized (TaskAppRoomDatabase.class) {
                 if (INSTANCE == null) {
-                    // Create database here
+                    // Create database here if not already created
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                             TaskAppRoomDatabase.class, "taskapp_database")
                             .fallbackToDestructiveMigration().build();
@@ -28,7 +40,17 @@ public abstract class TaskAppRoomDatabase extends RoomDatabase {
         return INSTANCE;
     }
 
+    /**
+     * Gets a Dao to interface with the task_table
+     *
+     * @return a Dao to interface with the task_table
+     */
     public abstract TaskDao taskDao();
 
+    /**
+     * Gets a Dao to interface with the event_table
+     *
+     * @return a Dao to interface with the event_table
+     */
     public abstract EventDao eventDao();
 }

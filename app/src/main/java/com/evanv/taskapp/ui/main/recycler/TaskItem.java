@@ -7,7 +7,7 @@ package com.evanv.taskapp.ui.main.recycler;
  */
 public class TaskItem {
     private final String mName; // Name of the task (e.g. "Read Ch. 3")
-    private final int mIndex;       // Index into taskSchedule.get(day) for this event
+    private final int mIndex;   // Index into taskSchedule.get(day) for this event
 
     /**
      * Creates an item representing a Task

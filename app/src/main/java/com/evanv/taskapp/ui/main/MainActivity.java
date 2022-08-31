@@ -65,31 +65,30 @@ import java.util.Objects;
  */
 @SuppressWarnings("unused")
 public class MainActivity extends AppCompatActivity implements ClickListener {
-
+    // Fields
     @SuppressWarnings("unused")
-    private ActivityMainBinding mBinding;      // Binding for the MainActivity
-    private Date mStartDate;                 // The current date
-    private int mTodayTime;                    // The amount of time spent completing tasks today
-    public static final int ITEM_REQUEST = 1; // requestCode for task/item entry
-    private DayItemAdapter mDayItemAdapter;    // Adapter for recyclerview showing user commitments
+    private ActivityMainBinding mBinding;          // Binding for the MainActivity
+    private Date mStartDate;                       // The current date
+    private int mTodayTime;                        // The time spent completing tasks today
+    public static final int ITEM_REQUEST = 1;      // requestCode for task/item entry
+    private DayItemAdapter mDayItemAdapter;        // Adapter for recycler showing user commitments
     private List<Task> mTasks = new ArrayList<>(); // List of all tasks for user
+    private TaskAppViewModel mTaskAppViewModel;    // ViewModel to interact with Database
+    private ViewFlipper mVF;                       // Swaps between loading screen and recycler
     // taskSchedule[i] represents the list of tasks for the day i days past startDate
     private final ArrayList<ArrayList<Task>> mTaskSchedule = new ArrayList<>();
     // eventSchedule[i] represents the list of events for the day i days past startDate
     private final ArrayList<ArrayList<Event>> mEventSchedule = new ArrayList<>();
-    // Key for the extra that stores the list of Task names for the Parent Task Picker Dialog in
-    // TaskEntry
-    public static final String EXTRA_TASKS = "com.evanv.taskapp.extras.TASKS";
-    private ViewFlipper mVF; // Swaps between loading screen and recycler
     // Allows data to be pulled from activity
     private ActivityResultLauncher<Intent> mStartForResult;
     // Allows us to manually show FAB when task/event completed/deleted.
-    private TaskAppViewModel mTaskAppViewModel; // ViewModel to interact with Database
-    private Event mTodayTimeEvent;              // Allows replacing todayTime event.
+
+    // Key for the extra that stores the list of Task names for the Parent Task Picker Dialog in
+    public static final String EXTRA_TASKS = "com.evanv.taskapp.ui.main.extras.TASKS";
     // Keys into SharedPrefs to store todayTime
-    private static final String PREF_FILE = "taskappPrefs";
-    private static final String PREF_DAY = "taskappDay";   // Day for todayTime
-    private static final String PREF_TIME = "taskappTime"; // Time for todayTime
+    private static final String PREF_FILE = "taskappPrefs"; // File name for sharedPrefs
+    private static final String PREF_DAY = "taskappDay";    // Day for todayTime
+    private static final String PREF_TIME = "taskappTime";  // Time for todayTime
 
     /**
      * Removes a task from the task dependency graph, while asking the user how long it took to
@@ -109,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // index of the taskSchedule member for it's do date.
         int diff = getDiff(doDate, mStartDate);
 
+        // If the task is in the internal data structure, remove it.
         if (diff >= 0) {
             mTaskSchedule.get(diff).remove(task);
             mDayItemAdapter.mDayItemList.set(diff, DayItemHelper(diff));
@@ -255,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                         recurCal.setTime(start);
                         recurCal.add(Calendar.DAY_OF_YEAR, i);
 
-                        Event toAdd = new Event(name, recurCal.getTime(), ttc);
+                        Event toAdd = new Event(name, ttc, recurCal.getTime());
                         mEventSchedule.get(diff + i).add(toAdd);
                         mTaskAppViewModel.insert(toAdd);
                         mDayItemAdapter.notifyItemChanged(diff + i);
@@ -304,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                                 // interval == 1, as the offByOne if clause fixes it otherwise
                                 if (!(j == 0 && offByOne) && !(j == numTimes - 1 && oneLess &&
                                         !offByOne)) {
-                                    Event toAdd = new Event(name, recurCal.getTime(), ttc);
+                                    Event toAdd = new Event(name, ttc, recurCal.getTime());
 
                                     for (int k = mEventSchedule.size(); k <= currIndex; k++) {
                                         mEventSchedule.add(new ArrayList<>());
@@ -329,7 +329,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                         }
                     }
                 }
+                // User chose to recur monthly
                 else if (MonthlyRecurFragment.EXTRA_VAL_TYPE.equals(recurType)) {
+                    // Get recur interval
                     int interval = recur.getInt(MonthlyRecurFragment.EXTRA_INTERVAL);
                     String intervalType = recur.getString(MonthlyRecurFragment.EXTRA_RECUR_TYPE);
 
@@ -338,7 +340,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                     int currIndex = diff;
 
+                    // User chose to recur on the same day every month
                     if (intervalType.equals(MonthlyRecurFragment.EXTRA_VAL_STATIC)) {
+                        // Calculate when to recur until
                         if (!until) {
                             Calendar endDateCal = Calendar.getInstance();
                             endDateCal.setTime(start);
@@ -347,13 +351,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                             endIndex = getDiff(endDate, mStartDate);
                         }
 
+                        // Ensure there is enough space in the eventSchedule
                         for (int i = mEventSchedule.size(); i <= endIndex; i++) {
                             mEventSchedule.add(new ArrayList<>());
                             mDayItemAdapter.notifyItemChanged(i);
                         }
+
+                        // Add an event at a consistent interval until end date is reached
                         while (!recurCal.getTime().after(endDate)) {
                             // Add event to schedule
-                            Event toAdd = new Event(name, recurCal.getTime(), ttc);
+                            Event toAdd = new Event(name, ttc, recurCal.getTime());
                             mEventSchedule.get(currIndex).add(toAdd);
                             mTaskAppViewModel.insert(toAdd);
                             mDayItemAdapter.notifyItemChanged(currIndex);
@@ -363,6 +370,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                             currIndex = getDiff(recurCal.getTime(), mStartDate);
                         }
                     }
+                    // If user chose to recur on the same weekday of every month (e.g. 3rd tuesday)
                     if (intervalType.equals(MonthlyRecurFragment.EXTRA_VAL_DYNAMIC)) {
                         int dayOfWeek = recurCal.get(Calendar.DAY_OF_WEEK);
                         int dayOfWeekInMonth = recurCal.get(Calendar.DAY_OF_WEEK_IN_MONTH);
@@ -382,7 +390,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                         for (int i = 0; i < numTimes && !recurCal.getTime().after(endDate); i++) {
                             // Add event to schedule
-                            Event toAdd = new Event(name, recurCal.getTime(), ttc);
+                            Event toAdd = new Event(name, ttc, recurCal.getTime());
 
                             for (int j = mEventSchedule.size(); j <= currIndex; j++) {
                                 mEventSchedule.add(new ArrayList<>());
@@ -400,9 +408,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                             currIndex = getDiff(recurCal.getTime(), mStartDate);
                         }
                     }
+                    // If user chose to recur on the same dates of every month (e.g. 2nd and 3rd)
                     if (intervalType.equals(MonthlyRecurFragment.EXTRA_VAL_SPECIFIC)) {
                         String[] strs = recur.getString(MonthlyRecurFragment.EXTRA_DAYS)
                                 .split(",");
+                        // Get all the days from the bundle
                         int[] days = new int[strs.length];
 
                         for (int i = 0; i < strs.length; i++) {
@@ -411,15 +421,19 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                         Arrays.sort(days);
 
+                        // For each day, add all of it's occurrences to the taskSchedule
                         for (int day : days) {
+                            // Calculate the first day the task occurs on this day of month
                             recurCal.setTime(start);
                             int daysInMonth = recurCal.getActualMaximum(Calendar.DAY_OF_MONTH);
                             int dayDiff = (day - recurCal.get(Calendar.DAY_OF_MONTH)
                                     + daysInMonth) % daysInMonth;
 
+                            // Set these fields to help with edge cases
                             boolean oneLess = (day - recurCal.get(Calendar.DAY_OF_MONTH)) < 0;
                             boolean offByOne = oneLess && (interval != 1);
 
+                            // Calculate the Date based on the first day he task occurs on
                             recurCal.add(Calendar.DAY_OF_YEAR, dayDiff);
                             currIndex = getDiff(recurCal.getTime(), mStartDate);
 
@@ -441,7 +455,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                                 // Add event to schedule
                                 if (!(i == 0 && offByOne) && !(i == numTimes - 1 && oneLess &&
                                         !offByOne)) {
-                                    Event toAdd = new Event(name, recurCal.getTime(), ttc);
+                                    Event toAdd = new Event(name, ttc, recurCal.getTime());
                                     for (int k = mEventSchedule.size(); k <= currIndex; k++) {
                                         mEventSchedule.add(new ArrayList<>());
                                         mDayItemAdapter.notifyItemChanged(k);
@@ -461,6 +475,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                         }
                     }
                 }
+                // The user chose to recur yearly
                 else if (YearlyRecurFragment.EXTRA_VAL_TYPE.equals(recurType)) {
                     // How many years between each recurrence of this event.
                     int interval = recur.getInt(YearlyRecurFragment.EXTRA_INTERVAL);
@@ -469,14 +484,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                     // What months to recur on if necessary.
                     boolean[] months = new boolean[12];
 
-
-
+                    // If necessary, see which months the user chose to recur on
                     if (intervalType.equals(YearlyRecurFragment.EXTRA_VAL_MULTIPLE_DYNAMIC)
                             || intervalType.equals(YearlyRecurFragment.EXTRA_VAL_MULTIPLE_STATIC)
                             || intervalType.equals(YearlyRecurFragment.EXTRA_VAL_SPECIFIC)) {
                         List<String> monthsStr = Arrays.asList(
                                 recur.getString(YearlyRecurFragment.EXTRA_MONTHS).split(","));
 
+                        // For each month, see if the user chose to include it
                         months[0] = monthsStr.contains(getString(R.string.jan));
                         months[1] = monthsStr.contains(getString(R.string.feb));
                         months[2] = monthsStr.contains(getString(R.string.mar));
@@ -491,13 +506,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                         months[11] = monthsStr.contains(getString(R.string.dec));
                     }
 
+                    // Initialize calendar
                     Calendar recurCal = Calendar.getInstance();
                     recurCal.setTime(start);
 
                     int currIndex = diff;
 
+                    // If user chose to recur on same month/day
                     if (intervalType.equals(YearlyRecurFragment.EXTRA_VAL_STATIC)) {
 
+                        // Calculate end date
                         if (!until) {
                             Calendar endDateCal = Calendar.getInstance();
                             endDateCal.setTime(start);
@@ -505,6 +523,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                             endDate = endDateCal.getTime();
                         }
 
+                        // Ensure enough space in eventSchedule
                         for (int i = mEventSchedule.size(); i <= endIndex; i++) {
                             mEventSchedule.add(new ArrayList<>());
                             mDayItemAdapter.notifyItemChanged(i);
@@ -512,7 +531,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                         while (!recurCal.getTime().after(endDate)) {
                             // Add event to schedule
-                            Event toAdd = new Event(name, recurCal.getTime(), ttc);
+                            Event toAdd = new Event(name, ttc, recurCal.getTime());
                             for (int k = mEventSchedule.size(); k <= currIndex; k++) {
                                 mEventSchedule.add(new ArrayList<>());
                                 mDayItemAdapter.notifyItemChanged(k);
@@ -526,10 +545,13 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                             currIndex = getDiff(recurCal.getTime(), mStartDate);
                         }
                     }
+                    // If user chose to recur on the same month/weekday (e.g. 3rd Mon of Sep)
                     if (intervalType.equals(YearlyRecurFragment.EXTRA_VAL_DYNAMIC)) {
                         int dayOfWeek = recurCal.get(Calendar.DAY_OF_WEEK);
                         int dayOfWeekInMonth = recurCal.get(Calendar.DAY_OF_WEEK_IN_MONTH);
 
+                        // Set the null fields to their max values to ensure they're ignored by the
+                        // while loop
                         if (until) {
                             numTimes = Integer.MAX_VALUE;
                         }
@@ -539,7 +561,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                         for (int i = 0; i < numTimes && !recurCal.getTime().after(endDate); i++) {
                             // Add event to schedule
-                            Event toAdd = new Event(name, recurCal.getTime(), ttc);
+                            Event toAdd = new Event(name, ttc, recurCal.getTime());
                             for (int k = mEventSchedule.size(); k <= currIndex; k++) {
                                 mEventSchedule.add(new ArrayList<>());
                                 mDayItemAdapter.notifyItemChanged(k);
@@ -555,9 +577,13 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                             currIndex = getDiff(recurCal.getTime(), mStartDate);
                         }
                     }
+                    // If user chose to recur on multiple months on the same day (e.g. Jan/Feb 3rd)
                     if (intervalType.equals(YearlyRecurFragment.EXTRA_VAL_MULTIPLE_STATIC)) {
+                        // For each month, check if it is recurred on, and if it is, calculate
+                        // events
                         for (int i = 0; i < months.length; i++) {
                             if (months[i]) {
+                                // Calculate first year event should be scheduled for
                                 boolean oneLess = (i - recurCal.get(Calendar.MONTH)) < 0;
                                 boolean offByOne = oneLess && (interval != 1);
                                 recurCal = Calendar.getInstance();
@@ -566,6 +592,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                                         (i - recurCal.get(Calendar.MONTH) + 12) % 12);
                                 currIndex = getDiff(recurCal.getTime(), mStartDate);
 
+                                // Set the null fields to their max values to ensure they're ignored
+                                // by the while loop
                                 if (until) {
                                     numTimes = Integer.MAX_VALUE;
                                 }
@@ -578,7 +606,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                                     // Add event to schedule
                                     if (!(j == 0 && offByOne) && !(j == numTimes - 1 && oneLess &&
                                             !offByOne)) {
-                                        Event toAdd = new Event(name, recurCal.getTime(), ttc);
+                                        Event toAdd = new Event(name, ttc, recurCal.getTime());
                                         for (int k = mEventSchedule.size(); k <= currIndex; k++) {
                                             mEventSchedule.add(new ArrayList<>());
                                             mDayItemAdapter.notifyItemChanged(k);
@@ -598,12 +626,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                             }
                         }
                     }
+                    // If the user chose to recur on multiple months on the same weekday (e.g. 3rd
+                    // Monday of Jan/Feb)
                     if (intervalType.equals(YearlyRecurFragment.EXTRA_VAL_MULTIPLE_DYNAMIC)) {
                         int dayOfWeek = recurCal.get(Calendar.DAY_OF_WEEK);
                         int dayOfWeekInMonth = recurCal.get(Calendar.DAY_OF_WEEK_IN_MONTH);
 
+                        // For each month, if user chose month to have event, schedule event
                         for (int i = 0; i < months.length; i++) {
                             if (months[i]) {
+                                // Calculate first occurrence of event on this month
                                 boolean oneLess = (i - recurCal.get(Calendar.MONTH)) < 0;
                                 boolean offByOne = oneLess && (interval != 1);
                                 recurCal = Calendar.getInstance();
@@ -614,6 +646,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                                 recurCal.set(Calendar.DAY_OF_WEEK_IN_MONTH, dayOfWeekInMonth);
                                 currIndex = getDiff(recurCal.getTime(), mStartDate);
 
+                                // Set the null fields to their max values to ensure they're ignored
+                                // by the while loop
                                 if (until) {
                                     numTimes = Integer.MAX_VALUE;
                                 }
@@ -626,7 +660,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                                     // Add event to schedule
                                     if (!(j == 0 && offByOne) && !(j == numTimes - 1 && oneLess
                                             && !offByOne)) {
-                                        Event toAdd = new Event(name, recurCal.getTime(), ttc);
+                                        Event toAdd = new Event(name, ttc, recurCal.getTime());
                                         for (int k = mEventSchedule.size(); k <= currIndex; k++) {
                                             mEventSchedule.add(new ArrayList<>());
                                             mDayItemAdapter.notifyItemChanged(k);
@@ -648,7 +682,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                             }
                         }
                     }
+                    // If user chose to recur on specific months/days (e.g. 2nd/3rd of Jan/Feb)
                     if (intervalType.equals(YearlyRecurFragment.EXTRA_VAL_SPECIFIC)) {
+                        // Get the days to recur on from user input.
                         String[] daysStrs = recur.getString(YearlyRecurFragment.EXTRA_DAYS)
                                 .split(",");
                         int[] days = new int[daysStrs.length];
@@ -657,8 +693,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                             days[i] = Integer.parseInt(daysStrs[i]);
                         }
 
+                        // For each month, check if user chose to recur on it, and schedule events
+                        // if they did
                         for (int i = 0; i < months.length; i++) {
                             if (months[i]) {
+                                // Calculate earliest possible date to start scheduling events for
+                                // this month
                                 boolean oneLess = (i - recurCal.get(Calendar.MONTH)) < 0;
                                 boolean offByOne = oneLess && (interval != 1);
                                 recurCal = Calendar.getInstance();
@@ -666,6 +706,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                                 recurCal.add(Calendar.MONTH,
                                         (i - recurCal.get(Calendar.MONTH) + 12) % 12);
 
+                                // Set the null fields to their max values to ensure they're ignored
+                                // by the while loop
                                 if (until) {
                                     numTimes = Integer.MAX_VALUE;
                                 }
@@ -673,32 +715,41 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                                     endDate.setTime(Long.MAX_VALUE);
                                 }
 
+                                // Schedule this month out until the recurrence is set to end.
                                 for (int j = 0; j < numTimes && !recurCal.getTime()
                                         .after(endDate); j++) {
                                     for (int day : days) {
-                                        if (day <= recurCal.getActualMaximum
+                                        // Make sure to schedule not to schedule days in months
+                                        // they're greater than the max day (e.g. 2/31)
+                                        if (day > recurCal.getActualMaximum
                                                 (Calendar.DAY_OF_MONTH)) {
-                                            recurCal.set(Calendar.DAY_OF_MONTH, day);
-                                            currIndex = getDiff(recurCal.getTime(), mStartDate);
-
-                                            if (!recurCal.getTime().before(start) &&
-                                                    !recurCal.getTime().after(endDate) &&
-                                                    !(j == 0 && offByOne) && !(j == numTimes - 1
-                                                    && oneLess && !offByOne)) {
-                                                Event toAdd = new Event(name, recurCal.getTime(),
-                                                        ttc);
-                                                for (int k = mEventSchedule.size(); k <=
-                                                        currIndex; k++) {
-                                                    mEventSchedule.add(new ArrayList<>());
-                                                    mDayItemAdapter.notifyItemChanged(k);
-                                                }
-                                                mEventSchedule.get(currIndex).add(toAdd);
-                                                mTaskAppViewModel.insert(toAdd);
-                                                mDayItemAdapter.notifyItemChanged(currIndex);
-                                            }
+                                            continue;
                                         }
+
+                                        // Set the calendar to this date
+                                        recurCal.set(Calendar.DAY_OF_MONTH, day);
+                                        currIndex = getDiff(recurCal.getTime(), mStartDate);
+
+                                        // Ensure that we don't schedule events for before today or
+                                        // the endDate the user chose
+                                        if (recurCal.getTime().before(start) || recurCal.getTime()
+                                                .after(endDate) || j == 0 && offByOne ||
+                                                j == numTimes - 1 && oneLess && !offByOne) {
+                                            continue;
+                                        }
+
+                                        // Add the event to the data structure.
+                                        Event toAdd = new Event(name, ttc, recurCal.getTime());
+                                        for (int k = mEventSchedule.size(); k <= currIndex; k++) {
+                                            mEventSchedule.add(new ArrayList<>());
+                                            mDayItemAdapter.notifyItemChanged(k);
+                                        }
+                                        mEventSchedule.get(currIndex).add(toAdd);
+                                        mTaskAppViewModel.insert(toAdd);
+                                        mDayItemAdapter.notifyItemChanged(currIndex);
                                     }
 
+                                    // Handle edge case
                                     if (j == 0 && offByOne) {
                                         recurCal.add(Calendar.YEAR, -1);
                                     }
@@ -709,13 +760,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                     }
                 }
             }
+            // If the user chose to not recur
             else {
+                // Ensure there is enough space in the eventSchedule
                 for (int i = mEventSchedule.size(); i <= diff; i++) {
                     mEventSchedule.add(new ArrayList<>());
                     mDayItemAdapter.notifyItemChanged(i);
                 }
 
-                Event toAdd = new Event(name, start, ttc);
+                // Schedule the event
+                Event toAdd = new Event(name, ttc, start);
                 mEventSchedule.get(diff).add(toAdd);
                 mTaskAppViewModel.insert(toAdd);
                 mDayItemAdapter.notifyItemChanged(diff);
@@ -764,6 +818,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 }
             }
 
+            // Add the event to the data structure and database
             mTasks.add(toAdd);
             mTaskAppViewModel.insert(toAdd);
         }
@@ -810,9 +865,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 eventLowIndex--;
             }
         }
-
         int eventScheduleSize = mEventSchedule.size();
-
         if (eventScheduleSize > eventLowIndex) {
             mEventSchedule.subList(eventLowIndex, eventScheduleSize).clear();
 
@@ -895,8 +948,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             e.printStackTrace();
         }
 
+        // Get tasks from database
         mTasks = mTaskAppViewModel.getAllTasks();
-
         mTasks = (mTasks == null) ? new ArrayList<>() : mTasks;
 
         ArrayList<Task> overdueTasks = new ArrayList<>(); // Tasks that are overdue.
@@ -1084,26 +1137,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             mVF.setDisplayedChild(2);
         }
 
+        // Create activity result handler for AddItem
         mStartForResult = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> MainActivity.this.onActivityResult(result.getResultCode(),
                         result.getData()));
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        List<Event> todayTimes = mTaskAppViewModel.getTodayTimes();
-
-        int todayTime = -1;
-
-        for (Event e : todayTimes) {
-            if (e.getLength() > todayTime && !e.getDoDate().before(mStartDate)) {
-                todayTime = e.getLength();
-            }
-            mTaskAppViewModel.delete(e);
-        }
     }
 
     /**
@@ -1140,6 +1178,15 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         mStartForResult.launch(intent);
     }
 
+    /**
+     * Get the EventItem and TaskItem lists for the day i days past today's date. Is used as a
+     * helper function so when the recycler needs to be refreshed, it only needs to get the DayItem
+     * for the updated days, not the entire schedule.
+     *
+     * @param i How many days past today's date to get the schedule for
+     *
+     * @return A DayItem representing that day's schedule
+     */
     private DayItem DayItemHelper(int i) {
         // Fields for the DayItem
         String dayString;
@@ -1346,19 +1393,23 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             Optimize(true);
         }
 
+        // If there are any tasks/events scheduled, show the recycler
         if (mTaskSchedule.size() != 0 || mEventSchedule.size() != 0) {
             mVF.setDisplayedChild(1);
         }
+        // If there aren't any, show the "add a task" fragment
         else {
             mVF.setDisplayedChild(2);
         }
 
+        // If the FAB is currently hidden, show the FAB again, to prevent it from being lost as the
+        // FAB hides if you scroll down currently, and if we don't do this and the recycler doesn't
+        // have enough content to scroll, the FAB will be lost until a restart.
         //noinspection unchecked
         HideBottomViewOnScrollBehavior<FloatingActionButton> fabBehavior =
                 (HideBottomViewOnScrollBehavior<FloatingActionButton>)
                         ((CoordinatorLayout.LayoutParams) mBinding.fab.getLayoutParams())
                                 .getBehavior();
-
         if (fabBehavior != null) {
             fabBehavior.slideUp(mBinding.fab);
         }

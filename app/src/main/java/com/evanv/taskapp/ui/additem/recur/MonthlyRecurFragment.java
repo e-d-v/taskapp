@@ -24,6 +24,7 @@ import java.util.Objects;
  * @author Evan Voogd
  */
 public class MonthlyRecurFragment extends Fragment implements RecurInput {
+    // Extras for storing monthly recurrence information
     // Value for a Bundle extra that represents monthly recurrence happening.
     public static final String EXTRA_VAL_TYPE = "com.evanv.taskapp.ui.additem.recur.MonthlyRecurFragment.extra.val.TYPE";
     // Extra key for a value containing how many months between each recurrence of this event.
@@ -39,6 +40,7 @@ public class MonthlyRecurFragment extends Fragment implements RecurInput {
     public static final String EXTRA_VAL_SPECIFIC = "com.evanv.taskapp.ui.additem.recur.MonthlyRecurFragment.extra.val.SPECIFIC";
     // Extra key for a value containing what days to recur on if specific is selected.
     public static final String EXTRA_DAYS = "com.evanv.taskapp.ui.additem.recur.MonthlyRecurFragment.extra.DAYS";
+
     private EditText mIntervalET;   // Edit text containing the interval value
     private RadioGroup mRecurTypes; // RadioGroup representing the type of recurrence the user chooses
     private EditText mDaysET;       // EditText containing what days to increment on
@@ -88,22 +90,28 @@ public class MonthlyRecurFragment extends Fragment implements RecurInput {
         // Inflate the layout for this fragment
         View toReturn = inflater.inflate(R.layout.fragment_monthly_recur, container, false);
 
+        // Get the various views of this layout
         mIntervalET = Objects.requireNonNull(toReturn).findViewById(R.id.monthsBetween);
         mRecurTypes = Objects.requireNonNull(toReturn).findViewById(R.id.monthlyRadioGroup);
         mDaysET = Objects.requireNonNull(toReturn).findViewById(R.id.recurDaysEditText);
 
+        // Get information packed in intent
         Intent intent = requireActivity().getIntent();
         String day = intent.getStringExtra(EventEntry.EXTRA_DAY);
         String desc = intent.getStringExtra(EventEntry.EXTRA_DESC);
 
+        // Get radio buttons from this layout
         RadioButton rbStatic = toReturn.findViewById(R.id.radioButtonStatic);
         RadioButton rbDynamic = toReturn.findViewById(R.id.radioButtonDynamic);
 
+        // Set the radio button text based on the day entered by user in AddEvent screen
         rbStatic.setText(String.format(getString(R.string.recur_on_the), day));
         rbDynamic.setText(String.format(getString(R.string.recur_on_the), desc));
 
+        // The initially selected radiobutton is index 0
         currSelection = 0;
 
+        // Set the onClickListener for the radio buttons to hide/show fields
         RadioGroup rg = toReturn.findViewById(R.id.monthlyRadioGroup);
         rg.setOnCheckedChangeListener((radioGroup, i) -> {
             if (currSelection == 2) {
@@ -142,8 +150,7 @@ public class MonthlyRecurFragment extends Fragment implements RecurInput {
             toReturn.putInt(EXTRA_INTERVAL, interval);
         }
         else {
-            Toast.makeText(getActivity(),
-                    String.format(getString(R.string.recur_format_event),
+            Toast.makeText(getActivity(), String.format(getString(R.string.recur_format_event),
                             getString(R.string.months)),Toast.LENGTH_LONG).show();
             flag = true;
         }

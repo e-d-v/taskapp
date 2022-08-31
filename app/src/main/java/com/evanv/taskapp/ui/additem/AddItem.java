@@ -54,6 +54,7 @@ public class AddItem extends AppCompatActivity {
     // Key for the number of reoccurrences for the task being added
     public static final String EXTRA_RECUR = "com.evanv.taskapp.extra.RECUR";
 
+    // Fields
     private boolean mTaskDisplayed;       // true if TaskEntry fragment is displayed
     private RadioGroup mRGroup;           // Task/Event selector
     private boolean ignoreCheckedChanged; // If check was changed by back press

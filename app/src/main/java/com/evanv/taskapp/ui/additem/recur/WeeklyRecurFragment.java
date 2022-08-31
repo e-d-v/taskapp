@@ -26,6 +26,7 @@ public class WeeklyRecurFragment extends Fragment implements RecurInput {
     public static final String EXTRA_INTERVAL = "com.evanv.taskapp.ui.additem.recur.WeeklyRecurFragment.extra.INTERVAL";
     // Extra key for a value containing an array of booleans representing if events occur these days
     public static final String EXTRA_DAYS = "com.evanv.taskapp.ui.additem.recur.WeeklyRecurFragment.extra.DAYS";
+
     private EditText mIntervalET;  // Edit text containing the interval value
     private CheckBox[] checkBoxes; // Array of the CheckBoxes representing the weeks
 

@@ -27,8 +27,7 @@ public class DatePickerFragment extends DialogFragment
     private final String mTitle; // The text for the title of the dialog
     private final Date mMinDate; // The earliest date user can choose
     private final Date mMaxDate; // The latest date user can choose
-    // True if time is needed, false if not.
-    private final boolean mTP;
+    private final boolean mTP;   // True if time is needed, false if not.
 
     /**
      * Creates a DatePickerFragment for a dialog that puts its output in the given EditText,
@@ -75,6 +74,14 @@ public class DatePickerFragment extends DialogFragment
         return dp;
     }
 
+    /**
+     * Updates EditText after dialog is submitted.
+     *
+     * @param view Not used
+     * @param year The year selected by the user.
+     * @param month The month chosen by the user.
+     * @param day The date chosen by the user.
+     */
     public void onDateSet(DatePicker view, int year, int month, int day) {
         // Do something with the date chosen by the user
 

@@ -29,29 +29,34 @@ import java.util.concurrent.TimeUnit;
 @Entity(tableName = "task_table")
 @TypeConverters(Converters.class)
 public class Task implements Comparable<Task> {
+    // Database Fields
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "id")                  // PrimaryKey for Task. Used as duplicate task names
-    private long mID;                         // is allowed.
+    @ColumnInfo(name = "id")
+    private long mID;                  // PrimaryKey for Task. Used as duplicate task names is allowed
     @NonNull
     @ColumnInfo(name = "name")
-    private final String mName;               // Name of the task
+    private String mName;        // Name of the task
     @NonNull
     @ColumnInfo(name = "earlyDate")
-    private Date mEarlyDate;                  // Earliest date to complete
+    private Date mEarlyDate;           // Earliest date to complete
     @ColumnInfo(name = "doDate")
-    private Date mDoDate;                     // Date to do the task
+    private Date mDoDate;              // Date to do the task
     @NonNull
     @ColumnInfo(name = "dueDate")
-    private Date mDueDate;                    // Date the task is due
+    private Date mDueDate;             // Date the task is due
     @ColumnInfo(name = "ttc")
-    private int mTimeToComplete;              // Time (in minutes) to complete the tasks
+    private int mTimeToComplete;       // Time (in minutes) to complete the tasks
     @NonNull
     @ColumnInfo(name = "parents_list")
+
+    // Runtime fields
     private final ArrayList<Long> mParentArr; // List of parent ids to be stored in Room.
     @Ignore
     private final ArrayList<Task> mParents;   // Tasks this task depends on
     @Ignore
     private final ArrayList<Task> mChildren;  // Tasks that depend on this task
+
+    // Optimizer fields
     @Ignore
     private ArrayList<Task> mWorkingParents;  // Working copy of parents for optimizer
     @Ignore
@@ -60,6 +65,8 @@ public class Task implements Comparable<Task> {
     private Date mWorkingEarlyDate;           // Working copy of earlyDate for optimizer.
     @Ignore
     private Date mWorkingDoDate;              // Working copy of doDate for optimizer.
+
+    // Static field
     // SimpleDateFormat that formats date in the style "08/20/22"
     @SuppressLint("SimpleDateFormat")
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy");
@@ -123,6 +130,15 @@ public class Task implements Comparable<Task> {
     }
 
     /**
+     * Changes the name of the task
+     *
+     * @param name THe new name of the task
+     */
+    public void setName(@NonNull String name) {
+        this.mName = name;
+    }
+
+    /**
      * Returns the earliest completion date for the task
      *
      * @return The earliest completion date for the task
@@ -140,23 +156,6 @@ public class Task implements Comparable<Task> {
         this.mEarlyDate = clearDate(earlyDate);
     }
 
-    /**
-     * Returns the working copy of the earliest completion date for the task
-     *
-     * @return The working copy of the earliest completion date for the task
-     */
-    public Date getWorkingEarlyDate() {
-        return mWorkingEarlyDate;
-    }
-
-    /**
-     * Changes the working copy of the earliest completion date for a task.
-     *
-     * @param earlyDate The new working copy of the earliest completion date for the task.
-     */
-    public void setWorkingEarlyDate(Date earlyDate) {
-        this.mWorkingEarlyDate = clearDate(earlyDate);
-    }
     /**
      * Returns the currently scheduled completion date (by the optimizer) for the task
      *
@@ -212,37 +211,6 @@ public class Task implements Comparable<Task> {
     }
 
     /**
-     * Returns the "working" parents list. The working list exists so the optimizer can remove
-     * parents from children as they are completed, so checking if all prerequisite tasks are
-     * completed is as easy as getWorkingParents().size() == 0.
-     *
-     * @return The working parents list.
-     */
-    public ArrayList<Task> getWorkingParents() {
-        return mWorkingParents;
-    }
-
-    /**
-     * Returns the "working" children list. Exists mostly for symmetry with workingParents.
-     *
-     * @return The working children list.
-     */
-    public ArrayList<Task> getWorkingChildren() {
-        return mWorkingChildren;
-    }
-
-    /**
-     * Copies children into working children and parents into working parents, so the optimizer can
-     * utilize the inherent dependency tree.
-     */
-    @SuppressWarnings("unchecked")
-    public void initializeForOptimization() {
-        mWorkingChildren = (ArrayList<Task>) mChildren.clone();
-        mWorkingParents = (ArrayList<Task>) mParents.clone();
-        mWorkingEarlyDate = mEarlyDate;
-    }
-
-    /**
      * Returns the prerequisite tasks for the task
      *
      * @return The prerequisite tasks for the task
@@ -272,15 +240,6 @@ public class Task implements Comparable<Task> {
     }
 
     /**
-     * Remove a prerequisite task for this task in the optimizer's working task dependency graph
-     *
-     * @param parent The prerequisite task to remove
-     */
-    public void removeWorkingParent(Task parent) {
-        this.mWorkingParents.remove(parent);
-    }
-
-    /**
      * Returns the tasks dependent on the completion of the task
      *
      * @return The tasks dependent on the completion of the task
@@ -305,6 +264,92 @@ public class Task implements Comparable<Task> {
      */
     public void removeChild(Task child) {
         this.mChildren.remove(child);
+    }
+
+    /**
+     * Get list of parent ids
+     *
+     * @return parent array
+     */
+    @NonNull
+    public ArrayList<Long> getParentArr() {
+        return mParentArr;
+    }
+
+    /**
+     * Get the working copy of the do date for the task
+     *
+     * @return The working copy of the do date for the task
+     */
+    public Date getWorkingDoDate() {
+        return mWorkingDoDate;
+    }
+
+    /**
+     * Change the working copy of the earliest completion date for the task
+     *
+     * @param mWorkingDoDate The new working copy of the earliest completion date for the task
+     */
+    public void setWorkingDoDate(Date mWorkingDoDate) {
+        this.mWorkingDoDate = mWorkingDoDate;
+    }
+
+    /**
+     * Returns the working copy of the earliest completion date for the task
+     *
+     * @return The working copy of the earliest completion date for the task
+     */
+    public Date getWorkingEarlyDate() {
+        return mWorkingEarlyDate;
+    }
+
+    /**
+     * Changes the working copy of the earliest completion date for a task.
+     *
+     * @param earlyDate The new working copy of the earliest completion date for the task.
+     */
+    public void setWorkingEarlyDate(Date earlyDate) {
+        this.mWorkingEarlyDate = clearDate(earlyDate);
+    }
+
+    /**
+     * Returns the "working" parents list. The working list exists so the optimizer can remove
+     * parents from children as they are completed, so checking if all prerequisite tasks are
+     * completed is as easy as getWorkingParents().size() == 0.
+     *
+     * @return The working parents list.
+     */
+    public ArrayList<Task> getWorkingParents() {
+        return mWorkingParents;
+    }
+
+    /**
+     * Remove a prerequisite task for this task in the optimizer's working task dependency graph
+     *
+     * @param parent The prerequisite task to remove
+     */
+    public void removeWorkingParent(Task parent) {
+        this.mWorkingParents.remove(parent);
+    }
+
+    /**
+     * Returns the "working" children list. Exists mostly for symmetry with workingParents.
+     *
+     * @return The working children list.
+     */
+    public ArrayList<Task> getWorkingChildren() {
+        return mWorkingChildren;
+    }
+
+    /**
+     * Copies children into working children and parents into working parents, so the optimizer can
+     * utilize the inherent dependency tree.
+     */
+    @SuppressWarnings("unchecked")
+    public void initializeForOptimization() {
+        mWorkingChildren = (ArrayList<Task>) mChildren.clone();
+        mWorkingParents = (ArrayList<Task>) mParents.clone();
+        mWorkingEarlyDate = mEarlyDate;
     }
 
     /**
@@ -356,28 +401,18 @@ public class Task implements Comparable<Task> {
         return cal.getTime();
     }
 
+    /**
+     * Get the difference (in days) between two dates. Often used to find index into taskSchedule
+     * List, so is included as a static field here.
+     *
+     * @param endDate The later date in the calculation
+     * @param startDate The earlier date in the calculation
+     * @return How many days between start and end dates. E.g. 8/21, 8/20 will return 1.
+     */
     public static int getDiff(Date endDate, Date startDate) {
         endDate = clearDate(endDate);
         startDate = clearDate(startDate);
         return (int) ((endDate.getTime() - startDate.getTime()) / TimeUnit.DAYS.toMillis(1));
-    }
-
-    public Date getWorkingDoDate() {
-        return mWorkingDoDate;
-    }
-
-    public void setWorkingDoDate(Date mWorkingDoDate) {
-        this.mWorkingDoDate = mWorkingDoDate;
-    }
-
-    /**
-     * Get list of parent ids
-     *
-     * @return parent array
-     */
-    @NonNull
-    public ArrayList<Long> getParentArr() {
-        return mParentArr;
     }
 
 }

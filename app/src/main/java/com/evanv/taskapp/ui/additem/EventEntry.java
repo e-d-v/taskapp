@@ -39,10 +39,14 @@ import java.util.Objects;
  * @author Evan Voogd
  */
 public class EventEntry extends Fragment implements ItemEntry {
-    private Bundle mRecur;        // The value returned by the recur activity.
+    // Fields
+    private Bundle mRecur;               // The value returned by the recur activity.
     private EditText mEditTextEventName; // EditText containing the name of the event
     private EditText mEditTextECD;       // EditText containing the date/time of the event
     private EditText mEditTextLength;    // EditText containing the length of the event
+    // Allows data to be pulled from activity
+    private ActivityResultLauncher<Intent> mStartForResult;
+
     // The day the user has entered (e.g. 18)
     public static final String EXTRA_DAY = "com.evanv.taskapp.ui.additem.EventEntry.extra.DAY";
     // The day the user has entered (e.g. 3rd monday)
@@ -51,8 +55,6 @@ public class EventEntry extends Fragment implements ItemEntry {
     public static final String EXTRA_MONTH = "com.evanv.taskapp.ui.additem.EventEntry.extra.MONTH";
     // The time the user has entered
     public static final String EXTRA_TIME = "com.evanv.taskapp.ui.additem.EventEntry.extra.TIME";
-    // Allows data to be pulled from activity
-    private ActivityResultLauncher<Intent> mStartForResult;
 
     /**
      * Required empty public constructor
@@ -76,6 +78,12 @@ public class EventEntry extends Fragment implements ItemEntry {
 
     }
 
+    /**
+     * Function that is called when result is received from recurrence activity.
+     *
+     * @param resultCode Is Activity.RESULT_OK if ran successfully
+     * @param data A bundle of data that describes the recurrence chosen
+     */
     private void handleRecurInput(int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
             mRecur = data.getBundleExtra(RecurActivity.EXTRA_RECUR);
@@ -116,6 +124,9 @@ public class EventEntry extends Fragment implements ItemEntry {
             boolean ecdFlag = false; // true if there is an issue with ecd input
 
             // Check if ecd follows format MM/DD/YY HH:MM AM/PM
+            // Almost certainly not needed now that we have the picker fill in these fields, but in
+            // case that doesn't work, I've kept it (as removing it has no noticeable performance
+            // benefit)`
             if (fullTokens.length == 3) {
                 String[] dateTokens = fullTokens[0].split("/");
                 String[] timeTokens = fullTokens[1].split(":");
@@ -155,6 +166,7 @@ public class EventEntry extends Fragment implements ItemEntry {
                         ecdFlag = true;
                     }
 
+                    // Make sure the user entered one of AM or PM
                     if (!fullTokens[2].equals(getString(R.string.am)) &&
                             !fullTokens[2].equals(getString(R.string.pm))) {
                         ecdFlag = true;
@@ -165,6 +177,7 @@ public class EventEntry extends Fragment implements ItemEntry {
                 ecdFlag = true;
             }
 
+            // If there was an issue with the user's input for ECD, inform them with a Toast
             if (ecdFlag) {
                 Toast.makeText(getActivity(),
                         R.string.ecd_help_text_format,
@@ -177,6 +190,8 @@ public class EventEntry extends Fragment implements ItemEntry {
             Toast.makeText(getActivity(), R.string.ttc_error_empty, Toast.LENGTH_LONG).show();
             flag = true;
         }
+        // If length was entered, ensure that it is a valid number. Also likely not needed due to
+        // inputType, but kept as a precaution.
         else {
             try {
                 Integer.parseInt(length);

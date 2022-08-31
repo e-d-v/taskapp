@@ -13,7 +13,7 @@ public class DayItem {
     private String mDayString;       // String of the day this DayItem represents
     private List<EventItem> mEvents; // List of EventItems to be displayed in recyclerview
     private List<TaskItem> mTasks;   // List of TaskItems to be displayed in recyclerview
-    private final int mIndex;              // Index into task/eventSchedule for this day
+    private final int mIndex;        // Index into task/eventSchedule for this day
 
     /**
      * Returns how many days past today's date this DayItem represents, which can be used as an
@@ -54,10 +54,10 @@ public class DayItem {
     /**
      * Sets the string representing the day this DayItem represents
      *
-     * @param mDayString a string representing the day this DayItem represents
+     * @param dayString a string representing the day this DayItem represents
      */
-    public void getDayString(String mDayString) {
-        this.mDayString = mDayString;
+    public void setDayString(String dayString) {
+        this.mDayString = dayString;
     }
 
     /**
@@ -72,10 +72,10 @@ public class DayItem {
     /**
      * Sets the List of EventItems to be displayed in recyclerview
      *
-     * @param mEvents a List of EventItems to be displayed in recyclerview
+     * @param events a List of EventItems to be displayed in recyclerview
      */
-    public void setEvents(List<EventItem> mEvents) {
-        this.mEvents = mEvents;
+    public void setEvents(List<EventItem> events) {
+        this.mEvents = events;
     }
 
     /**
@@ -90,9 +90,9 @@ public class DayItem {
     /**
      * Sets the List of TaskItems to be displayed in recyclerview
      *
-     * @param mTasks a List of TaskItems to be displayed in recyclerview
+     * @param tasks a List of TaskItems to be displayed in recyclerview
      */
-    public void setTasks(List<TaskItem> mTasks) {
-        this.mTasks = mTasks;
+    public void setTasks(List<TaskItem> tasks) {
+        this.mTasks = tasks;
     }
 }

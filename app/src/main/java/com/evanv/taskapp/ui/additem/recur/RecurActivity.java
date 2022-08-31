@@ -45,6 +45,7 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
     public static final String EXTRA_VAL_NUM = "com.evanv.taskapp.ui.additem.recur.RecurActivity.extra.val.NUM";
     // Key for the value representing the date the event stops recurring on / number of recurrences
     public static final String EXTRA_UNTIL = "com.evanv.taskapp.ui.additem.recur.RecurActivity.extra.UNTIL";
+
     private long time; // The time the user has entered
 
     /**
@@ -76,7 +77,6 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
-
         spinner = findViewById(R.id.reoccurSpanSpinner);
         adapter = ArrayAdapter.createFromResource(this, R.array.timespans,
                 android.R.layout.simple_spinner_item);
@@ -91,6 +91,9 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
         inputShown = true;
     }
 
+    /**
+     * Submit the recurrence information back to the EventEntry fragment
+     */
     private void submit() {
         // Get the information from the displayed fragment
         RecurInput input = (RecurInput) getSupportFragmentManager().findFragmentByTag(TAG_CURR_FRAG);
@@ -152,10 +155,10 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
      */
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+        // If the type of the recurrence is changed
         if (parent.getId() == R.id.reoccurSpinner) {
             FragmentManager fm = getSupportFragmentManager();
             FragmentTransaction transaction = fm.beginTransaction();
-
             EditText et = findViewById(R.id.recurTSET);
 
             // No recurrence
@@ -195,9 +198,11 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
             }
             transaction.commit();
         }
+        // If the type of timespan is changed, show the different UI
         else if (parent.getId() == R.id.reoccurSpanSpinner) {
             EditText et = findViewById(R.id.recurTSET);
 
+            // Recur n times
             if (pos == 0) {
                 et.setHint(R.string.recur_times);
                 inputShown = true;
@@ -208,6 +213,7 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
                 et.setOnClickListener(null);
                 et.getText().clear();
             }
+            // Recur until x date
             else if (pos == 1) {
                 et.setHint(getString(R.string.recur_until));
                 inputShown = false;

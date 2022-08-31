@@ -22,10 +22,11 @@ import java.util.List;
  * @author Evan Voogd
  */
 public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewHolder> {
+    public List<DayItem> mDayItemList; // List of days
+
     // Used to share views between the Event/Task RecyclerViews and the Day RecyclerViews
     private final RecyclerView.RecycledViewPool mTaskViewPool = new RecyclerView.RecycledViewPool();
     private final RecyclerView.RecycledViewPool mEventViewPool = new RecyclerView.RecycledViewPool();
-    public List<DayItem> mDayItemList; // List of days
     // Listener that allows easy completion of tasks (see ClickListener)
     private final ClickListener mListener;
 

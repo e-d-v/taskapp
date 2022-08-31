@@ -3,9 +3,7 @@ package com.evanv.taskapp.logic;
 import static com.evanv.taskapp.logic.Task.getDiff;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -23,6 +21,7 @@ public class Optimizer {
      * dates would create problems.
      *
      * @param t The task to find the true end date for
+     *
      * @return The latest date this task should be rescheduled for
      */
     private Date findTrueEndDate(Task t) {

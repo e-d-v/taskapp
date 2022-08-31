@@ -29,10 +29,11 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
 
     /**
      * Constructs an adapter for a given DayItem's event recyclerview
-     *  @param eventItemList the list of events for this day
+     *
+     * @param eventItemList the list of events for this day
      * @param listener ClickListener to handle button clicks
      * @param header TextView representing the header whose visibility will be changed depending on
- *               this adapter
+     *               this adapter
      */
     public EventItemAdapter(List<EventItem> eventItemList, ClickListener listener, int day,
                             TextView header) {
@@ -40,6 +41,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
         mListener = listener;
         mDay = day;
 
+        // If there are no events, hide the "Events" subheader
         if (mEventItemList.size() == 0) {
             header.setVisibility(View.INVISIBLE);
             header.setLayoutParams(new LinearLayout.LayoutParams(
@@ -81,12 +83,12 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
         holder.mEventItemName.setText(eventItem.getName());
         holder.mEventItemTimespan.setText(eventItem.getTimespan());
         holder.delete.setOnClickListener(view -> {
-        // If the view clicked was the button, tell the DayViewHolder the index of the event to
-        // be deleted. As the TaskViewHolder doesn't know the day index, this is -1, and will be
-        // filled in by the DayViewHolder
-        if (view.getId() == holder.DELETE_ID) {
-            holder.mListenerRef.get().onButtonClick(holder.mIndex, mDay, 2);
-        }
+            // If the view clicked was the button, tell the DayViewHolder the index of the event to
+            // be deleted. As the TaskViewHolder doesn't know the day index, this is -1, and will be
+            // filled in by the DayViewHolder
+            if (view.getId() == holder.DELETE_ID) {
+                holder.mListenerRef.get().onButtonClick(holder.mIndex, mDay, 2);
+            }
         });
         holder.mIndex = eventItem.getIndex();
     }

@@ -40,6 +40,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         mListener = listener;
         mDay = day;
 
+        // If the task list is empty, hide the "Tasks" subheader
         if (taskItemList.size() == 0) {
             header.setVisibility(View.INVISIBLE);
             header.setLayoutParams(

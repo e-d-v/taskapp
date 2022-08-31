@@ -19,11 +19,12 @@ import java.util.Objects;
  * @author Evan Voogd
  */
 public class DailyRecurFragment extends Fragment implements RecurInput {
+    private EditText mIntervalET; // Edit text containing the interval value
+
     // Value for a Bundle extra that represents daily recurrence happening.
     public static final String EXTRA_VAL_TYPE = "com.evanv.taskapp.ui.additem.recur.DailyRecurFragment.extra.val.TYPE";
     // Extra key for a value containing how many days between each recurrence of this event.
     public static final String EXTRA_INTERVAL = "com.evanv.taskapp.ui.additem.recur.DailyRecurFragment.extra.INTERVAL";
-    private EditText mIntervalET; // Edit text containing the interval value
 
     /**
      * Required empty public constructor
@@ -65,11 +66,11 @@ public class DailyRecurFragment extends Fragment implements RecurInput {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
         View toReturn = inflater.inflate(R.layout.fragment_daily_recur, container, false);
 
         mIntervalET = Objects.requireNonNull(toReturn).findViewById(R.id.daysBetween);
 
-        // Inflate the layout for this fragment
         return toReturn;
     }
 
@@ -88,15 +89,13 @@ public class DailyRecurFragment extends Fragment implements RecurInput {
         String input = mIntervalET.getText().toString();
         if (!input.equals("")) {
             int interval = Integer.parseInt(input);
-
             toReturn.putInt(EXTRA_INTERVAL, interval);
-
             return toReturn;
         }
         else {
-            Toast.makeText(getActivity(),
-                    String.format(getString(R.string.recur_format_event), getString(R.string.days)),Toast.LENGTH_LONG)
-                    .show();
+            // Display a toast reminding the user to enter an interval of time.
+            Toast.makeText(getActivity(), String.format(getString(R.string.recur_format_event),
+                            getString(R.string.days)), Toast.LENGTH_LONG).show();
 
             return null;
         }

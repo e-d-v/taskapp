@@ -1,0 +1,6 @@
+com.evanv.taskapp.db
+com.evanv.taskapp.logic
+com.evanv.taskapp.ui.additem
+com.evanv.taskapp.ui.additem.recur
+com.evanv.taskapp.ui.main
+com.evanv.taskapp.ui.main.recycler

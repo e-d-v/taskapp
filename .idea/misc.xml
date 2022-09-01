@@ -27,10 +27,66 @@
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/fragment_weekly_recur.xml" value="0.5583333333333333" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/fragment_yearly_recur.xml" value="0.5583333333333333" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/task_item.xml" value="0.6458112407211029" />
+        <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.239" />
       </map>
     </option>
   </component>
   <component name="EntryPointsManager">
+    <entry_points version="2.0">
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Event dateFormat" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Task dateFormat" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.additem.AddItem EXTRA_DUE" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.additem.AddItem EXTRA_ECD" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.additem.AddItem EXTRA_ITEM" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.additem.AddItem EXTRA_NAME" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.additem.AddItem EXTRA_PARENTS" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.additem.AddItem EXTRA_RECUR" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.additem.AddItem EXTRA_START" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.MainActivity EXTRA_TASKS" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.additem.AddItem EXTRA_TTC" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.additem.AddItem EXTRA_TYPE" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.additem.AddItem EXTRA_VAL_EVENT" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.additem.AddItem EXTRA_VAL_TASK" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.additem.AddItem ignoreCheckedChanged" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.MainActivity ITEM_REQUEST" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.MainActivity mBinding" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Task mChildren" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.MainActivity mDayItemAdapter" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.recycler.DayItem mDayString" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Event mDoDate" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Task mDoDate" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Task mDueDate" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Task mEarlyDate" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.recycler.DayItem mEvents" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.MainActivity mEventSchedule" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Event mID" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Task mID" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.recycler.DayItem mIndex" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Event mLength" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Event mName" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Task mName" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Task mParentArr" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Task mParents" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.additem.AddItem mRGroup" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.MainActivity mStartDate" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.MainActivity mStartForResult" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.MainActivity mTaskAppViewModel" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.additem.AddItem mTaskDisplayed" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.recycler.DayItem mTasks" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.MainActivity mTasks" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.MainActivity mTaskSchedule" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Task mTimeToComplete" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.MainActivity mTodayTime" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.MainActivity mVF" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Task mWorkingChildren" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Task mWorkingDoDate" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Task mWorkingEarlyDate" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Task mWorkingParents" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.MainActivity PREF_DAY" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.MainActivity PREF_FILE" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.ui.main.MainActivity PREF_TIME" />
+      <entry_point TYPE="field" FQNAME="com.evanv.taskapp.logic.Event timeFormat" />
+    </entry_points>
     <pattern value="com.evanv.taskapp.YearlyRecurFragment" method="newInstance" />
     <pattern value="com.evanv.taskapp.TaskAppViewModel" method="delete" />
     <pattern value="com.evanv.taskapp.TaskAppViewModel" method="getAllEvents" />
@@ -40,6 +96,131 @@
     <pattern value="com.evanv.taskapp.TaskAppViewModel" />
     <pattern value="com.evanv.taskapp.TaskAppViewModel" method="TaskAppViewModel" />
     <pattern value="com.evanv.taskapp.TaskAppViewModel" method="update" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="addChild" />
+    <pattern value="com.evanv.taskapp.ui.additem.AddItem" />
+    <pattern value="com.evanv.taskapp.ExampleUnitTest" method="addition_isCorrect" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="addParent" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="clearDate" />
+    <pattern value="com.evanv.taskapp.logic.Event" method="clearTime" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="compareTo" />
+    <pattern value="com.evanv.taskapp.ui.main.MainActivity" method="Complete" />
+    <pattern value="com.evanv.taskapp.db.Converters" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.DailyRecurFragment" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.DailyRecurFragment" method="DailyRecurFragment" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.DatePickerFragment" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.DatePickerFragment" method="DatePickerFragment" />
+    <pattern value="com.evanv.taskapp.ui.main.recycler.DayItem" />
+    <pattern value="com.evanv.taskapp.ui.main.recycler.DayItem" method="DayItem" />
+    <pattern value="com.evanv.taskapp.ui.main.recycler.DayItemAdapter" />
+    <pattern value="com.evanv.taskapp.ui.main.recycler.DayItemAdapter" method="DayItemAdapter" />
+    <pattern value="com.evanv.taskapp.ui.main.MainActivity" method="DayItemHelper" />
+    <pattern value="com.evanv.taskapp.ui.main.MainActivity" method="DayItemList" />
+    <pattern value="com.evanv.taskapp.db.TaskAppViewModel" method="delete" />
+    <pattern value="com.evanv.taskapp.logic.Event" />
+    <pattern value="com.evanv.taskapp.logic.Event" method="Event" />
+    <pattern value="com.evanv.taskapp.db.EventDao" />
+    <pattern value="com.evanv.taskapp.ui.additem.EventEntry" />
+    <pattern value="com.evanv.taskapp.ui.additem.EventEntry" method="EventEntry" />
+    <pattern value="com.evanv.taskapp.ui.main.recycler.EventItem" />
+    <pattern value="com.evanv.taskapp.ui.main.recycler.EventItem" method="EventItem" />
+    <pattern value="com.evanv.taskapp.ui.main.MainActivity" method="EventItemList" />
+    <pattern value="com.evanv.taskapp.ExampleInstrumentedTest" />
+    <pattern value="com.evanv.taskapp.ExampleUnitTest" />
+    <pattern value="com.evanv.taskapp.ui.main.MainActivity" method="finishProcessing" />
+    <pattern value="com.evanv.taskapp.db.Converters" method="fromArrayList" />
+    <pattern value="com.evanv.taskapp.db.Converters" method="fromDate" />
+    <pattern value="com.evanv.taskapp.db.Converters" method="fromString" />
+    <pattern value="com.evanv.taskapp.db.TaskAppViewModel" method="getAllEvents" />
+    <pattern value="com.evanv.taskapp.db.TaskAppViewModel" method="getAllTasks" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="getChildren" />
+    <pattern value="com.evanv.taskapp.ui.main.recycler.DayItem" method="getDayString" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="getDiff" />
+    <pattern value="com.evanv.taskapp.logic.Event" method="getDoDate" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="getDoDate" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="getDueDate" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="getEarlyDate" />
+    <pattern value="com.evanv.taskapp.ui.main.recycler.DayItem" method="getEvents" />
+    <pattern value="com.evanv.taskapp.logic.Event" method="getID" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="getID" />
+    <pattern value="com.evanv.taskapp.ui.main.recycler.DayItem" method="getIndex" />
+    <pattern value="com.evanv.taskapp.ui.additem.EventEntry" method="getItem" />
+    <pattern value="com.evanv.taskapp.ui.additem.ItemEntry" method="getItem" />
+    <pattern value="com.evanv.taskapp.ui.additem.TaskEntry" method="getItem" />
+    <pattern value="com.evanv.taskapp.logic.Event" method="getLength" />
+    <pattern value="com.evanv.taskapp.logic.Event" method="getName" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="getName" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="getParentArr" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="getParents" />
+    <pattern value="com.evanv.taskapp.ui.main.recycler.DayItem" method="getTasks" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="getTimeToComplete" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="getWorkingChildren" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="getWorkingDoDate" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="getWorkingEarlyDate" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="getWorkingParents" />
+    <pattern value="com.evanv.taskapp.ui.main.MainActivity" />
+    <pattern value="com.evanv.taskapp.ui.main.OptimizingActivity" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.RecurActivity" />
+    <pattern value="com.evanv.taskapp.db.TaskAppRoomDatabase" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="initializeForOptimization" />
+    <pattern value="com.evanv.taskapp.db.TaskAppViewModel" method="insert" />
+    <pattern value="com.evanv.taskapp.ui.main.MainActivity" method="intentAddItem" />
+    <pattern value="com.evanv.taskapp.ui.additem.ItemEntry" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.MonthlyRecurFragment" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.MonthlyRecurFragment" method="MonthlyRecurFragment" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.DailyRecurFragment" method="newInstance" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.NoRecurFragment" method="newInstance" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.WeeklyRecurFragment" method="newInstance" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.YearlyRecurFragment" method="newInstance" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.MonthlyRecurFragment" method="newInstance" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.NoRecurFragment" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.NoRecurFragment" method="NoRecurFragment" />
+    <pattern value="com.evanv.taskapp.ui.main.MainActivity" method="onActivityResult" />
+    <pattern value="com.evanv.taskapp.ui.additem.AddItem" method="onBackPressed" />
+    <pattern value="com.evanv.taskapp.ui.main.MainActivity" method="onButtonClick" />
+    <pattern value="com.evanv.taskapp.ui.additem.AddItem" method="onCreate" />
+    <pattern value="com.evanv.taskapp.ui.main.MainActivity" method="onCreate" />
+    <pattern value="com.evanv.taskapp.ui.main.MainActivity" method="onCreateOptionsMenu" />
+    <pattern value="com.evanv.taskapp.ui.main.MainActivity" method="onOptionsItemSelected" />
+    <pattern value="com.evanv.taskapp.ui.main.MainActivity" method="onPause" />
+    <pattern value="com.evanv.taskapp.ui.main.MainActivity" method="Optimize" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="removeChild" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="removeParent" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="removeWorkingParent" />
+    <pattern value="com.evanv.taskapp.ui.main.recycler.DayItem" method="setDayString" />
+    <pattern value="com.evanv.taskapp.logic.Event" method="setDoDate" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="setDoDate" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="setDueDate" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="setEarlyDate" />
+    <pattern value="com.evanv.taskapp.ui.main.recycler.DayItem" method="setEvents" />
+    <pattern value="com.evanv.taskapp.logic.Event" method="setID" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="setID" />
+    <pattern value="com.evanv.taskapp.logic.Event" method="setLength" />
+    <pattern value="com.evanv.taskapp.logic.Event" method="setName" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="setName" />
+    <pattern value="com.evanv.taskapp.ui.main.recycler.DayItem" method="setTasks" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="setTimeToComplete" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="setWorkingDoDate" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="setWorkingEarlyDate" />
+    <pattern value="com.evanv.taskapp.ui.additem.AddItem" method="submit" />
+    <pattern value="com.evanv.taskapp.logic.Task" />
+    <pattern value="com.evanv.taskapp.logic.Task" method="Task" />
+    <pattern value="com.evanv.taskapp.db.TaskAppViewModel" />
+    <pattern value="com.evanv.taskapp.db.TaskAppViewModel" method="TaskAppViewModel" />
+    <pattern value="com.evanv.taskapp.db.TaskDao" />
+    <pattern value="com.evanv.taskapp.ui.additem.TaskEntry" />
+    <pattern value="com.evanv.taskapp.ui.additem.TaskEntry" method="TaskEntry" />
+    <pattern value="com.evanv.taskapp.ui.main.recycler.TaskItem" />
+    <pattern value="com.evanv.taskapp.ui.main.recycler.TaskItem" method="TaskItem" />
+    <pattern value="com.evanv.taskapp.ui.main.MainActivity" method="TaskItemList" />
+    <pattern value="com.evanv.taskapp.ui.additem.TimePickerFragment" />
+    <pattern value="com.evanv.taskapp.ui.additem.TimePickerFragment" method="TimePickerFragment" />
+    <pattern value="com.evanv.taskapp.db.Converters" method="toDate" />
+    <pattern value="com.evanv.taskapp.db.TaskAppViewModel" method="update" />
+    <pattern value="com.evanv.taskapp.ExampleInstrumentedTest" method="useAppContext" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.WeeklyRecurFragment" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.WeeklyRecurFragment" method="WeeklyRecurFragment" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.YearlyRecurFragment" />
+    <pattern value="com.evanv.taskapp.ui.additem.recur.YearlyRecurFragment" method="YearlyRecurFragment" />
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />

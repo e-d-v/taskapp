@@ -64,4 +64,4 @@ taskapp also provides advanced recurrence options - allowing you to set nearly e
 </div>
 
 ## Javadoc
-To help navigate the structure of this project, we've provided a Javadoc.
+To help navigate the structure of this project, we've provided a [Javadoc](https://e-d-v.github.io/taskapp/).

@@ -278,6 +278,11 @@ public class Optimizer {
                             continue;
                         }
 
+                        Date otherEarlyDate = findTrueEarlyDate(other);
+                        if (otherEarlyDate.after(curr.getWorkingDoDate())) {
+                            continue;
+                        }
+
                         // Calculates difference between schedule with/without this change nearly
                         // identically to the first loop, although this one also adds/subtracts
                         // the task to be swapped

@@ -990,11 +990,19 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // Prompt the user with a dialog containing overdue tasks so they can mark overdue tasks
         // so taskapp can reoptimize the schedule if some tasks are overdue.
         if (overdueTasks.size() != 0) {
+
             String[] overdueNames = new String[overdueTasks.size()];
 
             // Create a list of overdue task names for the dialog
             for (int i = 0; i < overdueNames.length; i++) {
                 Task t = overdueTasks.get(i);
+
+                if (t.getDoDate().getTime() == 0) {
+                    mTasks.remove(t);
+                    mTaskAppViewModel.delete(t);
+                    continue;
+                }
+
                 Date tDate = t.getDueDate();
                 overdueNames[i] = String.format(getString(R.string.due_when), t.getName(),
                         Task.dateFormat.format(tDate));

@@ -961,6 +961,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             Date doDate = t.getDoDate();
             int index = getDiff(doDate, mStartDate);
 
+            if (t.getEarlyDate().before(mStartDate)) {
+                t.setEarlyDate(mStartDate);
+                mTaskAppViewModel.update(t);
+            }
+
             // Adds file to taskSchedule if it is scheduled for today or later.
             if (index >= 0) {
                 // Make sure taskSchedule is big enough

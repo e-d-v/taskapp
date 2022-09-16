@@ -123,4 +123,5 @@
     <string name="task_ecd_info">This is the earliest date you can complete this task. For instance, if you can\'t complete this task until after a specific meeting, put the date of that meeting.</string>
     <string name="task_dd_info">This is the latest date this task can be scheduled for. If this task is due by a specific date, set this to that date.</string>
     <string name="task_ttc_info">This is your best estimate on how long the task will take to complete. It doesn\'t have to be perfect, a rough estimate is good enough for the algorithm, although the more precise, the better the schedule.</string>
+    <string name="work_ahead_desc">(%d minutes, due %s)</string>
 </resources>

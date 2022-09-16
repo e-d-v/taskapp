@@ -961,6 +961,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             Date doDate = t.getDoDate();
             int index = getDiff(doDate, mStartDate);
 
+            if (t.getEarlyDate().before(mStartDate)) {
+                t.setEarlyDate(mStartDate);
+                mTaskAppViewModel.update(t);
+            }
+
             // Adds file to taskSchedule if it is scheduled for today or later.
             if (index >= 0) {
                 // Make sure taskSchedule is big enough
@@ -990,11 +995,19 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // Prompt the user with a dialog containing overdue tasks so they can mark overdue tasks
         // so taskapp can reoptimize the schedule if some tasks are overdue.
         if (overdueTasks.size() != 0) {
+
             String[] overdueNames = new String[overdueTasks.size()];
 
             // Create a list of overdue task names for the dialog
             for (int i = 0; i < overdueNames.length; i++) {
                 Task t = overdueTasks.get(i);
+
+                if (t.getDoDate().getTime() == 0) {
+                    mTasks.remove(t);
+                    mTaskAppViewModel.delete(t);
+                    continue;
+                }
+
                 Date tDate = t.getDueDate();
                 overdueNames[i] = String.format(getString(R.string.due_when), t.getName(),
                         Task.dateFormat.format(tDate));
@@ -1301,6 +1314,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             for (int j = 0; j < mTaskSchedule.get(index).size(); j++) {
                 // DayItem's only field
                 String name;
+                boolean completable;
 
                 // Get the jth task scheduled for the given day.
                 Task task = mTaskSchedule.get(index).get(j);
@@ -1309,7 +1323,10 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 name = task.getName() + "\n" + String.format(getString(R.string.minutes_to_complete),
                         task.getTimeToComplete());
 
-                itemList.add(new TaskItem(name, j));
+                completable = (task.getEarlyDate().equals(mStartDate))
+                        && (task.getParents().size() == 0);
+
+                itemList.add(new TaskItem(name, j, completable));
             }
         }
 
@@ -1362,6 +1379,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     public void onButtonClick(int position, int day, int action) {
         // Remove the given task from the task dependency graph
         mVF.setDisplayedChild(0);
+
         if (action == 0) {
             if (day == -1 || mTaskSchedule.get(day).size() <= position) {
                 mVF.setDisplayedChild(1);

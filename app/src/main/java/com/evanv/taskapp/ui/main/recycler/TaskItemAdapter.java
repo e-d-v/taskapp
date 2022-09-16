@@ -84,6 +84,9 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         if (taskItem.isCompletable()) {
             holder.mTaskItemName.setTypeface(null, Typeface.BOLD_ITALIC);
         }
+        else {
+            holder.mTaskItemName.setTypeface(null, Typeface.NORMAL);
+        }
         holder.complete.setOnClickListener(view -> {
             // If the view clicked was a button, tell the DayViewHolder the index of the task to be
             // completed or deleted. As the TaskViewHolder doesn't know the day index, this is -1,

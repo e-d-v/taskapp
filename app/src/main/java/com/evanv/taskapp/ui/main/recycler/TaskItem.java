@@ -8,16 +8,19 @@ package com.evanv.taskapp.ui.main.recycler;
 public class TaskItem {
     private final String mName; // Name of the task (e.g. "Read Ch. 3")
     private final int mIndex;   // Index into taskSchedule.get(day) for this event
+    private final boolean mCompletable; // Can be completed today
 
     /**
      * Creates an item representing a Task
      *
      * @param name a string representing the name of the Task
+     * @param completable a boolean representing if the task can be completed today
      */
     @SuppressWarnings("unused")
-    public TaskItem(String name, int index) {
+    public TaskItem(String name, int index, boolean completable) {
         mName = name;
         mIndex = index;
+        mCompletable = completable;
     }
 
     /**
@@ -38,4 +41,12 @@ public class TaskItem {
         return mName;
     }
 
+    /**
+     * Returns boolean that represents, if true, that the task can be completed today
+     *
+     * @return a boolean that represents if thask can be completed today
+     */
+    public boolean isCompletable() {
+        return mCompletable;
+    }
 }

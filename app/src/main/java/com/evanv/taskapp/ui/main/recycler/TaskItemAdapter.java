@@ -1,5 +1,6 @@
 package com.evanv.taskapp.ui.main.recycler;
 
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -80,6 +81,9 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
         TaskItem taskItem = mTaskItemList.get(position);
         holder.mTaskItemName.setText(taskItem.getName());
+        if (taskItem.isCompletable()) {
+            holder.mTaskItemName.setTypeface(null, Typeface.BOLD_ITALIC);
+        }
         holder.complete.setOnClickListener(view -> {
             // If the view clicked was a button, tell the DayViewHolder the index of the task to be
             // completed or deleted. As the TaskViewHolder doesn't know the day index, this is -1,

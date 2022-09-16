@@ -1314,6 +1314,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             for (int j = 0; j < mTaskSchedule.get(index).size(); j++) {
                 // DayItem's only field
                 String name;
+                boolean completable;
 
                 // Get the jth task scheduled for the given day.
                 Task task = mTaskSchedule.get(index).get(j);
@@ -1322,7 +1323,10 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 name = task.getName() + "\n" + String.format(getString(R.string.minutes_to_complete),
                         task.getTimeToComplete());
 
-                itemList.add(new TaskItem(name, j));
+                completable = (task.getEarlyDate().equals(mStartDate))
+                        && (task.getParents().size() == 0);
+
+                itemList.add(new TaskItem(name, j, completable));
             }
         }
 
@@ -1375,6 +1379,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     public void onButtonClick(int position, int day, int action) {
         // Remove the given task from the task dependency graph
         mVF.setDisplayedChild(0);
+
         if (action == 0) {
             if (day == -1 || mTaskSchedule.get(day).size() <= position) {
                 mVF.setDisplayedChild(1);

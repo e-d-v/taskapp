@@ -95,11 +95,6 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         holder.mTaskRecyclerView.setAdapter(taskItemAdapter);
         holder.mEventRecyclerView.setRecycledViewPool(mEventViewPool);
         holder.mTaskRecyclerView.setRecycledViewPool(mTaskViewPool);
-
-        holder.mTaskRecyclerView.addItemDecoration(new DividerItemDecoration
-                (holder.mTaskRecyclerView.getContext(), DividerItemDecoration.VERTICAL));
-        holder.mEventRecyclerView.addItemDecoration(new DividerItemDecoration
-                (holder.mEventRecyclerView.getContext(), DividerItemDecoration.VERTICAL));
     }
 
     /**
@@ -142,6 +137,11 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
             mTaskRecyclerView = itemView.findViewById(R.id.taskRecycler);
             mTaskHeader = itemView.findViewById(R.id.taskHeader);
             mEventHeader = itemView.findViewById(R.id.eventHeader);
+
+            mTaskRecyclerView.addItemDecoration(new DividerItemDecoration
+                    (mTaskRecyclerView.getContext(), DividerItemDecoration.VERTICAL));
+            mEventRecyclerView.addItemDecoration(new DividerItemDecoration
+                    (mEventRecyclerView.getContext(), DividerItemDecoration.VERTICAL));
         }
 
         /**

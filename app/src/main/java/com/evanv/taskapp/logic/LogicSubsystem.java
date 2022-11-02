@@ -44,16 +44,15 @@ import kotlin.Pair;
  */
 public class LogicSubsystem {
     private final Date mStartDate;              // The current date
-    private int mTodayTime;                     // The time spent completing tasks today
-    private List<Task> mTasks;                  // List of all tasks for user
-    private TaskAppViewModel mTaskAppViewModel; // ViewModel to interact with Database
     private final MainActivity mMainActivity;   // MainActivity for resources
-    private List<Task> overdueTasks;            // Overdue tasks
-
     // taskSchedule[i] represents the list of tasks for the day i days past startDate
     private final ArrayList<ArrayList<Task>> mTaskSchedule = new ArrayList<>();
     // eventSchedule[i] represents the list of events for the day i days past startDate
     private final ArrayList<ArrayList<Event>> mEventSchedule = new ArrayList<>();
+    private int mTodayTime;                     // The time spent completing tasks today
+    private List<Task> mTasks;                  // List of all tasks for user
+    private TaskAppViewModel mTaskAppViewModel; // ViewModel to interact with Database
+    private List<Task> overdueTasks;            // Overdue tasks
 
     /**
      * Creates a new LogicSubsystem and loads data from database into internal data structures.

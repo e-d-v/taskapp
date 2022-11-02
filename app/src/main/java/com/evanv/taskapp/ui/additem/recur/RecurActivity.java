@@ -146,7 +146,7 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
     }
 
     /**
-     * Changes displayed fragment when user changes interval of time to recur on
+     * Dispatches to various helper functions when a different item is selected in this layout.
      *
      * @param parent Adapter for the Spinner
      * @param view The item in the spinner itself
@@ -157,79 +157,97 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
         // If the type of the recurrence is changed
         if (parent.getId() == R.id.reoccurSpinner) {
-            FragmentManager fm = getSupportFragmentManager();
-            FragmentTransaction transaction = fm.beginTransaction();
-            EditText et = findViewById(R.id.recurTSET);
-
-            // No recurrence
-            if (pos == 0) {
-                Fragment fragment = new NoRecurFragment();
-                transaction.replace(R.id.contentFragment, fragment, TAG_CURR_FRAG);
-
-                et.setVisibility(View.INVISIBLE);
-            }
-            else {
-                et.setVisibility(View.VISIBLE);
-
-                // Daily recurrence
-                if (pos == 1) {
-                    Fragment fragment = new DailyRecurFragment();
-                    transaction.replace(R.id.contentFragment, fragment, TAG_CURR_FRAG);
-                }
-                // Weekly recurrence
-                else if (pos == 2) {
-                    Fragment fragment = new WeeklyRecurFragment();
-                    transaction.replace(R.id.contentFragment, fragment, TAG_CURR_FRAG);
-                }
-                // Monthly recurrence
-                else if (pos == 3) {
-                    Fragment fragment = new MonthlyRecurFragment();
-                    transaction.replace(R.id.contentFragment, fragment, TAG_CURR_FRAG);
-                }
-                // Yearly recurrence
-                else if (pos == 4) {
-                    Fragment fragment = new YearlyRecurFragment();
-                    transaction.replace(R.id.contentFragment, fragment, TAG_CURR_FRAG);
-                }
-                // Invalid call
-                else {
-                    return;
-                }
-            }
-            transaction.commit();
+            changeRecurrenceType(pos);
         }
         // If the type of timespan is changed, show the different UI
         else if (parent.getId() == R.id.reoccurSpanSpinner) {
-            EditText et = findViewById(R.id.recurTSET);
+            changeTimespanType(pos);
+        }
+    }
 
-            // Recur n times
-            if (pos == 0) {
-                et.setHint(R.string.recur_times);
-                inputShown = true;
+    /**
+     * Update UI when recurrence type is changed.
+     *
+     * @param pos Which recurrence type was chosen (index into spinner)
+     */
+    private void changeRecurrenceType(int pos) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment;
+        EditText et = findViewById(R.id.recurTSET);
 
-                et.setCursorVisible(true);
-                et.setFocusable(true);
-                et.setInputType(InputType.TYPE_CLASS_NUMBER);
-                et.setOnClickListener(null);
-                et.getText().clear();
+        // No recurrence
+        if (pos == 0) {
+            fragment = new NoRecurFragment();
+            transaction.replace(R.id.contentFragment, fragment, TAG_CURR_FRAG);
+
+            et.setVisibility(View.INVISIBLE);
+        }
+        else {
+            et.setVisibility(View.VISIBLE);
+
+            // Daily recurrence
+            if (pos == 1) {
+                fragment = new DailyRecurFragment();
+                transaction.replace(R.id.contentFragment, fragment, TAG_CURR_FRAG);
             }
-            // Recur until x date
-            else if (pos == 1) {
-                et.setHint(getString(R.string.recur_until));
-                inputShown = false;
-
-                et.setCursorVisible(false);
-                et.setFocusable(false);
-                et.setInputType(InputType.TYPE_NULL);
-                et.getText().clear();
-                et.setOnClickListener(v -> {
-                    Date minDate = new Date(time);
-
-                    DialogFragment newFragment = new DatePickerFragment(et,
-                            getString(R.string.recur_until), minDate, null, false);
-                    newFragment.show(getSupportFragmentManager(), "datePicker");
-                });
+            // Weekly recurrence
+            else if (pos == 2) {
+                fragment = new WeeklyRecurFragment();
+                transaction.replace(R.id.contentFragment, fragment, TAG_CURR_FRAG);
             }
+            // Monthly recurrence
+            else if (pos == 3) {
+                fragment = new MonthlyRecurFragment();
+                transaction.replace(R.id.contentFragment, fragment, TAG_CURR_FRAG);
+            }
+            // Yearly recurrence
+            else if (pos == 4) {
+                fragment = new YearlyRecurFragment();
+                transaction.replace(R.id.contentFragment, fragment, TAG_CURR_FRAG);
+            }
+            // Invalid call
+            else {
+                return;
+            }
+        }
+        transaction.commit();
+    }
+
+    /**
+     * Update UI when recurrence interval is changed.
+     *
+     * @param pos Which recurrence interval was chosen (index into spinner)
+     */
+    private void changeTimespanType(int pos) {
+        EditText et = findViewById(R.id.recurTSET);
+
+        // Recur n times
+        if (pos == 0) {
+            et.setHint(R.string.recur_times);
+            inputShown = true;
+
+            et.setCursorVisible(true);
+            et.setFocusable(true);
+            et.setInputType(InputType.TYPE_CLASS_NUMBER);
+            et.setOnClickListener(null);
+            et.getText().clear();
+        }
+        // Recur until x date
+        else if (pos == 1) {
+            et.setHint(getString(R.string.recur_until));
+            inputShown = false;
+
+            et.setCursorVisible(false);
+            et.setFocusable(false);
+            et.setInputType(InputType.TYPE_NULL);
+            et.getText().clear();
+            et.setOnClickListener(v -> {
+                Date minDate = new Date(time);
+
+                DialogFragment newFragment = new DatePickerFragment(et,
+                        getString(R.string.recur_until), minDate, null, false);
+                newFragment.show(getSupportFragmentManager(), "datePicker");
+            });
         }
     }
 

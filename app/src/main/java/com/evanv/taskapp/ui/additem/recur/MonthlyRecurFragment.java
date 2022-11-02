@@ -42,7 +42,6 @@ public class MonthlyRecurFragment extends Fragment implements RecurInput {
     public static final String EXTRA_DAYS = "com.evanv.taskapp.ui.additem.recur.MonthlyRecurFragment.extra.DAYS";
 
     private EditText mIntervalET;   // Edit text containing the interval value
-    private RadioGroup mRecurTypes; // RadioGroup representing the type of recurrence the user chooses
     private EditText mDaysET;       // EditText containing what days to increment on
     private int currSelection;      // Representing the index of the currently selected radio item
 
@@ -88,43 +87,41 @@ public class MonthlyRecurFragment extends Fragment implements RecurInput {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View toReturn = inflater.inflate(R.layout.fragment_monthly_recur, container, false);
+        View toReturn = inflater.inflate(R.layout.fragment_monthly_recur, container,
+                false);
 
         // Get the various views of this layout
         mIntervalET = Objects.requireNonNull(toReturn).findViewById(R.id.monthsBetween);
-        mRecurTypes = Objects.requireNonNull(toReturn).findViewById(R.id.monthlyRadioGroup);
         mDaysET = Objects.requireNonNull(toReturn).findViewById(R.id.recurDaysEditText);
 
         // Get information packed in intent
         Intent intent = requireActivity().getIntent();
-        String day = intent.getStringExtra(EventEntry.EXTRA_DAY);
-        String desc = intent.getStringExtra(EventEntry.EXTRA_DESC);
 
-        // Get radio buttons from this layout
-        RadioButton rbStatic = toReturn.findViewById(R.id.radioButtonStatic);
-        RadioButton rbDynamic = toReturn.findViewById(R.id.radioButtonDynamic);
-
-        // Set the radio button text based on the day entered by user in AddEvent screen
-        rbStatic.setText(String.format(getString(R.string.recur_on_the), day));
-        rbDynamic.setText(String.format(getString(R.string.recur_on_the), desc));
+        // Set the text for this layout's RadioButtons based on user input in AddEvent screen
+        ((RadioButton) toReturn.findViewById(R.id.radioButtonStatic))
+                .setText(String.format(getString(R.string.recur_on_the),
+                        intent.getStringExtra(EventEntry.EXTRA_DAY)));
+        ((RadioButton) toReturn.findViewById(R.id.radioButtonDynamic))
+                .setText(String.format(getString(R.string.recur_on_the),
+                        intent.getStringExtra(EventEntry.EXTRA_DESC)));
 
         // The initially selected radiobutton is index 0
         currSelection = 0;
 
         // Set the onClickListener for the radio buttons to hide/show fields
-        RadioGroup rg = toReturn.findViewById(R.id.monthlyRadioGroup);
-        rg.setOnCheckedChangeListener((radioGroup, i) -> {
-            if (currSelection == 2) {
-                LinearLayout ll = toReturn.findViewById(R.id.recurDaysLayout);
-                ll.setVisibility(View.INVISIBLE);
-                currSelection = i;
-            }
+        ((RadioGroup) toReturn.findViewById(R.id.monthlyRadioGroup))
+                .setOnCheckedChangeListener((radioGroup, i) -> {
+                    LinearLayout ll = toReturn.findViewById(R.id.recurDaysLayout);
 
-            if (radioGroup.indexOfChild(toReturn.findViewById(i)) == 2) {
-                LinearLayout ll = toReturn.findViewById(R.id.recurDaysLayout);
-                ll.setVisibility(View.VISIBLE);
-                currSelection = 2;
-            }
+                    if (currSelection == 2) {
+                        ll.setVisibility(View.INVISIBLE);
+                    }
+
+                    if (radioGroup.indexOfChild(toReturn.findViewById(i)) == 2) {
+                        ll.setVisibility(View.VISIBLE);
+                    }
+
+                    currSelection = i;
         });
 
         return toReturn;
@@ -141,35 +138,27 @@ public class MonthlyRecurFragment extends Fragment implements RecurInput {
         Bundle toReturn = new Bundle();
         toReturn.putString(RecurInput.EXTRA_TYPE, EXTRA_VAL_TYPE);
 
-        boolean flag = false; // If input is valid flag == false.
-
         // If valid, load the interval into the bundle
         String input = mIntervalET.getText().toString();
         if (!input.equals("")) {
-            int interval = Integer.parseInt(input);
-            toReturn.putInt(EXTRA_INTERVAL, interval);
+            toReturn.putInt(EXTRA_INTERVAL, Integer.parseInt(input));
         }
         else {
             Toast.makeText(getActivity(), String.format(getString(R.string.recur_format_event),
                             getString(R.string.months)),Toast.LENGTH_LONG).show();
-            flag = true;
+            return null;
         }
 
-        // Get the recurrence type chosen
-        int radioButtonID = mRecurTypes.getCheckedRadioButtonId();
-        View radioButton = mRecurTypes.findViewById(radioButtonID);
-        int idx = mRecurTypes.indexOfChild(radioButton);
-
         // User chose to recur on the xth day of every month
-        if (idx == 0) {
+        if (currSelection == 0) {
             toReturn.putString(EXTRA_RECUR_TYPE, EXTRA_VAL_STATIC);
         }
         // User chose to recur on the xth weekday of every month
-        else if (idx == 1) {
+        else if (currSelection == 1) {
             toReturn.putString(EXTRA_RECUR_TYPE, EXTRA_VAL_DYNAMIC);
         }
         // User chose to recur on multiple days of every month
-        else if (idx == 2) {
+        else if (currSelection == 2) {
             toReturn.putString(EXTRA_RECUR_TYPE, EXTRA_VAL_SPECIFIC);
 
             String userInput = mDaysET.getText().toString();
@@ -188,17 +177,16 @@ public class MonthlyRecurFragment extends Fragment implements RecurInput {
                 catch (Exception e) {
                     Toast.makeText(getActivity(), R.string.date_list_format,
                             Toast.LENGTH_LONG).show();
-                    flag = true;
+                    return null;
                 }
             }
             else {
                 Toast.makeText(getActivity(), R.string.no_days,
                         Toast.LENGTH_LONG).show();
-                flag = true;
+                return null;
             }
         }
 
-        // If valid return the bundle, if not, send null to the calling activity to inform it
-        return (!flag) ? toReturn : null;
+        return toReturn;
     }
 }

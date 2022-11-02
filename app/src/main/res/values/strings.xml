@@ -15,7 +15,7 @@
     <string name="task">Task</string>
     <string name="event">Event</string>
     <string name="optimizing">Optimizing…</string>
-    <string name="complete_dialog_message">How long (in minutes) did %s take to complete?</string>
+    <string name="complete_dialog_message">How long (in minutes) did the task take to complete?</string>
     <string name="complete_dialog_title">Complete Task</string>
     <string name="parents_button">Choose prerequisite tasks</string>
     <string name="ecd_help_text_format">Start times are formatted as MM/DD/YY HH:MM AM/PM.</string>

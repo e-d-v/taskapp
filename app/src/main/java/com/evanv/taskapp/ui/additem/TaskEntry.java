@@ -18,6 +18,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import com.evanv.taskapp.R;
+import com.evanv.taskapp.logic.Event;
 import com.evanv.taskapp.logic.Task;
 import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
@@ -74,84 +75,8 @@ public class TaskEntry extends Fragment implements ItemEntry {
 
         // Sets the onClick behavior to the button to creating a dialog asking what parents the user
         // wants to give the new task
-        Button button = view.findViewById(R.id.buttonAddParents);
-        button.setOnClickListener(new View.OnClickListener() {
-            /**
-             * Opens a dialog allowing the user to set parents for the task
-             *
-             * @param view the button
-             */
-            @Override
-            public void onClick(View view) {
-                // Converts the bundled arraylist of task names to a String[] that can be used by
-                // the alert dialog
-                ArrayList<Integer> selectedItems = new ArrayList<>();
-                ArrayList<String> taskNames = requireActivity().getIntent()
-                        .getStringArrayListExtra(MainActivity.EXTRA_TASKS);
-                String[] taskNamesArr = new String[taskNames.size()];
-                Object[] taskNamesObjs = taskNames.toArray();
-                for (int i = 0; i < taskNames.size(); i++) {
-                    taskNamesArr[i] = (String) taskNamesObjs[i];
-                }
-
-                // Define the dialog used to pick parent tasks
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle(R.string.parents_button)
-                        .setMultiChoiceItems(taskNamesArr, null,
-                                new DialogInterface.OnMultiChoiceClickListener() {
-
-                                    /**
-                                     * Adds the selected task to the parent list, or removes it if
-                                     * the task was unselected
-                                     *
-                                     * @param dialogInterface not used
-                                     * @param index the index into the tasks ArrayList of the parent
-                                     * @param isChecked true if checked, false if unchecked
-                                     */
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int index,
-                                                        boolean isChecked) {
-
-                                        // If checked, add to list of Tasks to be added as parents
-                                        if (isChecked) {
-                                            selectedItems.add(index);
-                                        }
-                                        // If unchecked, remove form list of Tasks to be added as
-                                        // parents
-                                        else if (selectedItems.contains(index)) {
-                                            selectedItems.remove(index);
-                                        }
-                                    }
-                                }).setPositiveButton(R.string.ok,
-                                    new DialogInterface.OnClickListener() {
-
-                                    /**
-                                     * When "ok" is clicked, change currentParents to reflect the
-                                     * selected tasks
-                                     *
-                                     * @param dialogInterface not used
-                                     * @param i not used
-                                     */
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        // Build a string that has the format n_1, n_2, ..., n_N,
-                                        // where n_x is an index into the task array of a Task to
-                                        // be added as a parent for the new Task
-                                        StringBuilder sb = new StringBuilder();
-                                        for (int index : selectedItems) {
-                                            sb.append(index);
-                                            sb.append(",");
-                                        }
-                                        mCurrentParents = (selectedItems.size() != 0) ? sb.toString()
-                                                : "-1";
-
-                                     }
-                                });
-
-                builder.create();
-                builder.show();
-            }
-        });
+        ((Button) view.findViewById(R.id.buttonAddParents)).setOnClickListener
+                (new AddParentsListener());
 
         // Get the EditTexts for dates`
         EditText editTextECD = view.findViewById(R.id.editTextECD);
@@ -193,22 +118,21 @@ public class TaskEntry extends Fragment implements ItemEntry {
         });
 
         // Initialize the information buttons to help the user understand the fields.
-        ImageButton infoECD = view.findViewById(R.id.ecdInfoButton);
-        ImageButton infoDD = view.findViewById(R.id.ddInfoButton);
-        ImageButton infoTTC = view.findViewById(R.id.ttcInfoButton);
-        infoECD.setOnClickListener(v -> {
+        ((ImageButton) view.findViewById(R.id.ecdInfoButton)).setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.task_ecd_info);
             builder.setTitle(R.string.ecd);
             builder.show();
         });
-        infoDD.setOnClickListener(v -> {
+
+        ((ImageButton) view.findViewById(R.id.ddInfoButton)).setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.task_dd_info);
             builder.setTitle(R.string.due_date);
             builder.show();
         });
-        infoTTC.setOnClickListener(v -> {
+
+        ((ImageButton) view.findViewById(R.id.ttcInfoButton)).setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.task_ttc_info);
             builder.setTitle(R.string.ttc);
@@ -230,151 +154,59 @@ public class TaskEntry extends Fragment implements ItemEntry {
     @SuppressWarnings("unused")
     @Override
     public Bundle getItem() {
-        // Gets all the required EditTexts containing user input
-        EditText editTextTaskName = mContainer.findViewById(R.id.editTextTaskName);
-        EditText editTextECD = mContainer.findViewById(R.id.editTextECD);
-        EditText editTextDueDate = mContainer.findViewById(R.id.editTextDueDate);
-        EditText editTextTTC = mContainer.findViewById(R.id.editTextTTC);
-
         // Get the user's input
-        String taskName = editTextTaskName.getText().toString();
-        String ecd = editTextECD.getText().toString();
-        String dueDate = editTextDueDate.getText().toString();
-        String ttc = editTextTTC.getText().toString();
-
-        boolean flag = false; // Allows us to Toast multiple errors at once.
+        String taskName = ((EditText) mContainer.findViewById(R.id.editTextTaskName)).getText()
+                .toString();
+        String dueDate = ((EditText) mContainer.findViewById(R.id.editTextDueDate)).getText()
+                .toString();
+        String ecd = ((EditText) mContainer.findViewById(R.id.editTextECD)).getText().toString();
+        String ttc = ((EditText) mContainer.findViewById(R.id.editTextTTC)).getText().toString();
 
         // Check if eventName is valid
         if (taskName.length() == 0) {
             Toast.makeText(getActivity(), R.string.name_empty_task,
                     Toast.LENGTH_LONG).show();
-            flag = true;
+            return null;
         }
+
         // Check if ECD is valid
-        Date earlyDate = null; // Allows us to check if due date is after early date
         if (ecd.length() == 0) {
             Toast.makeText(getActivity(),
                     R.string.ecd_empty_task,
                     Toast.LENGTH_LONG).show();
-            flag = true;
+            return null;
         }
         else {
-            boolean ecdFlag = false; // true if there is an issue with ecd input
-
-            // Check if ecd follows format MM/DD/YY HH:MM AM/PM
-            String[] dateTokens = ecd.split("/");
-
-            if (dateTokens.length == 3) {
-                // Check if everything that's supposed to be a number is an integer
-                try {
-                    int month = Integer.parseInt(dateTokens[0]);
-                    int day = Integer.parseInt(dateTokens[1]);
-                    int year = Integer.parseInt(dateTokens[2]);
-
-                    // Make sure input makes sense
-                    if (month > 12 || month < 1 || day > 31 || day < 1 || year < 0 ) {
-                        ecdFlag = true;
-                    }
-
-                    // Make sure we're not scheduling an event for before today.
-                    Date rightNow = clearDate(new Date());
-
-                    Calendar userCal = Calendar.getInstance();
-                    userCal.set(2000+year, month - 1, day);
-                    earlyDate = clearDate(userCal.getTime());
-
-                    if (earlyDate.before(rightNow)) {
-                        Toast.makeText(getActivity(),
-                                R.string.ecd_early_task,
-                                Toast.LENGTH_LONG).show();
-                        flag = true;
-                    }
-
-                }
-                catch (Exception e) {
-                    ecdFlag = true;
-                }
-            }
-            else {
-                ecdFlag = true;
-            }
-
-            // If there was an error with the user's input for the ECD, inform them with a Toast
-            if (ecdFlag) {
-                Toast.makeText(getActivity(),
-                        R.string.date_format_task,
-                        Toast.LENGTH_LONG).show();
-                flag = true;
+            try {
+                Task.dateFormat.parse(ecd);
+            } catch (ParseException e) {
+                Toast.makeText(getActivity(), R.string.ecd_empty_task, Toast.LENGTH_LONG).show();
+                return null;
             }
         }
+
         // Ensure the user entered a dueDate
         if (dueDate.length() == 0) {
             Toast.makeText(getActivity(),
                     R.string.due_empty_task,
                     Toast.LENGTH_LONG).show();
-            flag = true;
+            return null;
         }
         // Ensure the user entered a valid due date. (Probably) not necessary as the DatePicker
         // should handle this, but kept just in case.
         else {
-            boolean ddFlag = false; // true if there is an issue with dd input
-
-            // Check if Due Date follows format mm/dd/yy
-            String[] dateTokens = dueDate.split("/");
-
-            if (dateTokens.length == 3) {
-                // Check if everything that's supposed to be a number is an integer
-                try {
-                    int month = Integer.parseInt(dateTokens[0]);
-                    int day = Integer.parseInt(dateTokens[1]);
-                    int year = Integer.parseInt(dateTokens[2]);
-
-                    // Make sure input makes sense
-                    if (month > 12 || month < 1 || day > 31 || day < 1 || year < 0 ) {
-                        ddFlag = true;
-                    }
-
-                    // Make sure we're not scheduling an event for before today.
-                    Date rightNow = clearDate(new Date());
-
-                    // Make sure the due date isn't before right now or the earlyDate.
-                    Calendar userCal = Calendar.getInstance();
-                    userCal.set(2000+year, month - 1, day);
-                    Date dueDateTime = clearDate(userCal.getTime());
-
-                    if (dueDateTime.before(rightNow)) {
-                        Toast.makeText(getActivity(),
-                                R.string.ecd_early_task,
-                                Toast.LENGTH_LONG).show();
-                        flag = true;
-                    }
-                    else if (earlyDate != null && dueDateTime.before(earlyDate)) {
-                        Toast.makeText(getActivity(),
-                                R.string.due_before_task,
-                                Toast.LENGTH_LONG).show();
-                        flag = true;
-                    }
-                }
-                catch (Exception e) {
-                    ddFlag = true;
-                }
-            }
-            else {
-                ddFlag = true;
-            }
-
-            // If there was an issue with the user's input for the due date, inform them here.
-            if (ddFlag) {
-                Toast.makeText(getActivity(),
-                        R.string.date_format_task,
-                        Toast.LENGTH_LONG).show();
-                flag = true;
+            try {
+                Task.dateFormat.parse(dueDate);
+            } catch (ParseException e) {
+                Toast.makeText(getActivity(), R.string.due_empty_task, Toast.LENGTH_LONG).show();
+                return null;
             }
         }
+
         // Check if length is valid
         if (ttc.length() == 0) {
             Toast.makeText(getActivity(), R.string.ttc_error_empty_task, Toast.LENGTH_LONG).show();
-            flag = true;
+            return null;
         }
         // Check if user entered length is a number.
         else {
@@ -385,13 +217,8 @@ public class TaskEntry extends Fragment implements ItemEntry {
                 Toast.makeText(getActivity(),
                         R.string.ttc_format_event,
                         Toast.LENGTH_LONG).show();
-                flag = true;
+                return null;
             }
-        }
-
-        // If any required views are empty, return null to signify invalid input
-        if (flag) {
-            return null;
         }
 
         // Build a Bundle with all the required fields
@@ -406,4 +233,68 @@ public class TaskEntry extends Fragment implements ItemEntry {
         return toReturn;
     }
 
+    /**
+     * Listener for the "add prerequisites" button. Extracted due to it's large size.
+     */
+    private class AddParentsListener implements View.OnClickListener {
+        /**
+         * Opens a dialog allowing the user to set parents for the task
+         *
+         * @param view the button
+         */
+        @Override
+        public void onClick(View view) {
+            // Converts the bundled arraylist of task names to a String[] that can be used by
+            // the alert dialog
+            ArrayList<String> taskNames = requireActivity().getIntent()
+                    .getStringArrayListExtra(MainActivity.EXTRA_TASKS);
+            String[] taskNamesArr = new String[taskNames.size()];
+            Object[] taskNamesObjs = taskNames.toArray();
+            for (int i = 0; i < taskNames.size(); i++) {
+                taskNamesArr[i] = (String) taskNamesObjs[i];
+            }
+
+            showPickerDialog(taskNamesArr);
+        }
+
+        /**
+         * Builds and shows a picker dialog based on a list of task names.
+         *
+         * @param taskNamesArr List of names of tasks
+         */
+        private void showPickerDialog(String[] taskNamesArr) {
+            ArrayList<Integer> selectedItems = new ArrayList<>();
+            // Define the dialog used to pick parent tasks
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle(R.string.parents_button)
+                    .setMultiChoiceItems(taskNamesArr, null,
+                            ((dialogInterface, index, isChecked) -> {
+                                // If checked, add to list of Tasks to be added as parents
+                                if (isChecked) {
+                                    selectedItems.add(index);
+                                }
+                                // If unchecked, remove form list of Tasks to be added as
+                                // parents
+                                else if (selectedItems.contains(index)) {
+                                    selectedItems.remove(index);
+                                }
+                            })).setPositiveButton(R.string.ok,
+                            ((dialogInterface, i) -> {
+                                // Build a string that has the format n_1, n_2, ..., n_N,
+                                // where n_x is an index into the task array of a Task to
+                                // be added as a parent for the new Task
+                                StringBuilder sb = new StringBuilder();
+                                for (int index : selectedItems) {
+                                    sb.append(index);
+                                    sb.append(",");
+                                }
+                                mCurrentParents = (selectedItems.size() != 0) ? sb.toString()
+                                        : "-1";
+
+                            }));
+
+            builder.create();
+            builder.show();
+        }
+    }
 }

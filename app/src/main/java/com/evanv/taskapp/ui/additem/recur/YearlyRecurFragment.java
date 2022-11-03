@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.ui.additem.EventEntry;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -111,49 +112,20 @@ public class YearlyRecurFragment extends Fragment implements RecurInput {
         String desc = intent.getStringExtra(EventEntry.EXTRA_DESC);
         String month = intent.getStringExtra(EventEntry.EXTRA_MONTH);
 
-        // Get the RadioButtons from the layout
-        RadioButton rbStatic = toReturn.findViewById(R.id.radioButtonStatic);
-        RadioButton rbDynamic = toReturn.findViewById(R.id.radioButtonDynamic);
-        RadioButton rbMS = toReturn.findViewById(R.id.radioButtonMultipleStatic);
-        RadioButton rbMD = toReturn.findViewById(R.id.radioButtonMultipleDynamic);
-
         // Set text for the RadioButtons based on the date chosen by the user
-        rbStatic.setText(String.format(getString(R.string.recur_on), month, day));
-        rbDynamic.setText(String.format(getString(R.string.recur_on_of), desc, month));
-        rbMS.setText(String.format(getString(R.string.recur_specific_months), day));
-        rbMD.setText(String.format(getString(R.string.recur_specific_months), desc));
+        ((RadioButton) toReturn.findViewById(R.id.radioButtonStatic))
+                .setText(String.format(getString(R.string.recur_on), month, day));
+        ((RadioButton) toReturn.findViewById(R.id.radioButtonDynamic))
+                .setText(String.format(getString(R.string.recur_on_of), desc, month));
+        ((RadioButton) toReturn.findViewById(R.id.radioButtonMultipleStatic))
+                .setText(String.format(getString(R.string.recur_specific_months), day));
+        ((RadioButton) toReturn.findViewById(R.id.radioButtonMultipleDynamic))
+                .setText(String.format(getString(R.string.recur_specific_months), desc));
 
         // Set onClickListener that will show/hide views based on in if they're necessary for the
         // user's selection
-        RadioGroup rg = toReturn.findViewById(R.id.yearlyRadioGroup);
-        rg.setOnCheckedChangeListener((radioGroup, i) -> {
-            int index = radioGroup.indexOfChild(toReturn.findViewById(i));
-            // If the "Select months to recur on" EditText is currently displayed, hide it
-            if (currSelection == 2 || currSelection == 3 || currSelection == 4) {
-                LinearLayout ll = toReturn.findViewById(R.id.recurMonthsLayout);
-                ll.setVisibility(View.INVISIBLE);
-            }
-
-            // If the "Select days to recur on" EditText  is currently displayed, hide it
-            if (currSelection == 4) {
-                LinearLayout ll = toReturn.findViewById(R.id.recurDaysLayout);
-                ll.setVisibility(View.INVISIBLE);
-            }
-
-            // If the "Select months to recur on" EditText needs to be displayed, show it
-            if (index == 2 || index == 3 || index == 4) {
-                LinearLayout ll = toReturn.findViewById(R.id.recurMonthsLayout);
-                ll.setVisibility(View.VISIBLE);
-            }
-
-            // If the "Select days to recur on" EditText needs to be displayed, show it
-            if (index == 4) {
-                LinearLayout ll = toReturn.findViewById(R.id.recurDaysLayout);
-                ll.setVisibility(View.VISIBLE);
-            }
-
-            currSelection = index;
-        });
+        ((RadioGroup) toReturn.findViewById(R.id.yearlyRadioGroup)).setOnCheckedChangeListener(
+                new RecurrenceTypeOnChangedCheckListener(toReturn));
 
         // Inflate the layout for this fragment
         return toReturn;
@@ -170,25 +142,21 @@ public class YearlyRecurFragment extends Fragment implements RecurInput {
         Bundle toReturn = new Bundle();
         toReturn.putString(RecurInput.EXTRA_TYPE, EXTRA_VAL_TYPE);
 
-        boolean flag = false; // If input is valid flag == false.
-
         // If valid, add the number of years between events to the bundle
         String input = mIntervalET.getText().toString();
         if (!input.equals("")) {
-            int interval = Integer.parseInt(input);
-            toReturn.putInt(EXTRA_INTERVAL, interval);
+            toReturn.putInt(EXTRA_INTERVAL, Integer.parseInt(input));
         }
         else {
             Toast.makeText(getActivity(),
                     String.format(getString(R.string.recur_format_event),
                             getString(R.string.months)),Toast.LENGTH_LONG).show();
-            flag = true;
+            return null;
         }
 
         // Get the type of recurrence chosen
-        int radioButtonID = mRecurTypes.getCheckedRadioButtonId();
-        View radioButton = mRecurTypes.findViewById(radioButtonID);
-        int idx = mRecurTypes.indexOfChild(radioButton);
+        int idx = mRecurTypes.indexOfChild(
+                mRecurTypes.findViewById(mRecurTypes.getCheckedRadioButtonId()));
 
         // If the user chose to recur on the same day every year
         if (idx == 0) {
@@ -202,32 +170,11 @@ public class YearlyRecurFragment extends Fragment implements RecurInput {
         else if (idx == 2 || idx == 3 || idx == 4) {
             String userInput = mMonthsET.getText().toString();
 
-            // Make sure the user entered a month if they chose an option that requires a month
-            if (!userInput.equals("")) {
-                toReturn.putString(EXTRA_MONTHS, userInput);
-
-                String[] strs = userInput.split(",");
-
-                // Make sure the selected month is a correct Date.
-                for (String str : strs) {
-                    if (!str.equals("Jan") && !str.equals("Feb") && !str.equals("Mar") &&
-                            !str.equals("Apr") && !str.equals("May") && !str.equals("Jun") &&
-                            !str.equals("Jul") && !str.equals("Aug") && !str.equals("Sep") &&
-                            !str.equals("Oct") && !str.equals("Nov") && !str.equals("Dec")) {
-                        flag = true;
-                        Toast.makeText(getActivity(),
-                                R.string.months_format,
-                                Toast.LENGTH_LONG).show();
-                        break;
-                    }
-                }
+            if (!isListOfMonths(userInput)) {
+                return null;
             }
-            else {
-                Toast.makeText(getActivity(),
-                        R.string.months_format,
-                        Toast.LENGTH_LONG).show();
-                flag = true;
-            }
+
+            toReturn.putString(EXTRA_MONTHS, userInput);
         }
 
         // If the user chose to recur on the xth day of specific months
@@ -244,32 +191,130 @@ public class YearlyRecurFragment extends Fragment implements RecurInput {
 
             String userInput = mDaysET.getText().toString();
 
-            // If valid, load the days the user entered to recur on into the bundle
-            if (!userInput.equals("")) {
-                toReturn.putString(EXTRA_DAYS, userInput);
-
-                // Make sure all the user-entered days are valid.
-                try {
-                    String[] strs = userInput.split(",");
-
-                    for (String str : strs) {
-                        Integer.parseInt(str);
-                    }
-                }
-                catch (Exception e) {
-                    Toast.makeText(getActivity(), R.string.date_list_format,
-                            Toast.LENGTH_LONG).show();
-                    flag = true;
-                }
+            if (!isListOfDays(userInput)) {
+                return null;
             }
-            else {
-                Toast.makeText(getActivity(), R.string.no_days,
-                        Toast.LENGTH_LONG).show();
-                flag = true;
-            }
+
+            toReturn.putString(EXTRA_DAYS, userInput);
         }
 
         // If there was no issue, return the bundle, if not, return null to signify the error
-        return (!flag) ? toReturn : null;
+        return toReturn;
+    }
+
+    /**
+     * Checks if String contains a comma delimited list of three-letter abbreviations of months
+     *
+     * @param userInput A string to check
+     *
+     * @return true if userInput is a comma delimited list of months, false otherwise
+     */
+    private boolean isListOfMonths(String userInput) {
+        // Make sure the user entered a month if they chose an option that requires a month
+        if (!userInput.equals("")) {
+            String[] strs = userInput.split(",");
+
+            // Make sure the selected month is a correct Date.
+            for (String str : strs) {
+                if (!Arrays.asList(new String[]{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
+                        "Aug", "Sep", "Oct", "Nov", "Dec"}).contains(str)) {
+                    Toast.makeText(getActivity(),
+                            R.string.months_format,
+                            Toast.LENGTH_LONG).show();
+                    return false;
+                }
+            }
+        }
+        else {
+            Toast.makeText(getActivity(),
+                    R.string.months_format,
+                    Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks if String contains a comma delimited list of days
+     *
+     * @param userInput A string to check
+     *
+     * @return true if userInput is a comma delimited list of days, false otherwise
+     */
+    private boolean isListOfDays(String userInput) {
+        // If valid, load the days the user entered to recur on into the bundle
+        if (!userInput.equals("")) {
+
+            // Make sure all the user-entered days are valid.
+            try {
+                String[] strs = userInput.split(",");
+
+                for (String str : strs) {
+                    Integer.parseInt(str);
+                }
+            }
+            catch (Exception e) {
+                Toast.makeText(getActivity(), R.string.date_list_format,
+                        Toast.LENGTH_LONG).show();
+                return false;
+            }
+        }
+        else {
+            Toast.makeText(getActivity(), R.string.no_days,
+                    Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * OnChangedCheckListener that updates the UI when the user chooses a different type of yearly
+     * recurrence.
+     */
+    private class RecurrenceTypeOnChangedCheckListener implements RadioGroup.OnCheckedChangeListener {
+        private final View layout;
+
+        /**
+         * Constructs a listener that will update the UI when a different type of yearly recurrence
+         * is chosen.
+         *
+         * @param inflatedLayout The inflated layout for the YearlyRecurFragment.
+         */
+        public RecurrenceTypeOnChangedCheckListener(View inflatedLayout) {
+            this.layout = inflatedLayout;
+        }
+
+        @Override
+        public void onCheckedChanged(RadioGroup radioGroup, int i) {
+            int index = radioGroup.indexOfChild(layout.findViewById(i));
+            LinearLayout ll;
+            // If the "Select months to recur on" EditText is currently displayed, hide it
+            if (currSelection == 2 || currSelection == 3 || currSelection == 4) {
+                ll = layout.findViewById(R.id.recurMonthsLayout);
+                ll.setVisibility(View.INVISIBLE);
+            }
+
+            // If the "Select days to recur on" EditText  is currently displayed, hide it
+            if (currSelection == 4) {
+                ll = layout.findViewById(R.id.recurDaysLayout);
+                ll.setVisibility(View.INVISIBLE);
+            }
+
+            // If the "Select months to recur on" EditText needs to be displayed, show it
+            if (index == 2 || index == 3 || index == 4) {
+                ll = layout.findViewById(R.id.recurMonthsLayout);
+                ll.setVisibility(View.VISIBLE);
+            }
+
+            // If the "Select days to recur on" EditText needs to be displayed, show it
+            if (index == 4) {
+                ll = layout.findViewById(R.id.recurDaysLayout);
+                ll.setVisibility(View.VISIBLE);
+            }
+
+            currSelection = index;
+        }
     }
 }

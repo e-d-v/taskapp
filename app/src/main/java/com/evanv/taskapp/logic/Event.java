@@ -12,6 +12,7 @@ import com.evanv.taskapp.db.Converters;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 
 /**
@@ -22,7 +23,7 @@ import java.util.Date;
 @SuppressWarnings("unused")
 @Entity(tableName = "event_table")
 @TypeConverters(Converters.class)
-public class Event {
+public class Event implements Comparable {
     // Fields
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
@@ -160,5 +161,12 @@ public class Event {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        Event other = (Event) o;
+
+        return (int) (mDoDate.getTime() - other.mDoDate.getTime());
     }
 }

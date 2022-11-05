@@ -110,19 +110,15 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * scheduled events.
      */
     private void Optimize() {
-        Pair<Pair<Integer, Integer>, List<Pair<Integer, Integer>>> updatedInfo =
-                mLogicSubsystem.Optimize();
+        List<Pair<Integer, Integer>> changedIndices = mLogicSubsystem.Optimize();
 
-        // As the Optimizer may have changed tasks' dates, we must refresh the recycler
-        int eventLowIndex = updatedInfo.getFirst().getFirst();
-        int eventScheduleSize = updatedInfo.getFirst().getSecond();
-        List<Pair<Integer, Integer>> changedIndices = updatedInfo.getSecond();
-
-        if (eventScheduleSize > eventLowIndex) {
-            mDayItemAdapter.notifyItemRangeRemoved(eventLowIndex, eventScheduleSize);
-        }
-
+        int oldSize = mDayItemAdapter.mDayItemList.size();
         mDayItemAdapter.mDayItemList = mLogicSubsystem.DayItemList();
+        int newSize = mDayItemAdapter.mDayItemList.size();
+
+        if (oldSize > newSize) {
+            mDayItemAdapter.notifyItemRangeRemoved(newSize, oldSize - newSize);
+        }
 
         // Tell the recycler about moved tasks.
         for (Pair<Integer, Integer> indices : changedIndices) {
@@ -347,13 +343,21 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // Remove the given task from the task dependency graph
         mVF.setDisplayedChild(0);
 
+        int oldDays = mLogicSubsystem.getNumDays();
         boolean success = mLogicSubsystem.onButtonClick(position, day, action);
+        int newDays = mLogicSubsystem.getNumDays();
 
         if (action == 0 || action == 1) {
             if (!success) {
                 mVF.setDisplayedChild(1);
                 return;
             }
+
+        }
+
+        if (oldDays == newDays) {
+            mDayItemAdapter.mDayItemList.set(day, mLogicSubsystem.DayItemHelper(day));
+            mDayItemAdapter.notifyItemChanged(day);
         }
 
         if (action == 0) {
@@ -398,8 +402,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 mVF.setDisplayedChild(1);
                 return;
             }
-            mDayItemAdapter.mDayItemList.set(day, mLogicSubsystem.DayItemHelper(day));
-            mDayItemAdapter.notifyItemChanged(day);
+
+            while (mDayItemAdapter.mDayItemList.size() != newDays) {
+                mDayItemAdapter.mDayItemList.remove(newDays);
+            }
+
+            if (oldDays != newDays) {
+                mDayItemAdapter.notifyItemRangeRemoved(newDays, oldDays - newDays);
+            }
         }
 
 

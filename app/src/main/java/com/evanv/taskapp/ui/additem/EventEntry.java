@@ -1,7 +1,5 @@
 package com.evanv.taskapp.ui.additem;
 
-import static com.evanv.taskapp.logic.Task.clearDate;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -31,7 +29,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
-
 
 /**
  * The fragment that handles data entry for new events
@@ -97,98 +94,36 @@ public class EventEntry extends Fragment implements ItemEntry {
      */
     @SuppressWarnings("unused")
     public Bundle getItem() {
-
         // Get user input from views
         String eventName = mEditTextEventName.getText().toString();
         String ecd = mEditTextECD.getText().toString();
         String length = mEditTextLength.getText().toString();
 
-        boolean flag = false; // Allows us to Toast multiple errors at once.
-
         // Check if eventName is valid
         if (eventName.length() == 0) {
             Toast.makeText(getActivity(), R.string.name_error_event,
                     Toast.LENGTH_LONG).show();
-            flag = true;
+            return null;
         }
         // Check if ECD is valid
         if (ecd.length() == 0) {
             Toast.makeText(getActivity(),
                     R.string.ecd_empty_event,
                     Toast.LENGTH_LONG).show();
-            flag = true;
+            return null;
         }
         else {
-            String[] fullTokens = ecd.split(" ");
-
-            boolean ecdFlag = false; // true if there is an issue with ecd input
-
-            // Check if ecd follows format MM/DD/YY HH:MM AM/PM
-            // Almost certainly not needed now that we have the picker fill in these fields, but in
-            // case that doesn't work, I've kept it (as removing it has no noticeable performance
-            // benefit)`
-            if (fullTokens.length == 3) {
-                String[] dateTokens = fullTokens[0].split("/");
-                String[] timeTokens = fullTokens[1].split(":");
-
-                if (dateTokens.length == 3 && timeTokens.length == 2) {
-                    // Check if everything that's supposed to be a number is an integer
-                    try {
-                        int month = Integer.parseInt(dateTokens[0]);
-                        int day = Integer.parseInt(dateTokens[1]);
-                        int year = Integer.parseInt(dateTokens[2]);
-                        int hour = Integer.parseInt(timeTokens[0]);
-                        int minute = Integer.parseInt(timeTokens[1]);
-
-                        // Make sure input makes sense
-                        if (month > 12 || month < 1 || day > 31 || day < 1 || year < 0 ||
-                                hour < 1 || hour > 12 || minute < 0 || minute > 59) {
-                            ecdFlag = true;
-                        }
-
-                        // Make sure we're not scheduling an event for before today.
-                        // Note: we allow a start time any time in the current date in case user is
-                        // attempting to inform optimizer of a previous meeting they forgot to add
-                        // to the calendar.
-                        Date thisDay = clearDate(new Date());
-                        Calendar userCal = Calendar.getInstance();
-                        userCal.set(2000+year, month - 1, day);
-                        Date userDay = clearDate(userCal.getTime());
-
-                        if (userDay.before(thisDay)) {
-                            Toast.makeText(getActivity(),
-                                    R.string.ecd_format_event,
-                                    Toast.LENGTH_LONG).show();
-                            flag = true;
-                        }
-                    }
-                    catch (Exception e) {
-                        ecdFlag = true;
-                    }
-
-                    // Make sure the user entered one of AM or PM
-                    if (!fullTokens[2].equals(getString(R.string.am)) &&
-                            !fullTokens[2].equals(getString(R.string.pm))) {
-                        ecdFlag = true;
-                    }
-                }
-            }
-            else {
-                ecdFlag = true;
-            }
-
-            // If there was an issue with the user's input for ECD, inform them with a Toast
-            if (ecdFlag) {
-                Toast.makeText(getActivity(),
-                        R.string.ecd_help_text_format,
-                        Toast.LENGTH_LONG).show();
-                flag = true;
+            try {
+                Event.dateFormat.parse(ecd);
+            } catch (ParseException e) {
+                Toast.makeText(getActivity(), R.string.ecd_empty_event, Toast.LENGTH_LONG).show();
+                return null;
             }
         }
         // Check if length is valid
         if (length.length() == 0) {
             Toast.makeText(getActivity(), R.string.ttc_error_empty, Toast.LENGTH_LONG).show();
-            flag = true;
+            return null;
         }
         // If length was entered, ensure that it is a valid number. Also likely not needed due to
         // inputType, but kept as a precaution.
@@ -200,13 +135,8 @@ public class EventEntry extends Fragment implements ItemEntry {
                 Toast.makeText(getActivity(),
                         R.string.ttc_format_event,
                         Toast.LENGTH_LONG).show();
-                flag = true;
+                return null;
             }
-        }
-
-        // If any required views are empty, return null to signify invalid input
-        if (flag) {
-            return null;
         }
 
         // Put user input into a bundle
@@ -293,34 +223,66 @@ public class EventEntry extends Fragment implements ItemEntry {
             return;
         }
 
-        // Pull the month/day/week
-        // Gets how many times this weekday has appeared in the month. (e.g. if it is the 3rd
-        // monday of february, this says "3".
-        int dayOfWeekInMonth = ecdCal.get(Calendar.DAY_OF_WEEK_IN_MONTH);
-        int weekday = ecdCal.get(Calendar.DAY_OF_WEEK);
-        int month = ecdCal.get(Calendar.MONTH);
-        int day = ecdCal.get(Calendar.DAY_OF_MONTH);
+        // Get the day in month e.g. "31st"
+        intent.putExtra(EXTRA_DAY, getOrdinalDayInMonth(ecdCal.getTime()));
 
-        RuleBasedNumberFormat formatter = new RuleBasedNumberFormat(Locale.US, RuleBasedNumberFormat.ORDINAL);
+        // Get the ordinal day of week e.g. "3rd Monday"
+        intent.putExtra(EXTRA_DESC, getOrdinalDayInWeek(ecdCal.getTime()));
 
-        // Get the day
-        String dayString = formatter.format(day);
-        intent.putExtra(EXTRA_DAY, dayString);
-
-        // Get the description (formatted "3rd Monday)"
-        String ordinalNumber = formatter.format(dayOfWeekInMonth);
-        String weekdayString = getResources().getStringArray(R.array.weekdays)[weekday - 1];
-        intent.putExtra(EXTRA_DESC, ordinalNumber + " " + weekdayString);
-
-        // Get the month
-        String monthString = getResources().getStringArray(R.array.months)[month];
-        intent.putExtra(EXTRA_MONTH, monthString);
+        // Get the month e.g. "August"
+        intent.putExtra(EXTRA_MONTH,
+                getResources().getStringArray(R.array.months)[ecdCal.get(Calendar.MONTH)]);
 
         // Get the time
         intent.putExtra(EXTRA_TIME, time);
 
         // Launch RecurActivity
         mStartForResult.launch(intent);
+    }
+
+    /**
+     * Get the ordinal day in month for a specific Date (e.g. "31st")
+     *
+     * @param date The Date to build the ordinal date out of
+     *
+     * @return The ordinal day in month (e.g. "31st") of the given Date
+     */
+    private String getOrdinalDayInMonth(Date date) {
+        Calendar ecdCal = Calendar.getInstance();
+        ecdCal.setTime(date);
+
+        // Format the number to ordinal (the "st" in "31st")
+        RuleBasedNumberFormat formatter = new RuleBasedNumberFormat(Locale.US,
+                RuleBasedNumberFormat.ORDINAL);
+
+        // Return the day
+        return formatter.format(ecdCal.get(Calendar.DAY_OF_MONTH));
+    }
+
+    /**
+     * Get the ordinal day in week for a specific Date (e.g. "3rd Monday")
+     *
+     * @param date The Date to build the ordinal date out of
+     *
+     * @return The ordinal day in week (e.g. "3rd Monday") of the given Date
+     */
+    private String getOrdinalDayInWeek(Date date) {
+        Calendar ecdCal = Calendar.getInstance();
+        ecdCal.setTime(date);
+
+        // Get the day of week in month and day of week (e.g. the "3" and "Monday" in "3rd Monday")
+        int dayOfWeekInMonth = ecdCal.get(Calendar.DAY_OF_WEEK_IN_MONTH);
+        int weekday = ecdCal.get(Calendar.DAY_OF_WEEK);
+
+        // Format the number to ordinal (the "st" in "31st")
+        RuleBasedNumberFormat formatter = new RuleBasedNumberFormat(Locale.US,
+                RuleBasedNumberFormat.ORDINAL);
+
+        // Get the description (formatted "3rd Monday)"
+        String ordinalNumber = formatter.format(dayOfWeekInMonth);
+        String weekdayString = getResources().getStringArray(R.array.weekdays)[weekday - 1];
+
+        return ordinalNumber + " " + weekdayString;
     }
 
 }

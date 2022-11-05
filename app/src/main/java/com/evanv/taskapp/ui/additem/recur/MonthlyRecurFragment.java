@@ -110,18 +110,18 @@ public class MonthlyRecurFragment extends Fragment implements RecurInput {
 
         // Set the onClickListener for the radio buttons to hide/show fields
         ((RadioGroup) toReturn.findViewById(R.id.monthlyRadioGroup))
-                .setOnCheckedChangeListener((radioGroup, i) -> {
+                .setOnCheckedChangeListener((radioGroup, id) -> {
                     LinearLayout ll = toReturn.findViewById(R.id.recurDaysLayout);
 
                     if (currSelection == 2) {
                         ll.setVisibility(View.INVISIBLE);
                     }
 
-                    if (radioGroup.indexOfChild(toReturn.findViewById(i)) == 2) {
+                    if (radioGroup.indexOfChild(toReturn.findViewById(id)) == 2) {
                         ll.setVisibility(View.VISIBLE);
                     }
 
-                    currSelection = i;
+                    currSelection = radioGroup.indexOfChild(toReturn.findViewById(id));
         });
 
         return toReturn;

@@ -251,7 +251,7 @@ public class RecurrenceParser {
 
         // Add next date from iterator until either A) date is past endDate or B) more dates have
         // been added than the number of dates.
-        while (!currDate.after(endDate) && num < numTimes) {
+        while (!Task.clearDate(currDate).after(endDate) && num < numTimes) {
             toReturn.add(currDate);
 
             currDate = iterator.next();
@@ -265,7 +265,6 @@ public class RecurrenceParser {
      * Iterator that handles the daily recurrence case
      */
     private static class DailyIterator implements Iterator<Date> {
-        private final Date mItemStart;    // Start date
         private final int mInterval;      // Days between
         private final Calendar mRecurCal; // Calendar used to calculate next day
 
@@ -276,11 +275,10 @@ public class RecurrenceParser {
          * @param interval How many days between recurrences
          */
         public DailyIterator(Date itemStart, int interval) {
-            mItemStart = itemStart;
             mInterval = interval;
 
             mRecurCal = Calendar.getInstance();
-            mRecurCal.setTime(mItemStart);
+            mRecurCal.setTime(itemStart);
         }
 
         /**
@@ -328,8 +326,8 @@ public class RecurrenceParser {
             mRecurCal = Calendar.getInstance();
             mRecurCal.setTime(itemStart);
 
-            mCurrDate = mRecurCal.get(Calendar.DAY_OF_WEEK);
-            mStartDate = mRecurCal.get(Calendar.DAY_OF_WEEK);
+            mCurrDate = mRecurCal.get(Calendar.DAY_OF_WEEK) - 1;
+            mStartDate = mRecurCal.get(Calendar.DAY_OF_WEEK) - 1;
 
             mDays = days;
             mInterval = interval;
@@ -354,17 +352,17 @@ public class RecurrenceParser {
         public Date next() {
             Date toRet = mRecurCal.getTime();
 
-            if (!mDays[mCurrDate - 1]) {
+            if (!mDays[mCurrDate]) {
                 toRet = null;
             }
 
             mRecurCal.add(Calendar.DAY_OF_YEAR, 1);
 
-            mCurrDate = mCurrDate + 1 % 7;
-
-            if (mCurrDate == mStartDate) {
+            if ((mCurrDate + 1) % 7 == 0) {
                 mRecurCal.add(Calendar.WEEK_OF_YEAR, mInterval - 1);
             }
+
+            mCurrDate = (mCurrDate + 1) % 7;
 
             return toRet == null ? next() : toRet;
         }
@@ -635,7 +633,6 @@ public class RecurrenceParser {
         private final Calendar mRecurCal; // Calendar used to calculate recurrence
         private final boolean[] mMonths;  // Months to recur on
         private final int mInterval;      // Years between recurrences
-        private final int mStartMonth;    // Month of start date
         private int mCurrMonth;           // Current month
 
         /**
@@ -651,7 +648,6 @@ public class RecurrenceParser {
             mMonths = months;
             mInterval = interval;
             mCurrMonth = mRecurCal.get(Calendar.MONTH);
-            mStartMonth = mRecurCal.get(Calendar.MONTH);
         }
 
         /**
@@ -673,16 +669,16 @@ public class RecurrenceParser {
         public Date next() {
             Date toRet = mRecurCal.getTime();
 
-            if (!mMonths[mCurrMonth - 1]) {
+            if (!mMonths[mCurrMonth]) {
                 toRet = null;
+            }
+
+            if ((mCurrMonth + 1) % 12 == 0) {
+                mRecurCal.add(Calendar.YEAR, mInterval - 1);
             }
 
             mRecurCal.add(Calendar.MONTH,1);
             mCurrMonth = mRecurCal.get(Calendar.MONTH);
-
-            if (mCurrMonth == mStartMonth) {
-                mRecurCal.add(Calendar.YEAR, mInterval - 1);
-            }
 
             return toRet == null ? next() : toRet;
         }
@@ -696,7 +692,6 @@ public class RecurrenceParser {
         private final Calendar mRecurCal;    // Calendar used to calculate recurrence
         private final boolean[] mMonths;     // Months to recur on
         private final int mInterval;         // Number of years between recurrences
-        private final int mStartMonth;       // Start date's month
         private final int mDayOfWeek;        // Start date's day of week
         private final int mDayOfWeekInMonth; // Day of week in month of start date (3rd in 3rd Mon)
         private int mCurrMonth;              // Current month
@@ -714,7 +709,6 @@ public class RecurrenceParser {
             this.mMonths = months;
             this.mInterval = interval;
             mCurrMonth = mRecurCal.get(Calendar.MONTH);
-            mStartMonth = mRecurCal.get(Calendar.MONTH);
             mDayOfWeek = mRecurCal.get(Calendar.DAY_OF_WEEK);
             mDayOfWeekInMonth = mRecurCal.get(Calendar.DAY_OF_WEEK_IN_MONTH);
         }
@@ -742,12 +736,12 @@ public class RecurrenceParser {
                 toRet = null;
             }
 
-            mRecurCal.add(Calendar.MONTH, 1);
-            mCurrMonth = mRecurCal.get(Calendar.MONTH);
-
-            if (mCurrMonth == mStartMonth) {
+            if ((mCurrMonth + 1) % 12 == 0) {
                 mRecurCal.add(Calendar.YEAR, mInterval - 1);
             }
+
+            mRecurCal.add(Calendar.MONTH, 1);
+            mCurrMonth = mRecurCal.get(Calendar.MONTH);
 
             mRecurCal.set(Calendar.DAY_OF_WEEK, mDayOfWeek);
             mRecurCal.set(Calendar.DAY_OF_WEEK_IN_MONTH, mDayOfWeekInMonth);
@@ -764,8 +758,6 @@ public class RecurrenceParser {
         private final boolean[] mMonths;   // Months to recur on
         private final List<Integer> mDays; // Days to recur on
         private final int mInterval;       // Number of years between recurrences
-        private final int mStartMonth;     // Month of start date
-        private final int mStartDay;       // Day in month of start date
         private int mCurrMonth;            // Current month
         private int mCurrDay;              // Current date
 
@@ -781,8 +773,6 @@ public class RecurrenceParser {
 
             mCurrMonth = mRecurCal.get(Calendar.MONTH);
             mCurrDay = mRecurCal.get(Calendar.DAY_OF_MONTH);
-            mStartMonth = mRecurCal.get(Calendar.MONTH);
-            mStartDay = mRecurCal.get(Calendar.DAY_OF_MONTH);
 
             mDays = new ArrayList<>();
             for (String str : days) {
@@ -812,17 +802,17 @@ public class RecurrenceParser {
         public Date next() {
             Date toRet = mRecurCal.getTime();
 
-            if (!mMonths[mCurrMonth - 1] || !mDays.contains(mCurrDay)) {
+            if (!mMonths[mCurrMonth] || !mDays.contains(mCurrDay)) {
                 toRet = null;
+            }
+
+            if (mCurrMonth == 11 && mCurrDay == 31) {
+                mRecurCal.add(Calendar.YEAR, mInterval - 1);
             }
 
             mRecurCal.add(Calendar.DAY_OF_YEAR, 1);
             mCurrMonth = mRecurCal.get(Calendar.MONTH);
             mCurrDay = mRecurCal.get(Calendar.DAY_OF_MONTH);
-
-            if (mCurrMonth == mStartMonth && mCurrDay == mStartDay) {
-                mRecurCal.add(Calendar.YEAR, mInterval - 1);
-            }
 
             return toRet == null ? next() : toRet;
         }

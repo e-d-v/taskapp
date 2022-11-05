@@ -4,9 +4,12 @@ import static com.evanv.taskapp.logic.Task.getDiff;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.PriorityQueue;
+
+import kotlin.Pair;
 
 /**
  * The holy grail. A class that calculates a (locally) optimal schedule for task completion
@@ -154,6 +157,11 @@ public class Optimizer {
             }
         }
 
+        // Sort eventSchedule by early start time
+        for (int i = 0; i < eventSchedule.size(); i++) {
+            Collections.sort(eventSchedule.get(i));
+        }
+
         // Initialize the time array, where time[i] is the amount of currently scheduled time for
         // the date i days past today's date. We start with only using events, as they can't be
         // rescheduled, so we should schedule tasks around them
@@ -162,7 +170,22 @@ public class Optimizer {
             time[i] = (i == 0) ? todayTime : 0;
 
             for (int j = 0; i < eventSchedule.size() && j < eventSchedule.get(i).size(); j++) {
-                time[i] += eventSchedule.get(i).get(j).getLength();
+                Event e = eventSchedule.get(i).get(j);
+
+                // Check if events overlap - if they do, only count each minute once.
+                Pair<Integer, Integer> currBounds = getStartEndMinutes(e);
+                int startMinute = currBounds.getFirst();
+                int endMinute = currBounds.getSecond();
+
+                for (int k = 0; k < j; k++) {
+                    int otherEndMinute = getStartEndMinutes(eventSchedule.get(i).get(k)).getSecond();
+
+                    if (startMinute < otherEndMinute) {
+                        startMinute = Integer.min(endMinute, otherEndMinute);
+                    }
+                }
+
+                time[i] += endMinute - startMinute;
             }
         }
 
@@ -193,6 +216,26 @@ public class Optimizer {
         }
 
         return changedTasks;
+    }
+
+    /**
+     * Get a pair representing the timespan of the event. First item is how many minutes past
+     * midnight this event starts, and the second item is how many minutes past midnight this
+     * event ends.
+     *
+     * @param e The event to get the timespan of
+     *
+     * @return A pair of ints representing the timespan of the event.
+     */
+    private Pair<Integer, Integer> getStartEndMinutes(Event e) {
+        Calendar overlapCal = Calendar.getInstance();
+        overlapCal.setTime(e.getDoDate());
+
+        int startMinute = (24 * overlapCal.get(Calendar.HOUR_OF_DAY)) +
+                overlapCal.get(Calendar.MINUTE);
+        int endMinute = startMinute + e.getLength();
+
+        return new Pair<>(startMinute, endMinute);
     }
 
     /**

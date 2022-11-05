@@ -227,6 +227,7 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
             inputShown = true;
 
             et.setCursorVisible(true);
+            et.setFocusableInTouchMode(true);
             et.setFocusable(true);
             et.setInputType(InputType.TYPE_CLASS_NUMBER);
             et.setOnClickListener(null);
@@ -238,6 +239,7 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
             inputShown = false;
 
             et.setCursorVisible(false);
+            et.setFocusableInTouchMode(false);
             et.setFocusable(false);
             et.setInputType(InputType.TYPE_NULL);
             et.getText().clear();

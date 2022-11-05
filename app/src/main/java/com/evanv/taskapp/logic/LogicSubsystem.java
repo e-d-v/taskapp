@@ -319,7 +319,7 @@ public class LogicSubsystem {
             List<Date> recurrenceDates = rp.parseBundle(recur, start);
 
             for (Date d : recurrenceDates) {
-                int index = getDiff(start, mStartDate);
+                int index = getDiff(d, mStartDate);
 
                 // Make sure there is enough mEventSchedules.
                 for (int i = mEventSchedule.size(); i <= index; i++) {
@@ -383,28 +383,20 @@ public class LogicSubsystem {
     }
 
     /**
-     * Optimize the user's schedules. Returns a pair of data informing what recycler entries need to
-     * update.
-     *
-     * First item in the pair is the latest day with an event/task scheduled and the number
-     * of recycler DayItems. If eventLowIndex < eventScheduleSize, the items in the range between
-     * these two numbers need to be removed from the DayItemRecycler.
-     *
-     * Second item in the pair is a list of pairs representing tasks that were changed -
+     * Optimize the user's schedules. Returns a list of pairs representing tasks that were changed -
      * specifically their formerly scheduled index and their newly scheduled index, so all these
      * indices must be updated.
      *
      * @return Pair of data informing what recycler entries need to update.
      */
-    public Pair<Pair<Integer, Integer>, List<Pair<Integer, Integer>>> Optimize() {
+    public List<Pair<Integer, Integer>> Optimize() {
         Optimizer opt = new Optimizer();
         ArrayList<Task> changedTasks = opt.Optimize
                 (mTasks, mTaskSchedule, mEventSchedule, mStartDate, mTodayTime);
 
-        Pair<Integer, Integer> removedRange = pareDownSchedules();
-        List<Pair<Integer, Integer>> changedIndices = updateTasks(changedTasks);
+        pareDownSchedules();
 
-        return new Pair<>(removedRange, changedIndices);
+        return updateTasks(changedTasks);
     }
 
     /**
@@ -434,14 +426,9 @@ public class LogicSubsystem {
     }
 
     /**
-     * Pare down empty dates in the data structures and return a pair containing the latest day with
-     * an event/task scheduled and the number of recycler DayItems. If eventLowIndex <
-     * eventScheduleSize, the items in the range between these two numbers need to be removed from
-     * the DayItemRecycler.
-     *
-     * @return A pair of indices representing if the recycler needs to be updated.
+     * Pare down empty dates in the data structures so there's no extra items in the recycler
      */
-    private Pair<Integer, Integer> pareDownSchedules() {
+    private void pareDownSchedules() {
         // Delete any empty lists at the end of the taskSchedule.
         int taskLowIndex = mTaskSchedule.size();
         for (int i = mTaskSchedule.size() - 1; i >= 0; i--) {
@@ -469,12 +456,7 @@ public class LogicSubsystem {
         int eventScheduleSize = mEventSchedule.size();
         if (eventScheduleSize > eventLowIndex) {
             mEventSchedule.subList(eventLowIndex, eventScheduleSize).clear();
-
-            // Remove hanging days from adapter as well
-            eventLowIndex = Math.max(eventLowIndex, taskLowIndex);
         }
-
-        return new Pair<>(eventLowIndex, eventScheduleSize);
     }
 
     /**
@@ -721,8 +703,19 @@ public class LogicSubsystem {
             }
             mTaskAppViewModel.delete(mEventSchedule.get(day).get(position));
             mEventSchedule.get(day).remove(position);
+
+            pareDownSchedules();
         }
 
         return true;
+    }
+
+    /**
+     * Get the number of days currently scheduled in the app's internal data structures
+     *
+     * @return The number of days currently scheduled in the app's internal data structures
+     */
+    public int getNumDays() {
+        return Integer.max(mEventSchedule.size(), mTaskSchedule.size());
     }
 }

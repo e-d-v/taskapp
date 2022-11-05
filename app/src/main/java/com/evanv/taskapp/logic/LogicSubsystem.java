@@ -36,9 +36,9 @@ public class LogicSubsystem {
     private final Date mStartDate;              // The current date
     private final MainActivity mMainActivity;   // MainActivity for resources
     // taskSchedule[i] represents the list of tasks for the day i days past startDate
-    private final ArrayList<ArrayList<Task>> mTaskSchedule = new ArrayList<>();
+    private final List<List<Task>> mTaskSchedule = new ArrayList<>();
     // eventSchedule[i] represents the list of events for the day i days past startDate
-    private final ArrayList<ArrayList<Event>> mEventSchedule = new ArrayList<>();
+    private final List<List<Event>> mEventSchedule = new ArrayList<>();
     private int mTodayTime;                     // The time spent completing tasks today
     private List<Task> mTasks;                  // List of all tasks for user
     private TaskAppViewModel mTaskAppViewModel; // ViewModel to interact with Database

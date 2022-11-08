@@ -58,8 +58,6 @@ public class LogicSubsystem {
         // startDate is our representation for the current date upon the launch of TaskApp.
         mStartDate = clearDate(new Date());
 
-        mTodayTime = 0;
-
         ViewModelStoreOwner vmso = mMainActivity;
 
         // Populate from database;

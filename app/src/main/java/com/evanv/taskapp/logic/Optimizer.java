@@ -231,7 +231,7 @@ public class Optimizer {
         Calendar overlapCal = Calendar.getInstance();
         overlapCal.setTime(e.getDoDate());
 
-        int startMinute = (24 * overlapCal.get(Calendar.HOUR_OF_DAY)) +
+        int startMinute = (60 * overlapCal.get(Calendar.HOUR_OF_DAY)) +
                 overlapCal.get(Calendar.MINUTE);
         int endMinute = startMinute + e.getLength();
 

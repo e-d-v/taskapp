@@ -407,7 +407,19 @@ public class RecurrenceParser {
         public Date next() {
             Date toRet = mRecurCal.getTime();
 
+            int date = mRecurCal.get(Calendar.DAY_OF_MONTH);
+
             mRecurCal.add(Calendar.MONTH, mInterval);
+
+            int newDate = mRecurCal.get(Calendar.DAY_OF_MONTH);
+
+            // Handle edge cases, such as recurring on the 30th in February
+            while (newDate != date) {
+                mRecurCal.add(Calendar.MONTH, mInterval);
+                mRecurCal.set(Calendar.DAY_OF_MONTH, date);
+
+                newDate = mRecurCal.get(Calendar.DAY_OF_MONTH);
+            }
 
             return toRet;
         }
@@ -461,6 +473,14 @@ public class RecurrenceParser {
             mRecurCal.add(Calendar.MONTH, mInterval);
             mRecurCal.set(Calendar.DAY_OF_WEEK, mDayOfWeek);
             mRecurCal.set(Calendar.DAY_OF_WEEK_IN_MONTH, mDayOfWeekInMonth);
+
+            // Handle edge cases, such as recurring on the 5th monday in February
+            while (mRecurCal.get(Calendar.DAY_OF_WEEK) != mDayOfWeek ||
+                    mRecurCal.get(Calendar.DAY_OF_WEEK_IN_MONTH) != mDayOfWeekInMonth) {
+                mRecurCal.add(Calendar.MONTH, mInterval);
+                mRecurCal.set(Calendar.DAY_OF_WEEK, mDayOfWeek);
+                mRecurCal.set(Calendar.DAY_OF_WEEK_IN_MONTH, mDayOfWeekInMonth);
+            }
 
             return toRet;
         }
@@ -567,7 +587,20 @@ public class RecurrenceParser {
         @Override
         public Date next() {
             Date toRet = mRecurCal.getTime();
+
+            int day = mRecurCal.get(Calendar.DAY_OF_MONTH);
+            int month = mRecurCal.get(Calendar.MONTH);
+
             mRecurCal.add(Calendar.YEAR, mInterval);
+
+            // Handle edge cases such as when a given month doesn't have a given date
+            while (mRecurCal.get(Calendar.DAY_OF_MONTH) != day ||
+                    mRecurCal.get(Calendar.MONTH) != month) {
+                mRecurCal.add(Calendar.YEAR, mInterval);
+                mRecurCal.set(Calendar.DAY_OF_MONTH, day);
+                mRecurCal.set(Calendar.MONTH, month);
+            }
+
             return toRet;
         }
     }
@@ -621,6 +654,14 @@ public class RecurrenceParser {
             mRecurCal.set(Calendar.DAY_OF_WEEK, mDayOfWeek);
             mRecurCal.set(Calendar.DAY_OF_WEEK_IN_MONTH, mDayOfWeekInMonth);
 
+            // Handle edge cases such as when a given month doesn't have a given date
+            while (mRecurCal.get(Calendar.DAY_OF_WEEK) != mDayOfWeek ||
+                    mRecurCal.get(Calendar.DAY_OF_WEEK_IN_MONTH) != mDayOfWeekInMonth) {
+                mRecurCal.add(Calendar.YEAR, mInterval);
+                mRecurCal.set(Calendar.DAY_OF_WEEK, mDayOfWeek);
+                mRecurCal.set(Calendar.DAY_OF_WEEK_IN_MONTH, mDayOfWeekInMonth);
+            }
+
             return toRet;
         }
     }
@@ -669,6 +710,8 @@ public class RecurrenceParser {
         public Date next() {
             Date toRet = mRecurCal.getTime();
 
+            int date = mRecurCal.get(Calendar.DAY_OF_MONTH);
+
             if (!mMonths[mCurrMonth]) {
                 toRet = null;
             }
@@ -679,6 +722,16 @@ public class RecurrenceParser {
 
             mRecurCal.add(Calendar.MONTH,1);
             mCurrMonth = mRecurCal.get(Calendar.MONTH);
+
+            // Handle edge cases such as when a given month doesn't have a given date
+            while (mRecurCal.get(Calendar.DAY_OF_MONTH) != date) {
+                if ((mCurrMonth + 1) % 12 == 0) {
+                    mRecurCal.add(Calendar.YEAR, mInterval - 1);
+                }
+
+                mRecurCal.add(Calendar.MONTH,1);
+                mCurrMonth = mRecurCal.get(Calendar.MONTH);
+            }
 
             return toRet == null ? next() : toRet;
         }
@@ -745,6 +798,20 @@ public class RecurrenceParser {
 
             mRecurCal.set(Calendar.DAY_OF_WEEK, mDayOfWeek);
             mRecurCal.set(Calendar.DAY_OF_WEEK_IN_MONTH, mDayOfWeekInMonth);
+
+            // Handle edge cases such as when a given month doesn't have a given date
+            while (mRecurCal.get(Calendar.DAY_OF_WEEK) != mDayOfWeek ||
+                    mRecurCal.get(Calendar.DAY_OF_WEEK_IN_MONTH) != mDayOfWeekInMonth) {
+                if ((mCurrMonth + 1) % 12 == 0) {
+                    mRecurCal.add(Calendar.YEAR, mInterval - 1);
+                }
+
+                mRecurCal.add(Calendar.MONTH, 1);
+                mCurrMonth = mRecurCal.get(Calendar.MONTH);
+
+                mRecurCal.set(Calendar.DAY_OF_WEEK, mDayOfWeek);
+                mRecurCal.set(Calendar.DAY_OF_WEEK_IN_MONTH, mDayOfWeekInMonth);
+            }
 
             return toRet == null ? next() : toRet;
         }

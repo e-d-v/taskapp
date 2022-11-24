@@ -1,6 +1,8 @@
 package com.evanv.taskapp.ui.additem;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,17 +13,25 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import com.evanv.taskapp.R;
+import com.evanv.taskapp.logic.Event;
 import com.evanv.taskapp.logic.Task;
+import com.evanv.taskapp.ui.additem.recur.NoRecurFragment;
+import com.evanv.taskapp.ui.additem.recur.RecurActivity;
+import com.evanv.taskapp.ui.additem.recur.RecurInput;
 import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * The fragment that handles data entry for new tasks
@@ -31,6 +41,9 @@ import java.util.Date;
 public class TaskEntry extends Fragment implements ItemEntry {
     private ViewGroup mContainer;  // The ViewGroup for the activity, allows easy access to views
     private String mCurrentParents; // The list of parents for task, returned when fab is clicked
+    private Bundle mRecur;
+    private EditText mEditTextECD; // The EditText for the earliest completion date
+    private ActivityResultLauncher<Intent> mStartForResult;
 
     /**
      * Required empty public constructor, creates new TaskEntry fragment
@@ -48,8 +61,25 @@ public class TaskEntry extends Fragment implements ItemEntry {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mStartForResult = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> handleRecurInput(result.getResultCode(),
+                        result.getData()));
+
         // -1 signifies that the new task has no dependent tasks, as none were entered
         mCurrentParents = "-1";
+    }
+
+    /**
+     * Function that is called when result is received from recurrence activity.
+     *
+     * @param resultCode Is Activity.RESULT_OK if ran successfully
+     * @param data A bundle of data that describes the recurrence chosen
+     */
+    private void handleRecurInput(int resultCode, Intent data) {
+        if (resultCode == Activity.RESULT_OK) {
+            mRecur = data.getBundleExtra(RecurActivity.EXTRA_RECUR);
+        }
     }
 
     /**
@@ -74,12 +104,20 @@ public class TaskEntry extends Fragment implements ItemEntry {
                 (new AddParentsListener());
 
         // Get the EditTexts for dates`
-        EditText editTextECD = view.findViewById(R.id.editTextECD);
+        mEditTextECD = view.findViewById(R.id.editTextECD);
         EditText editTextDueDate = view.findViewById(R.id.editTextDueDate);
+
+        // Add click handler to button
+        Button button = view.findViewById(R.id.recurButton);
+        button.setOnClickListener(x -> intentRecur());
+
+        // Add the default recurrence interval (none)
+        mRecur = new Bundle();
+        mRecur.putString(RecurInput.EXTRA_TYPE, NoRecurFragment.EXTRA_VAL_TYPE);
 
         // Set the onClickListener so clicking the EditTexts opens a Date Picker dialog instead of
         // a keyboard
-        editTextECD.setOnClickListener(view1 -> {
+        mEditTextECD.setOnClickListener(view1 -> {
             // Set the max date so the early date can't be set as later than the due date
             Date maxDate = null;
             if (!editTextDueDate.getText().toString().equals("")) {
@@ -91,16 +129,16 @@ public class TaskEntry extends Fragment implements ItemEntry {
             }
 
             // Generate and show the DatePicker
-            DialogFragment newFragment = new DatePickerFragment(editTextECD, getString(R.string.ecd),
+            DialogFragment newFragment = new DatePickerFragment(mEditTextECD, getString(R.string.ecd),
                     new Date(), maxDate, false);
             newFragment.show(getParentFragmentManager(), "datePicker");
         });
         editTextDueDate.setOnClickListener(view1 -> {
             // Set the min date so the due date can't be before the early date.
             Date minDate = new Date();
-            if (!editTextECD.getText().toString().equals("")) {
+            if (!mEditTextECD.getText().toString().equals("")) {
                 try {
-                    minDate = Task.dateFormat.parse(editTextECD.getText().toString());
+                    minDate = Task.dateFormat.parse(mEditTextECD.getText().toString());
                 } catch (ParseException e) {
                     Log.e(this.getTag(), e.getMessage());
                 }
@@ -136,6 +174,46 @@ public class TaskEntry extends Fragment implements ItemEntry {
 
         // Inflate the layout for this fragment
         return view;
+    }
+
+    /**
+     * Launch a new intent to the RecurActivity, and give it the needed information
+     */
+    private void intentRecur() {
+        // Create a new intent
+        Intent intent = new Intent(getActivity(), RecurActivity.class);
+
+        // Get the date information the user has entered
+        Calendar ecdCal = Calendar.getInstance();
+        long time;
+        try {
+            String ecdText = mEditTextECD.getText().toString();
+            Date ecd = Task.dateFormat.parse(ecdText);
+            time = Objects.requireNonNull(ecd).getTime();
+            ecdCal.setTime(Objects.requireNonNull(ecd));
+        } catch (ParseException e) {
+            Toast.makeText(getActivity(),
+                    R.string.ecd_reminder,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // Get the day in month e.g. "31st"
+        intent.putExtra(EventEntry.EXTRA_DAY, EventEntry.getOrdinalDayInMonth(ecdCal.getTime()));
+
+        // Get the ordinal day of week e.g. "3rd Monday"
+        intent.putExtra(EventEntry.EXTRA_DESC, EventEntry.getOrdinalDayInWeek(requireContext(),
+                ecdCal.getTime()));
+
+        // Get the month e.g. "August"
+        intent.putExtra(EventEntry.EXTRA_MONTH,
+                getResources().getStringArray(R.array.months)[ecdCal.get(Calendar.MONTH)]);
+
+        // Get the time
+        intent.putExtra(EventEntry.EXTRA_TIME, time);
+
+        // Launch RecurActivity
+        mStartForResult.launch(intent);
     }
 
     /**
@@ -224,6 +302,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         toReturn.putString(AddItem.EXTRA_DUE, dueDate);
         toReturn.putString(AddItem.EXTRA_END, ttc);
         toReturn.putString(AddItem.EXTRA_PARENTS, mCurrentParents);
+        toReturn.putBundle(AddItem.EXTRA_RECUR, mRecur);
 
         return toReturn;
     }

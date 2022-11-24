@@ -116,4 +116,10 @@
         android:layout_height="wrap_content"
         android:text="@string/parents_button"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/task_recur_button"
+        android:id="@+id/recurButton"/>
+
 </LinearLayout>

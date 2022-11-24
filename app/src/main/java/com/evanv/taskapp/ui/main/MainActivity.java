@@ -345,20 +345,23 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         mVF.setDisplayedChild(0);
 
         int oldDays = mLogicSubsystem.getNumDays();
-        boolean success = mLogicSubsystem.onButtonClick(position, day, action);
+        List<Integer> changedDates = mLogicSubsystem.onButtonClick(position, day, action);
         int newDays = mLogicSubsystem.getNumDays();
 
         if (action == 0 || action == 1) {
-            if (!success) {
+            if (changedDates == null) {
                 mVF.setDisplayedChild(1);
                 return;
             }
 
-        }
+            for (int d : changedDates) {
+                if (d >= newDays) {
+                    continue;
+                }
 
-        if (oldDays == newDays) {
-            mDayItemAdapter.mDayItemList.set(day, mLogicSubsystem.DayItemHelper(day));
-            mDayItemAdapter.notifyItemChanged(day);
+                mDayItemAdapter.mDayItemList.set(d, mLogicSubsystem.DayItemHelper(d));
+                mDayItemAdapter.notifyItemChanged(d);
+            }
         }
 
         if (action == 0) {
@@ -399,7 +402,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
         // Remove the given event from the schedule and re-optimize.
         else if (action == 2) {
-            if (!success) {
+            if (changedDates == null) {
                 mVF.setDisplayedChild(1);
                 return;
             }

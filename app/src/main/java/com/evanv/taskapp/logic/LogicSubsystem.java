@@ -226,11 +226,14 @@ public class LogicSubsystem {
      * Removes a task from the task dependency graph.
      *
      * @param task The task to be removed from the task dependency graph
+     * @return
      */
-    public void Complete(Task task) {
+    public List<Integer> Complete(Task task) {
         mTasks.remove(task);
 
         Date doDate = task.getDoDate();
+
+        List<Integer> toReturn = new ArrayList<>();
 
         // Get the number of days past the start date this task is scheduled for, so we can get the
         // index of the taskSchedule member for it's do date.
@@ -239,11 +242,14 @@ public class LogicSubsystem {
         // If the task is in the internal data structure, remove it.
         if (diff >= 0) {
             mTaskSchedule.get(diff).remove(task);
+            toReturn.add(diff);
         }
 
         // Remove the task from the task dependency graph
         for (int i = 0; i < task.getChildren().size(); i++) {
             task.getChildren().get(i).removeParent(task);
+
+            toReturn.add(getDiff(task.getChildren().get(i).getDoDate(), mStartDate));
         }
         for (int i = 0; i < task.getParents().size(); i++) {
             task.getParents().get(i).removeChild(task);
@@ -253,6 +259,7 @@ public class LogicSubsystem {
         if (diff >= 0) {
             DayItemHelper(diff);
         }
+        return toReturn;
     }
 
     /**
@@ -720,29 +727,33 @@ public class LogicSubsystem {
      * @param day How many days past today's date task/event was scheduled for
      * @param action 0 to complete task, 1 to delete task, 2 to delete event
      *
-     * @return true if ran successfully, false if error occurred.
+     * @return list of updated dates if ran successfully, false if error occurred.
      */
-    public boolean onButtonClick(int position, int day, int action) {
+    public List<Integer> onButtonClick(int position, int day, int action) {
+        List<Integer> toReturn = new ArrayList<>();
+
         if (action == 0 || action == 1) {
             if (day == -1 || mTaskSchedule.get(day).size() <= position) {
-                return false;
+                return null;
             }
 
             mTaskAppViewModel.delete(mTaskSchedule.get(day).get(position));
-            Complete(mTaskSchedule.get(day).get(position));
+            toReturn = Complete(mTaskSchedule.get(day).get(position));
         }
         // Remove the given event from the schedule and re-optimize.
         if (action == 2) {
             if (day == -1 || mEventSchedule.get(day).size() <= position) {
-                return false;
+                return null;
             }
             mTaskAppViewModel.delete(mEventSchedule.get(day).get(position));
             mEventSchedule.get(day).remove(position);
 
+            toReturn.add(day);
+
             pareDownSchedules();
         }
 
-        return true;
+        return toReturn;
     }
 
     /**

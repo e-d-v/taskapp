@@ -162,31 +162,14 @@ public class Optimizer {
             Collections.sort(eventSchedule.get(i));
         }
 
-        // Initialize the time array, where time[i] is the amount of currently scheduled time for
-        // the date i days past today's date. We start with only using events, as they can't be
-        // rescheduled, so we should schedule tasks around them
         int[] time = new int[taskSchedule.size()];
+
         for (int i = 0; i < taskSchedule.size(); i++) {
-            time[i] = (i == 0) ? todayTime : 0;
+            time[i] = calculateTotalTime(i, eventSchedule);
+        }
 
-            for (int j = 0; i < eventSchedule.size() && j < eventSchedule.get(i).size(); j++) {
-                Event e = eventSchedule.get(i).get(j);
-
-                // Check if events overlap - if they do, only count each minute once.
-                Pair<Integer, Integer> currBounds = getStartEndMinutes(e);
-                int startMinute = currBounds.getFirst();
-                int endMinute = currBounds.getSecond();
-
-                for (int k = 0; k < j; k++) {
-                    int otherEndMinute = getStartEndMinutes(eventSchedule.get(i).get(k)).getSecond();
-
-                    if (startMinute < otherEndMinute) {
-                        startMinute = Integer.min(endMinute, otherEndMinute);
-                    }
-                }
-
-                time[i] += endMinute - startMinute;
-            }
+        if (time.length >= 1) {
+            time[0] += todayTime;
         }
 
         // Assign tasks using a greedy algorithm - for each task assign it to the date between it's
@@ -219,6 +202,40 @@ public class Optimizer {
     }
 
     /**
+     * Calculates the total event time for a specific day
+     *
+     * @param day What day to calculate
+     * @param eventSchedule Schedule of events where ith element is list of elements scheduled for i
+     *                      days past today.
+     *
+     * @return Total event time for a specific day
+     */
+    public static int calculateTotalTime(int day, List<List<Event>> eventSchedule) {
+        int time = 0;
+
+        for (int j = 0; day < eventSchedule.size() && j < eventSchedule.get(day).size(); j++) {
+            Event e = eventSchedule.get(day).get(j);
+
+            // Check if events overlap - if they do, only count each minute once.
+            Pair<Integer, Integer> currBounds = getStartEndMinutes(e);
+            int startMinute = currBounds.getFirst();
+            int endMinute = currBounds.getSecond();
+
+            for (int k = 0; k < j; k++) {
+                int otherEndMinute = getStartEndMinutes(eventSchedule.get(day).get(k)).getSecond();
+
+                if (startMinute < otherEndMinute) {
+                    startMinute = Integer.min(endMinute, otherEndMinute);
+                }
+            }
+
+            time += endMinute - startMinute;
+        }
+
+        return time;
+    }
+
+    /**
      * Get a pair representing the timespan of the event. First item is how many minutes past
      * midnight this event starts, and the second item is how many minutes past midnight this
      * event ends.
@@ -227,7 +244,7 @@ public class Optimizer {
      *
      * @return A pair of ints representing the timespan of the event.
      */
-    private Pair<Integer, Integer> getStartEndMinutes(Event e) {
+    private static Pair<Integer, Integer> getStartEndMinutes(Event e) {
         Calendar overlapCal = Calendar.getInstance();
         overlapCal.setTime(e.getDoDate());
 

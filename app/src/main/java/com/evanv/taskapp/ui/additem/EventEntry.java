@@ -2,6 +2,7 @@ package com.evanv.taskapp.ui.additem;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -232,7 +233,7 @@ public class EventEntry extends Fragment implements ItemEntry {
         intent.putExtra(EXTRA_DAY, getOrdinalDayInMonth(ecdCal.getTime()));
 
         // Get the ordinal day of week e.g. "3rd Monday"
-        intent.putExtra(EXTRA_DESC, getOrdinalDayInWeek(ecdCal.getTime()));
+        intent.putExtra(EXTRA_DESC, getOrdinalDayInWeek(requireContext(), ecdCal.getTime()));
 
         // Get the month e.g. "August"
         intent.putExtra(EXTRA_MONTH,
@@ -252,7 +253,7 @@ public class EventEntry extends Fragment implements ItemEntry {
      *
      * @return The ordinal day in month (e.g. "31st") of the given Date
      */
-    private String getOrdinalDayInMonth(Date date) {
+    public static String getOrdinalDayInMonth(Date date) {
         Calendar ecdCal = Calendar.getInstance();
         ecdCal.setTime(date);
 
@@ -268,10 +269,11 @@ public class EventEntry extends Fragment implements ItemEntry {
      * Get the ordinal day in week for a specific Date (e.g. "3rd Monday")
      *
      * @param date The Date to build the ordinal date out of
+     * @param context The context of the call for resources
      *
      * @return The ordinal day in week (e.g. "3rd Monday") of the given Date
      */
-    private String getOrdinalDayInWeek(Date date) {
+    public static String getOrdinalDayInWeek(Context context, Date date) {
         Calendar ecdCal = Calendar.getInstance();
         ecdCal.setTime(date);
 
@@ -285,7 +287,7 @@ public class EventEntry extends Fragment implements ItemEntry {
 
         // Get the description (formatted "3rd Monday)"
         String ordinalNumber = formatter.format(dayOfWeekInMonth);
-        String weekdayString = getResources().getStringArray(R.array.weekdays)[weekday - 1];
+        String weekdayString = context.getResources().getStringArray(R.array.weekdays)[weekday - 1];
 
         return ordinalNumber + " " + weekdayString;
     }

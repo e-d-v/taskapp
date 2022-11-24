@@ -360,6 +360,7 @@ public class LogicSubsystem {
             String ecd = result.getString(AddItem.EXTRA_ECD);
             String dd = result.getString(AddItem.EXTRA_DUE);
             String parents = result.getString(AddItem.EXTRA_PARENTS);
+            Bundle recur = result.getBundle(AddItem.EXTRA_RECUR);
 
             // Convert the earliest completion date String to a MyTime
             Date early;
@@ -379,23 +380,43 @@ public class LogicSubsystem {
                 return null;
             }
 
-            Task toAdd = new Task(name, early, due, timeToComplete);
+            RecurrenceParser rp = new RecurrenceParser(mMainActivity);
+            List<Date> recurrenceDates = rp.parseBundle(recur, early);
 
-            // The parents string in the Bundle is a String of the format "n1,n2,n3,...nN,"
-            // where each nx is an index to a Task in tasks that should be used as a parent
-            // for the task to be added.
-            String[] parentIndices = parents.split(",");
-            for (String parentIndex : parentIndices) {
-                if (!parentIndex.equals("-1")) {
-                    Task parent = mTasks.get(Integer.parseInt(parentIndex));
-                    toAdd.addParent(parent);
-                    parent.addChild(toAdd);
+            int diff = getDiff(due, early);
+
+            for (Date d : recurrenceDates) {
+                int index = getDiff(d, mStartDate);
+
+                // Make sure there is enough mEventSchedules.
+                for (int i = mTaskSchedule.size(); i <= index; i++) {
+                    mTaskSchedule.add(new ArrayList<>());
+                    updatedIndices.add(i);
                 }
-            }
 
-            // Add the event to the data structure and database
-            mTasks.add(toAdd);
-            mTaskAppViewModel.insert(toAdd);
+                Calendar dDue = Calendar.getInstance();
+                dDue.setTime(d);
+                dDue.add(Calendar.DAY_OF_YEAR, diff);
+
+                Task toAdd = new Task(name, d, dDue.getTime(), timeToComplete);
+
+                // The parents string in the Bundle is a String of the format "n1,n2,n3,...nN,"
+                // where each nx is an index to a Task in tasks that should be used as a parent
+                // for the task to be added.
+                String[] parentIndices = parents.split(",");
+                for (String parentIndex : parentIndices) {
+                    if (!parentIndex.equals("-1")) {
+                        Task parent = mTasks.get(Integer.parseInt(parentIndex));
+                        toAdd.addParent(parent);
+                        parent.addChild(toAdd);
+                    }
+                }
+
+                // Add the event to the data structure and database
+                mTasks.add(toAdd);
+                mTaskAppViewModel.insert(toAdd);
+                updatedIndices.add(index);
+            }
         }
 
         return updatedIndices;

@@ -126,4 +126,6 @@
     <string name="work_ahead_desc">(%d minutes, due %s)</string>
     <string name="end_time">End Time</string>
     <string name="enter_end_time">Make sure to enter an end time for the event</string>
+    <string name="task_recur_button">Change how often this task recurs</string>
+    <string name="ecd_reminder">Make sure to enter an start date</string>
 </resources>

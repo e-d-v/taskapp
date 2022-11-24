@@ -34,7 +34,7 @@ public class AddItem extends AppCompatActivity {
     // Key for the name of the item being added
     public static final String EXTRA_NAME = "com.evanv.taskapp.extra.NAME";
     // Key for the time to complete/length of the item (in minutes)
-    public static final String EXTRA_TTC = "com.evanv.taskapp.extra.TTC";
+    public static final String EXTRA_END = "com.evanv.taskapp.extra.TTC";
 
     // Used by Task
     // Type value representing Task

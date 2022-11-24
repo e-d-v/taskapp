@@ -40,7 +40,7 @@ public class EventEntry extends Fragment implements ItemEntry {
     private Bundle mRecur;               // The value returned by the recur activity.
     private EditText mEditTextEventName; // EditText containing the name of the event
     private EditText mEditTextECD;       // EditText containing the date/time of the event
-    private EditText mEditTextLength;    // EditText containing the length of the event
+    private EditText mEditTextEndTime;    // EditText containing the length of the event
     // Allows data to be pulled from activity
     private ActivityResultLauncher<Intent> mStartForResult;
 
@@ -97,7 +97,7 @@ public class EventEntry extends Fragment implements ItemEntry {
         // Get user input from views
         String eventName = mEditTextEventName.getText().toString();
         String ecd = mEditTextECD.getText().toString();
-        String length = mEditTextLength.getText().toString();
+        String endTime = mEditTextEndTime.getText().toString();
 
         // Check if eventName is valid
         if (eventName.length() == 0) {
@@ -105,6 +105,9 @@ public class EventEntry extends Fragment implements ItemEntry {
                     Toast.LENGTH_LONG).show();
             return null;
         }
+
+        Date startTime = null;
+
         // Check if ECD is valid
         if (ecd.length() == 0) {
             Toast.makeText(getActivity(),
@@ -114,27 +117,26 @@ public class EventEntry extends Fragment implements ItemEntry {
         }
         else {
             try {
-                Event.dateFormat.parse(ecd);
+                startTime = Event.dateFormat.parse(ecd);
             } catch (ParseException e) {
                 Toast.makeText(getActivity(), R.string.ecd_empty_event, Toast.LENGTH_LONG).show();
                 return null;
             }
         }
-        // Check if length is valid
-        if (length.length() == 0) {
-            Toast.makeText(getActivity(), R.string.ttc_error_empty, Toast.LENGTH_LONG).show();
+        // Check if ECD is valid
+        if (endTime.length() == 0) {
+            Toast.makeText(getActivity(),
+                    R.string.enter_end_time,
+                    Toast.LENGTH_LONG).show();
             return null;
         }
-        // If length was entered, ensure that it is a valid number. Also likely not needed due to
-        // inputType, but kept as a precaution.
         else {
             try {
-                Integer.parseInt(length);
-            }
-            catch (Exception e) {
-                Toast.makeText(getActivity(),
-                        R.string.ttc_format_event,
-                        Toast.LENGTH_LONG).show();
+                Date endTimeDate = Event.dateFormat.parse(endTime);
+                assert endTimeDate != null;
+                assert !endTimeDate.before(startTime);
+            } catch (Throwable e) {
+                Toast.makeText(getActivity(), R.string.enter_end_time, Toast.LENGTH_LONG).show();
                 return null;
             }
         }
@@ -144,7 +146,7 @@ public class EventEntry extends Fragment implements ItemEntry {
         bundle.putString(AddItem.EXTRA_TYPE, AddItem.EXTRA_VAL_EVENT);
         bundle.putString(AddItem.EXTRA_NAME, eventName);
         bundle.putString(AddItem.EXTRA_START, ecd);
-        bundle.putString(AddItem.EXTRA_TTC, length);
+        bundle.putString(AddItem.EXTRA_END, endTime);
         bundle.putBundle(AddItem.EXTRA_RECUR, mRecur);
 
         // Return bundle containing user input
@@ -167,7 +169,7 @@ public class EventEntry extends Fragment implements ItemEntry {
         // Get needed views
         mEditTextEventName = toReturn.findViewById(R.id.editTextEventName);
         mEditTextECD = toReturn.findViewById(R.id.editTextECD);
-        mEditTextLength = toReturn.findViewById(R.id.editTextLength);
+        mEditTextEndTime = toReturn.findViewById(R.id.editTextEndTime);
 
         // Add the default recurrence interval (none)
         mRecur = new Bundle();
@@ -179,6 +181,9 @@ public class EventEntry extends Fragment implements ItemEntry {
 
         mEditTextECD.setOnClickListener(v -> new DatePickerFragment(mEditTextECD,
                 getString(R.string.start_time), new Date(), null, true)
+                .show(getParentFragmentManager(), getTag()));
+        mEditTextEndTime.setOnClickListener(v -> new DatePickerFragment(mEditTextEndTime,
+                getString(R.string.end_time), new Date(), null, true)
                 .show(getParentFragmentManager(), getTag()));
 
         // Initialize the information buttons to help the user understand the fields.

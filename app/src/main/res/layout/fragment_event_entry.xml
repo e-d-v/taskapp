@@ -57,12 +57,14 @@
         android:layout_height="wrap_content">
 
         <EditText
-            android:id="@+id/editTextLength"
+            android:id="@+id/editTextEndTime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:cursorVisible="false"
+            android:focusable="false"
             android:ems="10"
-            android:hint="@string/length"
+            android:hint="@string/end_time"
             android:inputType="number"
             android:minHeight="48dp"
             android:textColorHint="#757575"

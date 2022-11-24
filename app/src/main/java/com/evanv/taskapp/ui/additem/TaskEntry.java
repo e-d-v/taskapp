@@ -1,9 +1,6 @@
 package com.evanv.taskapp.ui.additem;
 
-import static com.evanv.taskapp.logic.Task.clearDate;
-
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,14 +15,12 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import com.evanv.taskapp.R;
-import com.evanv.taskapp.logic.Event;
 import com.evanv.taskapp.logic.Task;
 import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -227,7 +222,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         toReturn.putString(AddItem.EXTRA_NAME, taskName);
         toReturn.putString(AddItem.EXTRA_ECD, ecd);
         toReturn.putString(AddItem.EXTRA_DUE, dueDate);
-        toReturn.putString(AddItem.EXTRA_TTC, ttc);
+        toReturn.putString(AddItem.EXTRA_END, ttc);
         toReturn.putString(AddItem.EXTRA_PARENTS, mCurrentParents);
 
         return toReturn;

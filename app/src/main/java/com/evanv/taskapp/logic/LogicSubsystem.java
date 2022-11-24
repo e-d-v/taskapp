@@ -161,6 +161,7 @@ public class LogicSubsystem {
         // As the user has marked these tasks as completed, remove them.
         for (int i = 0; i < completedItems.size(); i++) {
             Complete(overdueTasks.get(completedItems.get(i)));
+            mTaskAppViewModel.delete(overdueTasks.get(completedItems.get(i)));
         }
 
         // Change due date for overdue tasks if it has already been passed to today.
@@ -247,7 +248,10 @@ public class LogicSubsystem {
             task.getParents().get(i).removeChild(task);
         }
 
-        DayItemHelper(diff);
+
+        if (diff >= 0) {
+            DayItemHelper(diff);
+        }
     }
 
     /**

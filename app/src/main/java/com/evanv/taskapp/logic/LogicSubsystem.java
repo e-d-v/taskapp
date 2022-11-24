@@ -532,12 +532,7 @@ public class LogicSubsystem {
         int totalTime = (i == 0) ? mTodayTime : 0;
 
         // Adds the total event time for the day to the total time
-        if (i < mEventSchedule.size() && mEventSchedule.get(i).size() > 0) {
-            for (int j = 0; j < mEventSchedule.get(i).size(); j++) {
-                Event event = mEventSchedule.get(i).get(j);
-                totalTime += event.getLength();
-            }
-        }
+        totalTime += Optimizer.calculateTotalTime(i, mEventSchedule);
 
         // Adds the total task time for the day to the total time
         if (i < mTaskSchedule.size() && mTaskSchedule.get(i).size() > 0) {

@@ -165,6 +165,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
         mLogicSubsystem = new LogicSubsystem(this, todayTime);
 
+        // Create activity result handler for AddItem
+        mStartForResult = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> MainActivity.this.onActivityResult(result.getResultCode(),
+                        result.getData()));
+
         String[] overdueNames = mLogicSubsystem.getOverdueTasks();
 
         // Prompt the user with a dialog containing overdue tasks so they can mark overdue tasks
@@ -261,11 +267,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             mVF.setDisplayedChild(2);
         }
 
-        // Create activity result handler for AddItem
-        mStartForResult = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> MainActivity.this.onActivityResult(result.getResultCode(),
-                        result.getData()));
     }
 
     /**

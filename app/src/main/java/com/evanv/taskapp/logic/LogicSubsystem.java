@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import kotlin.Pair;
 
@@ -273,10 +274,6 @@ public class LogicSubsystem {
     }
 
     /**
-     * TODO: The absolute monstrosity that is addItem. Very flawed - the vast majority of the logic
-     * (the recurrence logic) should be a separate class (and has a lot of repeated code), so this
-     * iteration will be drastically changed soon.
-     *
      * Adds an item to the internal data structure based on the information passed in by the AddItem
      * activity.
      *
@@ -295,11 +292,11 @@ public class LogicSubsystem {
         if (type.equals(AddItem.EXTRA_VAL_EVENT)) {
             // Get the fields from the bundle
             String name = result.getString(AddItem.EXTRA_NAME);
-            int ttc = Integer.parseInt(result.getString(AddItem.EXTRA_TTC));
             String startStr = result.getString(AddItem.EXTRA_START);
+            String endStr = result.getString(AddItem.EXTRA_END);
             Bundle recur = result.getBundle(AddItem.EXTRA_RECUR);
 
-            // Convert the String start time into a MyTime
+            // Convert the String start time into a Date
             Date start;
             Calendar userStart;
             try {
@@ -317,8 +314,28 @@ public class LogicSubsystem {
                 return null;
             }
 
+            // Convert the String end time into a Date
+            Date end;
+            Calendar userEnd;
+            try {
+                end = Event.dateFormat.parse(endStr);
+                userEnd = Calendar.getInstance();
+                if (end != null) {
+                    userEnd.setTime(end);
+                }
+                else {
+                    return null;
+                }
+            }
+            catch (Exception e) {
+                System.out.println(e.getMessage());
+                return null;
+            }
+
             RecurrenceParser rp = new RecurrenceParser(mMainActivity);
             List<Date> recurrenceDates = rp.parseBundle(recur, start);
+
+            int ttc =(int) ((end.getTime() - start.getTime()) / TimeUnit.MINUTES.toMillis(1));
 
             for (Date d : recurrenceDates) {
                 int index = getDiff(d, mStartDate);
@@ -339,7 +356,7 @@ public class LogicSubsystem {
         else if (type.equals(AddItem.EXTRA_VAL_TASK)) {
             // Get the fields from the Bundle
             String name = result.getString(AddItem.EXTRA_NAME);
-            int timeToComplete = Integer.parseInt(result.getString(AddItem.EXTRA_TTC));
+            int timeToComplete = Integer.parseInt(result.getString(AddItem.EXTRA_END));
             String ecd = result.getString(AddItem.EXTRA_ECD);
             String dd = result.getString(AddItem.EXTRA_DUE);
             String parents = result.getString(AddItem.EXTRA_PARENTS);

@@ -54,7 +54,7 @@ Adding an event is easy, simply give the app the name of the event, the start ti
   <p>The recurrence screen</p>
 </div>
 
-taskapp also provides advanced recurrence options - allowing you to set nearly every imaginable custom interval to recur on, such as this one that recurs every Monday, Wednesday, and Friday until December 14th.
+taskapp also provides advanced recurrence options for both events and tasks - allowing you to set nearly every imaginable custom interval to recur on, such as this one that recurs every Monday, Wednesday, and Friday until December 14th.
 
 <div align="center">
   <figure>

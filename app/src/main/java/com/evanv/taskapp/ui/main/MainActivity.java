@@ -353,15 +353,15 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 mVF.setDisplayedChild(1);
                 return;
             }
+        }
 
-            for (int d : changedDates) {
-                if (d >= newDays) {
-                    continue;
-                }
-
-                mDayItemAdapter.mDayItemList.set(d, mLogicSubsystem.DayItemHelper(d));
-                mDayItemAdapter.notifyItemChanged(d);
+        for (int d : changedDates) {
+            if (d >= newDays) {
+                continue;
             }
+
+            mDayItemAdapter.mDayItemList.set(d, mLogicSubsystem.DayItemHelper(d));
+            mDayItemAdapter.notifyItemChanged(d);
         }
 
         if (action == 0) {

@@ -64,6 +64,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     private static final String PREF_FILE = "taskappPrefs"; // File name for sharedPrefs
     private static final String PREF_DAY = "taskappDay";    // Day for todayTime
     private static final String PREF_TIME = "taskappTime";  // Time for todayTime
+    private static final String PREF_TIMED_TASK = "taskappTimerTask"; // TaskID for timer
+    private static final String PREF_TIMER = "taskappTimerStart"; // Start Date for the timer
 
     /**
      * Handles activities started for a result, in this case when the AddItem activity returns with
@@ -163,7 +165,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             todayTime = sp.getInt(PREF_TIME, 0);
         }
 
-        mLogicSubsystem = new LogicSubsystem(this, todayTime);
+        // Get current timer
+        long timedTaskID = sp.getLong(PREF_TIMED_TASK, -1);
+        long timerStart = sp.getLong(PREF_TIMER, -1);
+
+        mLogicSubsystem = new LogicSubsystem(this, todayTime, timedTaskID, timerStart);
 
         // Create activity result handler for AddItem
         mStartForResult = registerForActivityResult(
@@ -247,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // Initialize the main recyclerview with data calculated in helper function DayItemList
         RecyclerView dayRecyclerView = findViewById(R.id.main_recyclerview);
         LinearLayoutManager layoutManager = new LinearLayoutManager(MainActivity.this);
-        mDayItemAdapter = new DayItemAdapter(recyclerData, this);
+        mDayItemAdapter = new DayItemAdapter(recyclerData, this, this);
         dayRecyclerView.setAdapter(mDayItemAdapter);
         dayRecyclerView.setLayoutManager(layoutManager);
 
@@ -281,6 +287,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         SharedPreferences.Editor edit = sp.edit();
         edit.putLong(PREF_DAY, mStartDate.getTime());
         edit.putInt(PREF_TIME, mLogicSubsystem.getTodayTime());
+        edit.putLong(PREF_TIMED_TASK, mLogicSubsystem.getTimedID());
+        edit.putLong(PREF_TIMER, mLogicSubsystem.getTimerStart());
         edit.apply();
     }
 
@@ -341,18 +349,40 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     @Override
     public void onButtonClick(int position, int day, int action) {
+        // If starting a timer, tell mLogicSubsystem.
+        if (action == 3) {
+            int oldTimer = mLogicSubsystem.getTimerDay();
+
+            mLogicSubsystem.timer(position, day);
+
+            mDayItemAdapter.mDayItemList.set(day, mLogicSubsystem.DayItemHelper(day));
+            mDayItemAdapter.notifyItemChanged(day);
+
+            if (oldTimer != -1 && oldTimer != day) {
+                mDayItemAdapter.mDayItemList.set(oldTimer, mLogicSubsystem.DayItemHelper(oldTimer));
+                mDayItemAdapter.notifyItemChanged(oldTimer);
+            }
+
+            return;
+        }
+
         // Remove the given task from the task dependency graph
         mVF.setDisplayedChild(0);
+
+        boolean isTimed = (action == 0) && mLogicSubsystem.isTimed(position, day);
+        int timerVal = -1;
+
+        if (isTimed) {
+            timerVal = mLogicSubsystem.getTimer();
+        }
 
         int oldDays = mLogicSubsystem.getNumDays();
         List<Integer> changedDates = mLogicSubsystem.onButtonClick(position, day, action);
         int newDays = mLogicSubsystem.getNumDays();
 
-        if (action == 0 || action == 1) {
-            if (changedDates == null) {
-                mVF.setDisplayedChild(1);
-                return;
-            }
+        if (changedDates == null) {
+            mVF.setDisplayedChild(1);
+            return;
         }
 
         for (int d : changedDates) {
@@ -365,36 +395,42 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
 
         if (action == 0) {
-            int completionTime = -1;
+            if (isTimed) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-            // Prompt the user to ask how long it took to complete the task, and add this time to
-            // todayTime to prevent the user from being overscheduled on today's date.
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(getString(R.string.complete_dialog_message));
+                builder.setMessage(String.format(getString(R.string.timer_prompt), timerVal));
 
-            builder.setTitle(R.string.complete_dialog_title);
+                // If user chooses to accept the given time, then add it to the today time and
+                // continue.
+                int finalTimerVal = timerVal;
+                builder.setPositiveButton("OK", (dialogInterface, i) -> {
+                    mLogicSubsystem.addTodayTime(finalTimerVal);
 
-            final EditText input = new EditText(this);
-            input.setInputType(InputType.TYPE_CLASS_NUMBER);
-            builder.setView(input);
+                    // As the task dependency graph has been updated, we must reoptimize it
+                    Optimize();
 
-            builder.setPositiveButton(R.string.complete_task, (dialogInterface, i) -> {
-                mLogicSubsystem.addTodayTime(Integer.parseInt(input.getText().toString()));
+                    // If there are any tasks/events scheduled, show the recycler
+                    if (!mLogicSubsystem.isEmpty()) {
+                        mVF.setDisplayedChild(1);
+                    }
+                    // If there aren't any, show the "add a task" fragment
+                    else {
+                        mVF.setDisplayedChild(2);
+                    }
+                });
 
-                // As the task dependency graph has been updated, we must reoptimize it
-                Optimize();
+                // If user chooses to use a different time, show the normal time to complete
+                // dialog.
+                builder.setNegativeButton("Manual Time", (dialogInterface, i) -> {
+                    ttcPrompt();
+                });
 
-                // If there are any tasks/events scheduled, show the recycler
-                if (!mLogicSubsystem.isEmpty()) {
-                    mVF.setDisplayedChild(1);
-                }
-                // If there aren't any, show the "add a task" fragment
-                else {
-                    mVF.setDisplayedChild(2);
-                }
-            });
+                builder.show();
+                return;
+            }
 
-            builder.show();
+            // User did not have a timer set, so use the normal time to complete dialog.
+            ttcPrompt();
             return;
         }
         else if (action == 1) {
@@ -402,11 +438,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
         // Remove the given event from the schedule and re-optimize.
         else if (action == 2) {
-            if (changedDates == null) {
-                mVF.setDisplayedChild(1);
-                return;
-            }
-
             while (mDayItemAdapter.mDayItemList.size() != newDays) {
                 mDayItemAdapter.mDayItemList.remove(newDays);
             }
@@ -415,7 +446,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 mDayItemAdapter.notifyItemRangeRemoved(newDays, oldDays - newDays);
             }
         }
-
 
         // If there are any tasks/events scheduled, show the recycler
         if (!mLogicSubsystem.isEmpty()) {
@@ -436,5 +466,42 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         if (fabBehavior != null) {
             fabBehavior.slideUp(mBinding.fab);
         }
+    }
+
+    /**
+     * Show a prompt asking the user how much time a task took to complete, and then add that time
+     * to todayTime.
+     */
+    private void ttcPrompt() {
+        int completionTime = -1;
+
+        // Prompt the user to ask how long it took to complete the task, and add this time to
+        // todayTime to prevent the user from being overscheduled on today's date.
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(getString(R.string.complete_dialog_message));
+
+        builder.setTitle(R.string.complete_dialog_title);
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+        builder.setPositiveButton(R.string.complete_task, (dialogInterface, i) -> {
+            mLogicSubsystem.addTodayTime(Integer.parseInt(input.getText().toString()));
+
+            // As the task dependency graph has been updated, we must reoptimize it
+            Optimize();
+
+            // If there are any tasks/events scheduled, show the recycler
+            if (!mLogicSubsystem.isEmpty()) {
+                mVF.setDisplayedChild(1);
+            }
+            // If there aren't any, show the "add a task" fragment
+            else {
+                mVF.setDisplayedChild(2);
+            }
+        });
+
+        builder.show();
     }
 }

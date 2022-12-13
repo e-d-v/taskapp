@@ -31,6 +31,24 @@
         tools:ignore="HardcodedText" />
 
     <LinearLayout
+        android:id="@+id/timerLayout"
+        android:layout_weight="0"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:gravity="end">
+        <ImageButton
+            android:id="@+id/buttonTimer"
+            android:layout_height="32dp"
+            app:tint="@color/text_primary"
+            android:background="@null"
+            android:scaleType="fitXY"
+            android:contentDescription="@string/hourglass"
+            android:src="@drawable/ic_baseline_hourglass_top_24"
+            android:layout_width="32dp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/deleteLayout"
         android:layout_weight="0"
         android:layout_height="wrap_content"

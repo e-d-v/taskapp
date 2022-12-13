@@ -128,4 +128,7 @@
     <string name="enter_end_time">Make sure to enter an end time for the event</string>
     <string name="task_recur_button">Change how often this task recurs</string>
     <string name="ecd_reminder">Make sure to enter an start date</string>
+    <string name="hourglass">Hourglass</string>
+    <string name="underline"><u>%s</u></string>
+    <string name="timer_prompt">Your timer said the task took %d minutes to complete. Would you like to accept this or enter your own time?</string>
 </resources>

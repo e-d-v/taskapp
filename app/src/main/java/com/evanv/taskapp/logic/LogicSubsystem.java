@@ -44,15 +44,18 @@ public class LogicSubsystem {
     private List<Task> mTasks;                  // List of all tasks for user
     private TaskAppViewModel mTaskAppViewModel; // ViewModel to interact with Database
     private List<Task> overdueTasks;            // Overdue tasks
+    private Task mTimerTask;                    // Task currently being timed.
+    private Date mTimer;                        // Start time of current timer
 
     /**
      * Creates a new LogicSubsystem and loads data from database into internal data structures.
-     *
-     * @param mainActivity The calling MainActivity. Don't love this from a coupling perspective,
+     *  @param mainActivity The calling MainActivity. Don't love this from a coupling perspective,
      *                     but due to Android's design, it's necessary to extract resources.
      * @param todayTime The amount of time spent completing tasks so far today.
+     * @param timedTaskID ID of the task currently being timed.
+     * @param timerStart Start time of the current timer.
      */
-    public LogicSubsystem(MainActivity mainActivity, int todayTime) {
+    public LogicSubsystem(MainActivity mainActivity, int todayTime, long timedTaskID, long timerStart) {
         this.mMainActivity = mainActivity;
         this.mTodayTime = todayTime;
 
@@ -72,6 +75,11 @@ public class LogicSubsystem {
             thread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+
+        // Set the timer
+        if (timerStart != -1) {
+            mTimer = new Date(timerStart);
         }
 
         // Get tasks from database
@@ -103,6 +111,11 @@ public class LogicSubsystem {
                 mTaskSchedule.get(index).add(t);
             } else {
                 overdueTasks.add(t);
+            }
+
+            // If task is the currently timed task, add it.
+            if (t.getID() == timedTaskID) {
+                mTimerTask = t;
             }
         }
 
@@ -692,7 +705,9 @@ public class LogicSubsystem {
         completable = (task.getEarlyDate().equals(mStartDate))
                 && (task.getParents().size() == 0);
 
-        return new TaskItem(name, position, completable);
+        boolean hasTimer = mTimerTask != null && mTimerTask == task;
+
+        return new TaskItem(name, position, completable, hasTimer);
     }
 
     /**
@@ -737,8 +752,17 @@ public class LogicSubsystem {
                 return null;
             }
 
-            mTaskAppViewModel.delete(mTaskSchedule.get(day).get(position));
+            Task toRemove = mTaskSchedule.get(day).get(position);
+
+            // If task to remove is currently being timed, cancel the timer.
+            if (toRemove == mTimerTask) {
+                mTimerTask = null;
+                mTimer = null;
+            }
+
+            mTaskAppViewModel.delete(toRemove);
             toReturn = Complete(mTaskSchedule.get(day).get(position));
+
         }
         // Remove the given event from the schedule and re-optimize.
         if (action == 2) {
@@ -763,5 +787,82 @@ public class LogicSubsystem {
      */
     public int getNumDays() {
         return Integer.max(mEventSchedule.size(), mTaskSchedule.size());
+    }
+
+    /**
+     * Start or cancel a timer.
+     *
+     * @param position Position in the day'th list in the taskSchedule list of the task
+     * @param day How many days past today's date the task is scheduled for.
+     */
+    public void timer(int position, int day) {
+        Task toTime = mTaskSchedule.get(day).get(position);
+
+        if (mTimerTask == toTime) {
+            mTimerTask = null;
+            mTimer = null;
+
+            return;
+        }
+
+        mTimer = new Date();
+        mTimerTask = toTime;
+    }
+
+    /**
+     * Returns if the selected task is currently being timed.
+     *
+     * @param position Position in the task recycler for the given day
+     * @param day How many days past today's date the task is assigned for
+     *
+     * @return true if given task is timed, false otherwise.
+     */
+    public boolean isTimed(int position, int day) {
+        return mTaskSchedule.get(day).get(position) == mTimerTask;
+    }
+
+    /**
+     * Get the amount of time elapsed in the current timer.
+     *
+     * @return Amount of time elapsed in the current timer, or -1 if no timer is set.
+     */
+    public int getTimer() {
+        if (mTimer == null) {
+            return -1;
+        }
+
+        Date currTime = new Date();
+
+        // Weird, but this calculates number of minutes task took while rounding up to the nearest
+        // minute instead of rounding down.
+        return (int) Math.ceil(((double) (currTime.getTime() - mTimer.getTime()))
+                / ((double) TimeUnit.MINUTES.toMillis(1)));
+    }
+
+    /**
+     * Return the ID of the currently timed task.
+     *
+     * @return ID of the task currently being timed, or -1 if no task is currently being timed.
+     */
+    public long getTimedID() {
+        return (mTimerTask == null) ? -1 : mTimerTask.getID();
+    }
+
+    /**
+     * Return the long representation of the timer start.
+     *
+     * @return long representation of the timer Date, or -1 if no timer is active.
+     */
+    public long getTimerStart() {
+        return (mTimer == null) ? -1 : mTimer.getTime();
+    }
+
+    /**
+     * Get the do date of the currently timed task
+     *
+     * @return the do date of the currently timed task, or -1 if no task is currently being timed.
+     */
+    public int getTimerDay() {
+        return (mTimerTask == null) ? -1 : getDiff(mTimerTask.getDoDate(), mStartDate);
     }
 }

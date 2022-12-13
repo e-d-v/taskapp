@@ -1,5 +1,6 @@
 package com.evanv.taskapp.ui.main.recycler;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +30,7 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
     private final RecyclerView.RecycledViewPool mEventViewPool = new RecyclerView.RecycledViewPool();
     // Listener that allows easy completion of tasks (see ClickListener)
     private final ClickListener mListener;
+    private final Context mContext; // Context of current Activity
 
     /**
      * Constructs an adapter for MainActivity's recyclerview
@@ -36,9 +38,10 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
      * @param dayItemList the list of days for this user
      */
     @SuppressWarnings("unused")
-    public DayItemAdapter(List<DayItem> dayItemList, ClickListener listener) {
+    public DayItemAdapter(List<DayItem> dayItemList, ClickListener listener, Context context) {
         mDayItemList = dayItemList;
         mListener = listener;
+        mContext = context;
     }
 
     /**
@@ -88,7 +91,7 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         EventItemAdapter eventItemAdapter = new EventItemAdapter(dayItem.getEvents(), holder,
                 dayItem.getIndex(), holder.mEventHeader);
         TaskItemAdapter taskItemAdapter = new TaskItemAdapter(dayItem.getTasks(), holder,
-                dayItem.getIndex(), holder.mTaskHeader);
+                dayItem.getIndex(), holder.mTaskHeader, mContext);
         holder.mEventRecyclerView.setLayoutManager(eventLayoutManager);
         holder.mTaskRecyclerView.setLayoutManager(taskLayoutManager);
         holder.mEventRecyclerView.setAdapter(eventItemAdapter);

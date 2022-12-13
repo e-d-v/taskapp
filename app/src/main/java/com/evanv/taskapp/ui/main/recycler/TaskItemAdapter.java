@@ -1,6 +1,12 @@
 package com.evanv.taskapp.ui.main.recycler;
 
+import android.content.Context;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.Typeface;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.UnderlineSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.evanv.taskapp.R;
@@ -27,6 +34,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
     // Listener that allows easy completion of tasks (see ClickListener)
     private final ClickListener mListener;
     private final int mDay; // Index into taskSchedule representing this day
+    private final Context mContext; // Context for resources.
 
     /**
      * Constructs an adapter for a given DayItem's task recyclerview
@@ -36,10 +44,11 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
      * @param header Header for task list for this day
      */
     public TaskItemAdapter(List<TaskItem> taskItemList, ClickListener listener, int day,
-                           TextView header) {
+                           TextView header, Context context) {
         mTaskItemList = taskItemList;
         mListener = listener;
         mDay = day;
+        mContext = context;
 
         // If the task list is empty, hide the "Tasks" subheader
         if (taskItemList.size() == 0) {
@@ -80,13 +89,30 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
         TaskItem taskItem = mTaskItemList.get(position);
-        holder.mTaskItemName.setText(taskItem.getName());
+
+        SpannableString name = new SpannableString(taskItem.getName());
+
+        // If a task is timed, set it's name to be red.
+        if (taskItem.isTimed()) {
+//            name.setSpan(new ForegroundColorSpan(Color.RED), 0,
+//                    taskItem.getName().indexOf('\n'), 0);
+
+            holder.timer.setColorFilter(Color.RED);
+        }
+        else {
+            holder.timer.setColorFilter(ContextCompat.getColor(mContext, R.color.text_primary));
+        }
+
+        holder.mTaskItemName.setText(name);
+
         if (taskItem.isCompletable()) {
             holder.mTaskItemName.setTypeface(null, Typeface.BOLD_ITALIC);
         }
         else {
             holder.mTaskItemName.setTypeface(null, Typeface.NORMAL);
         }
+
+
         holder.complete.setOnClickListener(view -> {
             // If the view clicked was a button, tell the DayViewHolder the index of the task to be
             // completed or deleted. As the TaskViewHolder doesn't know the day index, this is -1,
@@ -101,6 +127,14 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             // and will be filled in by the DayViewHolder
             if (view.getId() == holder.DELETE_ID) {
                 holder.mListenerRef.get().onButtonClick(holder.mIndex, mDay, 1);
+            }
+        });
+        holder.timer.setOnClickListener(view -> {
+            // If the view clicked was a button, tell the DayViewHolder the index of the task to be
+            // completed or deleted. As the TaskViewHolder doesn't know the day index, this is -1,
+            // and will be filled in by the DayViewHolder
+            if (view.getId() == holder.TIMER_ID) {
+                holder.mListenerRef.get().onButtonClick(holder.mIndex, mDay, 3);
             }
         });
         holder.mIndex = taskItem.getIndex();
@@ -124,12 +158,13 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         final TextView mTaskItemName; // The TextView representing the name in task_item
         private final int COMPLETE_ID; // ID of the completion button.
         private final int DELETE_ID; // ID of the deletion button.
+        private final int TIMER_ID; // ID of the timer button.
         // Listener that allows easy completion of tasks (see ClickListener)
         final WeakReference<ClickListener> mListenerRef;
         final ImageButton complete;
         final ImageButton delete;
+        final ImageButton timer;
         int mIndex; // Index into taskSchedule.get(day) for this event
-
 
         /**
          * Constructs a new TaskViewHolder, setting it's values to the views in the task_item
@@ -143,13 +178,14 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             mListenerRef = new WeakReference<>(listener);
             COMPLETE_ID = R.id.buttonComplete;
             DELETE_ID = R.id.buttonDeleteTask;
+            TIMER_ID = R.id.buttonTimer;
 
             // Sets this as the OnClickListener for the button, so when the button is clicked, we
             // can move up the ClickListener chain to mark the task as complete in MainActivity's
             // data structures and refresh the recyclerview
             complete = itemView.findViewById(R.id.buttonComplete);
             delete = itemView.findViewById(R.id.buttonDeleteTask);
+            timer = itemView.findViewById(R.id.buttonTimer);
         }
-
     }
 }

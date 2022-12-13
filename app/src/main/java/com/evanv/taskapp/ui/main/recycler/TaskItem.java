@@ -9,18 +9,20 @@ public class TaskItem {
     private final String mName; // Name of the task (e.g. "Read Ch. 3")
     private final int mIndex;   // Index into taskSchedule.get(day) for this event
     private final boolean mCompletable; // Can be completed today
+    private final boolean mHasTimer;    // Task has active timer.
 
     /**
      * Creates an item representing a Task
-     *
-     * @param name a string representing the name of the Task
+     *  @param name a string representing the name of the Task
      * @param completable a boolean representing if the task can be completed today
+     * @param hasTimer true if task is timed, false otherwise.
      */
     @SuppressWarnings("unused")
-    public TaskItem(String name, int index, boolean completable) {
+    public TaskItem(String name, int index, boolean completable, boolean hasTimer) {
         mName = name;
         mIndex = index;
         mCompletable = completable;
+        mHasTimer = hasTimer;
     }
 
     /**
@@ -48,5 +50,14 @@ public class TaskItem {
      */
     public boolean isCompletable() {
         return mCompletable;
+    }
+
+    /**
+     * Returns true if task is being timed, false otherwise.
+     *
+     * @return true if task is being timed, false otherwise.
+     */
+    public boolean isTimed() {
+        return mHasTimer;
     }
 }

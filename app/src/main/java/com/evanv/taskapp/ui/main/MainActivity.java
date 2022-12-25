@@ -392,14 +392,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         List<Integer> changedDates = mLogicSubsystem.onButtonClick(position, day, action);
         int newDays = mLogicSubsystem.getNumDays();
 
-        if (changedDates == null) {
-            mVF.setDisplayedChild(1);
-            return;
-        }
         // Make sure to always update the first day so "Work Ahead" can be redisplayed.
-        else {
-            changedDates.add(0);
-        }
+        changedDates = changedDates == null ? new ArrayList<>() : changedDates;
+        changedDates.add(0);
 
         for (int d : changedDates) {
             if (d >= newDays) {
@@ -457,6 +452,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             while (mDayItemAdapter.mDayItemList.size() != newDays) {
                 mDayItemAdapter.mDayItemList.remove(newDays);
             }
+
+            Optimize();
 
             if (oldDays != newDays) {
                 mDayItemAdapter.notifyItemRangeRemoved(newDays, oldDays - newDays);

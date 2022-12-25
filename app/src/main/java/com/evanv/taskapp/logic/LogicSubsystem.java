@@ -240,7 +240,7 @@ public class LogicSubsystem {
      * Removes a task from the task dependency graph.
      *
      * @param task The task to be removed from the task dependency graph
-     * @return
+     * @return List of days changed.
      */
     public List<Integer> Complete(Task task) {
         mTasks.remove(task);
@@ -892,6 +892,14 @@ public class LogicSubsystem {
         return (mTimerTask == null) ? -1 : getDiff(mTimerTask.getDoDate(), mStartDate);
     }
 
+    /**
+     * Must be for today's date. If today's date is currently displaying work ahead, then it returns
+     * the position of the task on it's normal date.
+     *
+     * @param position Position in the work ahead list.
+     *
+     * @return <Position, Day> pair if Work Ahead is displayed, null otherwise.
+     */
     public Pair<Integer, Integer> convertDay(int position) {
         if (mWorkAheadTasks == null) {
             return null;

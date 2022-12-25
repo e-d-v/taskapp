@@ -91,7 +91,7 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         EventItemAdapter eventItemAdapter = new EventItemAdapter(dayItem.getEvents(), holder,
                 dayItem.getIndex(), holder.mEventHeader);
         TaskItemAdapter taskItemAdapter = new TaskItemAdapter(dayItem.getTasks(), holder,
-                dayItem.getIndex(), holder.mTaskHeader, mContext);
+                dayItem.getIndex(), holder.mTaskHeader, dayItem.isWorkAhead(), mContext);
         holder.mEventRecyclerView.setLayoutManager(eventLayoutManager);
         holder.mTaskRecyclerView.setLayoutManager(taskLayoutManager);
         holder.mEventRecyclerView.setAdapter(eventItemAdapter);

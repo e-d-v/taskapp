@@ -349,6 +349,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     @Override
     public void onButtonClick(int position, int day, int action) {
+        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
+        if (day == 0 && (action == 0 || action == 1)) {
+            Pair<Integer, Integer> convertedDates = mLogicSubsystem.convertDay(position);
+
+            if (convertedDates != null) {
+                position = convertedDates.getFirst();
+                day = convertedDates.getSecond();
+            }
+        }
+
         // If starting a timer, tell mLogicSubsystem.
         if (action == 3) {
             int oldTimer = mLogicSubsystem.getTimerDay();
@@ -356,7 +366,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             mLogicSubsystem.timer(position, day);
 
             mDayItemAdapter.mDayItemList.set(day, mLogicSubsystem.DayItemHelper(day));
+            mDayItemAdapter.mDayItemList.set(0, mLogicSubsystem.DayItemHelper(0));
             mDayItemAdapter.notifyItemChanged(day);
+            mDayItemAdapter.notifyItemChanged(0);
 
             if (oldTimer != -1 && oldTimer != day) {
                 mDayItemAdapter.mDayItemList.set(oldTimer, mLogicSubsystem.DayItemHelper(oldTimer));
@@ -383,6 +395,10 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         if (changedDates == null) {
             mVF.setDisplayedChild(1);
             return;
+        }
+        // Make sure to always update the first day so "Work Ahead" can be redisplayed.
+        else {
+            changedDates.add(0);
         }
 
         for (int d : changedDates) {

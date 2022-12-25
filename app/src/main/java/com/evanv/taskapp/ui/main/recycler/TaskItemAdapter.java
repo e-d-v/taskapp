@@ -42,9 +42,10 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
      * @param listener ClickListener to handle button clicks
      * @param day Index into taskSchedule representing this day
      * @param header Header for task list for this day
+     * @param workAhead true if "Work Ahead" should be displayed in header.
      */
     public TaskItemAdapter(List<TaskItem> taskItemList, ClickListener listener, int day,
-                           TextView header, Context context) {
+                           TextView header, boolean workAhead, Context context) {
         mTaskItemList = taskItemList;
         mListener = listener;
         mDay = day;
@@ -58,6 +59,15 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         }
         else {
             header.setVisibility(View.VISIBLE);
+
+            // Change header to work ahead if necessary.
+            if (workAhead) {
+                header.setText(R.string.work_ahead);
+            }
+            else {
+                header.setText(R.string.tasks);
+            }
+
             header.setLayoutParams(new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         }
@@ -94,9 +104,6 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
 
         // If a task is timed, set it's name to be red.
         if (taskItem.isTimed()) {
-//            name.setSpan(new ForegroundColorSpan(Color.RED), 0,
-//                    taskItem.getName().indexOf('\n'), 0);
-
             holder.timer.setColorFilter(Color.RED);
         }
         else {
@@ -104,14 +111,6 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         }
 
         holder.mTaskItemName.setText(name);
-
-        if (taskItem.isCompletable()) {
-            holder.mTaskItemName.setTypeface(null, Typeface.BOLD_ITALIC);
-        }
-        else {
-            holder.mTaskItemName.setTypeface(null, Typeface.NORMAL);
-        }
-
 
         holder.complete.setOnClickListener(view -> {
             // If the view clicked was a button, tell the DayViewHolder the index of the task to be

@@ -40,12 +40,13 @@ public class LogicSubsystem {
     private final List<List<Task>> mTaskSchedule = new ArrayList<>();
     // eventSchedule[i] represents the list of events for the day i days past startDate
     private final List<List<Event>> mEventSchedule = new ArrayList<>();
-    private int mTodayTime;                     // The time spent completing tasks today
-    private List<Task> mTasks;                  // List of all tasks for user
-    private TaskAppViewModel mTaskAppViewModel; // ViewModel to interact with Database
-    private List<Task> overdueTasks;            // Overdue tasks
-    private Task mTimerTask;                    // Task currently being timed.
-    private Date mTimer;                        // Start time of current timer
+    private int mTodayTime;                       // The time spent completing tasks today
+    private List<Task> mTasks;                    // List of all tasks for user
+    private TaskAppViewModel mTaskAppViewModel;   // ViewModel to interact with Database
+    private List<Task> overdueTasks;              // Overdue tasks
+    private Task mTimerTask;                      // Task currently being timed.
+    private Date mTimer;                          // Start time of current timer
+    @Nullable private List<Task> mWorkAheadTasks; // List of tasks currently work ahead.
 
     /**
      * Creates a new LogicSubsystem and loads data from database into internal data structures.
@@ -563,7 +564,33 @@ public class LogicSubsystem {
         events = EventItemList(i);
         tasks = TaskItemList(i);
 
-        return new DayItem(dayString, events, tasks, i);
+        // If it is today's date and there are currently no tasks scheduled today, add a
+        // "Work Ahead" page to today.
+        boolean workAhead = i == 0 && tasks.size() == 0;
+        if (workAhead) {
+            tasks = new ArrayList<>();
+
+            int numTasks = 0;
+
+            mWorkAheadTasks = new ArrayList<>();
+
+            // For each task, check if it can be completed today. If it can, then add it.
+            for (Task t : mTasks) {
+                TaskItem temp = TaskItemHelper(t, numTasks);
+
+                if (temp.isCompletable()) {
+                    tasks.add(temp);
+                    mWorkAheadTasks.add(t);
+                    numTasks++;
+                }
+            }
+        }
+        // If Work Ahead is not displayed, do not keep a list.
+        else if (i == 0) {
+            mWorkAheadTasks = null;
+        }
+
+        return new DayItem(dayString, events, tasks, i, workAhead);
     }
 
     /**
@@ -748,11 +775,11 @@ public class LogicSubsystem {
         List<Integer> toReturn = new ArrayList<>();
 
         if (action == 0 || action == 1) {
+            Task toRemove = mTaskSchedule.get(day).get(position);
+
             if (day == -1 || mTaskSchedule.get(day).size() <= position) {
                 return null;
             }
-
-            Task toRemove = mTaskSchedule.get(day).get(position);
 
             // If task to remove is currently being timed, cancel the timer.
             if (toRemove == mTimerTask) {
@@ -762,7 +789,6 @@ public class LogicSubsystem {
 
             mTaskAppViewModel.delete(toRemove);
             toReturn = Complete(mTaskSchedule.get(day).get(position));
-
         }
         // Remove the given event from the schedule and re-optimize.
         if (action == 2) {
@@ -864,5 +890,23 @@ public class LogicSubsystem {
      */
     public int getTimerDay() {
         return (mTimerTask == null) ? -1 : getDiff(mTimerTask.getDoDate(), mStartDate);
+    }
+
+    public Pair<Integer, Integer> convertDay(int position) {
+        if (mWorkAheadTasks == null) {
+            return null;
+        }
+
+        Task toRemove = mWorkAheadTasks.get(position);
+
+        int day = getDiff(toRemove.getDoDate(), mStartDate);
+
+        position = mTaskSchedule.get(day).indexOf(toRemove);
+
+        if (position == -1) {
+            return null;
+        }
+
+        return new Pair<>(position, day);
     }
 }

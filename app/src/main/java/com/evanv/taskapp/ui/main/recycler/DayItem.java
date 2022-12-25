@@ -10,10 +10,11 @@ import java.util.List;
  */
 @SuppressWarnings("unused")
 public class DayItem {
-    private String mDayString;       // String of the day this DayItem represents
-    private List<EventItem> mEvents; // List of EventItems to be displayed in recyclerview
-    private List<TaskItem> mTasks;   // List of TaskItems to be displayed in recyclerview
-    private final int mIndex;        // Index into task/eventSchedule for this day
+    private String mDayString;        // String of the day this DayItem represents
+    private List<EventItem> mEvents;  // List of EventItems to be displayed in recyclerview
+    private List<TaskItem> mTasks;    // List of TaskItems to be displayed in recyclerview
+    private final int mIndex;         // Index into task/eventSchedule for this day
+    private final boolean mWorkAhead; // true if UI should show "Work Ahead" instead of "Tasks"
 
     /**
      * Returns how many days past today's date this DayItem represents, which can be used as an
@@ -33,13 +34,16 @@ public class DayItem {
      * @param events list of EventItems to be displayed in recyclerview
      * @param tasks list of TaskItems to be displayed in recyclerview
      * @param index how many days past today's date this DayItem represents
+     * @param workAhead true if the UI should display "Work Ahead" instead of "Tasks"
      */
     @SuppressWarnings("unused")
-    public DayItem(String dayString, List<EventItem> events, List<TaskItem> tasks, int index) {
+    public DayItem(String dayString, List<EventItem> events, List<TaskItem> tasks, int index,
+                   boolean workAhead) {
         mDayString = dayString;
         mEvents = events;
         mTasks = tasks;
         mIndex = index;
+        mWorkAhead = workAhead;
     }
 
     /**
@@ -94,5 +98,14 @@ public class DayItem {
      */
     public void setTasks(List<TaskItem> tasks) {
         this.mTasks = tasks;
+    }
+
+    /**
+     * Returns true if the UI should display "Work Ahead" instead of "Tasks", false otherwise
+     *
+     * @return true if the UI should display "Work Ahead" instead of "Tasks", false otherwise
+     */
+    public boolean isWorkAhead() {
+        return mWorkAhead;
     }
 }

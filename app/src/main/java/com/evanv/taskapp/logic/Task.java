@@ -376,13 +376,20 @@ public class Task implements Comparable<Task> {
      */
     @Override
     public int compareTo(Task other) {
+        // See if this task has higher priority than other task.
+        long diff = other.getPriority() - mPriority;
+        if (diff != 0) {
+            return (int) diff;
+        }
+
         // See if task is due before the other task
         Date otherDueDate = other.getDueDate();
-        long diff = mDueDate.compareTo(otherDueDate);
+        diff = mDueDate.compareTo(otherDueDate);
 
         if (diff == 0) {
             // See if task has more children than the other task
-            diff = mChildren.size() - other.getChildren().size();
+            // Go backwards as we want a higher number of children first
+            diff = other.getChildren().size() - mChildren.size();
 
             if (diff == 0) {
                 // See if task can be completed earlier than the other task

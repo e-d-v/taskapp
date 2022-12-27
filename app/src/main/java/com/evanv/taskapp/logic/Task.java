@@ -422,8 +422,13 @@ public class Task implements Comparable<Task> {
             }
         }
 
+        // Normalize value
         if (diff != 0) {
             diff = diff/Math.abs(diff);
+        }
+        // Sort by name as last case scenario (mostly for recycler)
+        else {
+            diff = mName.compareTo(other.getName());
         }
 
         return (int)diff;

@@ -110,6 +110,23 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             holder.timer.setColorFilter(ContextCompat.getColor(mContext, R.color.text_primary));
         }
 
+        switch (taskItem.getPriority()) {
+            case 0:
+                holder.complete.setColorFilter(ContextCompat.getColor(mContext, R.color.text_primary));
+                break;
+            case 1:
+                holder.complete.setColorFilter(ContextCompat.getColor(mContext, R.color.gold));
+                break;
+            case 2:
+                holder.complete.setColorFilter(ContextCompat.getColor(mContext, R.color.orange));
+                break;
+            case 4:
+                name.setSpan(new ForegroundColorSpan(Color.RED), 0, name.length(), 0);
+            case 3:
+                holder.complete.setColorFilter(Color.RED);
+                break;
+        }
+
         holder.mTaskItemName.setText(name);
 
         holder.complete.setOnClickListener(view -> {

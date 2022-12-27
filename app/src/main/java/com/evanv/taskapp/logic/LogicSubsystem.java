@@ -735,7 +735,7 @@ public class LogicSubsystem {
 
         boolean hasTimer = mTimerTask != null && mTimerTask == task;
 
-        int priority = mStartDate == task.getDueDate() ? 5 : task.getPriority();
+        int priority = !mStartDate.before(task.getDueDate()) ? 4 : task.getPriority();
 
         return new TaskItem(name, position, completable, hasTimer, priority);
     }

@@ -45,6 +45,8 @@ public class AddItem extends AppCompatActivity {
     public static final String EXTRA_DUE = "com.evanv.taskapp.extra.DUE";
     // Key for the list of parent tasks indices for the task being added
     public static final String EXTRA_PARENTS = "com.evanv.taskapp.extra.PARENTS";
+    // Key for the priority of the task.
+    public static final String EXTRA_PRIORITY = "com.evanv.taskapp.extra.PRIORITY";
 
     // Used by Event
     // Type value representing Event

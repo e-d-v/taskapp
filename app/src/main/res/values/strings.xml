@@ -132,4 +132,6 @@
     <string name="underline"><u>%s</u></string>
     <string name="timer_prompt">Your timer said the task took %d minutes to complete. Would you like to accept this or enter your own time?</string>
     <string name="work_ahead">Work Ahead</string>
+    <string name="priority">Priority:</string>
+    <string name="priority_info">How important a task is. Leftmost is lowest priority, rightmost is highest priority.</string>
 </resources>

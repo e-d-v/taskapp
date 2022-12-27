@@ -371,13 +371,36 @@ public class Task implements Comparable<Task> {
      * Compares this task with another given task
      *
      * @param other The other task to compare it with
-     * @return Returns a positive number if the other task is greater,
-     * negative if this task is greater, and 0 if they are equal
+     * @return Returns a positive number if this task is greater,
+     * negative if the other task is greater, and 0 if they are equal
      */
     @Override
     public int compareTo(Task other) {
+        // Check if task can only be completed for one day to get these tasks scheduled first.
+        boolean task1OneDay = mDueDate.getTime() == mEarlyDate.getTime();
+        boolean task2OneDay = other.getDueDate().getTime() == other.getEarlyDate().getTime();
+        if (task1OneDay && !task2OneDay) {
+            return -1;
+        }
+        else if (!task1OneDay && task2OneDay) {
+            return 1;
+        }
+
+        // Get task priorities
+        int priority1 = mPriority;
+        int priority2 = other.getPriority();
+
+        // Set priority to 5 if task is due today
+        if (mDueDate.getTime() == clearDate(new Date()).getTime()) {
+            priority1 = 5;
+        }
+        if (mDueDate.getTime() == clearDate(new Date()).getTime()) {
+            priority2 = 5;
+        }
+
         // See if this task has higher priority than other task.
-        long diff = other.getPriority() - mPriority;
+        long diff = priority2 - priority1;
+
         if (diff != 0) {
             return (int) diff;
         }

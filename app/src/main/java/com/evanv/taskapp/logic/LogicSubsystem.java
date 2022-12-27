@@ -21,6 +21,7 @@ import com.evanv.taskapp.ui.main.recycler.TaskItem;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -698,6 +699,8 @@ public class LogicSubsystem {
         // The list of TaskItems representing the tasks scheduled for the date index days past
         // today's date
         List<TaskItem> itemList = new ArrayList<>();
+
+        Collections.sort(mTaskSchedule.get(index));
 
         // Add all the tasks scheduled for the given date to itemList
         if (index < mTaskSchedule.size() && mTaskSchedule.get(index).size() > 0) {

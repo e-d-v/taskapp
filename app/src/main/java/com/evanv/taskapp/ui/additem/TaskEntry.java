@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -44,6 +45,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
     private Bundle mRecur;
     private EditText mEditTextECD; // The EditText for the earliest completion date
     private ActivityResultLauncher<Intent> mStartForResult;
+    private SeekBar mSeekBar;      // The SeekBar used for priority.
 
     /**
      * Required empty public constructor, creates new TaskEntry fragment
@@ -111,6 +113,9 @@ public class TaskEntry extends Fragment implements ItemEntry {
         Button button = view.findViewById(R.id.recurButton);
         button.setOnClickListener(x -> intentRecur());
 
+        // Get the priority seek bar.
+        mSeekBar = view.findViewById(R.id.seekBar);
+
         // Add the default recurrence interval (none)
         mRecur = new Bundle();
         mRecur.putString(RecurInput.EXTRA_TYPE, NoRecurFragment.EXTRA_VAL_TYPE);
@@ -169,6 +174,13 @@ public class TaskEntry extends Fragment implements ItemEntry {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.task_ttc_info);
             builder.setTitle(R.string.ttc);
+            builder.show();
+        });
+
+        ((ImageButton) view.findViewById(R.id.priorityInfoButton)).setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(R.string.priority_info);
+            builder.setTitle(R.string.priority);
             builder.show();
         });
 
@@ -234,6 +246,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
                 .toString();
         String ecd = ((EditText) mContainer.findViewById(R.id.editTextECD)).getText().toString();
         String ttc = ((EditText) mContainer.findViewById(R.id.editTextTTC)).getText().toString();
+        int priority = mSeekBar.getProgress();
 
         // Check if eventName is valid
         if (taskName.length() == 0) {
@@ -303,6 +316,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         toReturn.putString(AddItem.EXTRA_END, ttc);
         toReturn.putString(AddItem.EXTRA_PARENTS, mCurrentParents);
         toReturn.putBundle(AddItem.EXTRA_RECUR, mRecur);
+        toReturn.putInt(AddItem.EXTRA_PRIORITY, priority);
 
         return toReturn;
     }

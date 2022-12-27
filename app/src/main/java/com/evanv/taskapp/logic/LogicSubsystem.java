@@ -21,6 +21,7 @@ import com.evanv.taskapp.ui.main.recycler.TaskItem;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -382,6 +383,7 @@ public class LogicSubsystem {
             String dd = result.getString(AddItem.EXTRA_DUE);
             String parents = result.getString(AddItem.EXTRA_PARENTS);
             Bundle recur = result.getBundle(AddItem.EXTRA_RECUR);
+            int priority = result.getInt(AddItem.EXTRA_PRIORITY);
 
             // Convert the earliest completion date String to a MyTime
             Date early;
@@ -419,7 +421,7 @@ public class LogicSubsystem {
                 dDue.setTime(d);
                 dDue.add(Calendar.DAY_OF_YEAR, diff);
 
-                Task toAdd = new Task(name, d, dDue.getTime(), timeToComplete);
+                Task toAdd = new Task(name, d, dDue.getTime(), timeToComplete, priority);
 
                 // The parents string in the Bundle is a String of the format "n1,n2,n3,...nN,"
                 // where each nx is an index to a Task in tasks that should be used as a parent
@@ -698,6 +700,8 @@ public class LogicSubsystem {
         // today's date
         List<TaskItem> itemList = new ArrayList<>();
 
+        Collections.sort(mTaskSchedule.get(index));
+
         // Add all the tasks scheduled for the given date to itemList
         if (index < mTaskSchedule.size() && mTaskSchedule.get(index).size() > 0) {
             for (int j = 0; j < mTaskSchedule.get(index).size(); j++) {
@@ -734,7 +738,9 @@ public class LogicSubsystem {
 
         boolean hasTimer = mTimerTask != null && mTimerTask == task;
 
-        return new TaskItem(name, position, completable, hasTimer);
+        int priority = !mStartDate.before(task.getDueDate()) ? 4 : task.getPriority();
+
+        return new TaskItem(name, position, completable, hasTimer, priority);
     }
 
     /**

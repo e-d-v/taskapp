@@ -10,6 +10,7 @@ public class TaskItem {
     private final int mIndex;   // Index into taskSchedule.get(day) for this event
     private final boolean mCompletable; // Can be completed today
     private final boolean mHasTimer;    // Task has active timer.
+    private final int mPriority;        // Priority of task
 
     /**
      * Creates an item representing a Task
@@ -18,11 +19,12 @@ public class TaskItem {
      * @param hasTimer true if task is timed, false otherwise.
      */
     @SuppressWarnings("unused")
-    public TaskItem(String name, int index, boolean completable, boolean hasTimer) {
+    public TaskItem(String name, int index, boolean completable, boolean hasTimer, int priority) {
         mName = name;
         mIndex = index;
         mCompletable = completable;
         mHasTimer = hasTimer;
+        mPriority = priority;
     }
 
     /**
@@ -59,5 +61,14 @@ public class TaskItem {
      */
     public boolean isTimed() {
         return mHasTimer;
+    }
+
+    /**
+     * Return the priority of the task.
+     *
+     * @return the priority of the task.
+     */
+    public int getPriority() {
+        return mPriority;
     }
 }

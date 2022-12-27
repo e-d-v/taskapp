@@ -15,7 +15,7 @@ import com.evanv.taskapp.logic.Task;
  *
  * @author Evan Voogd
  */
-@Database(entities = {Task.class, Event.class}, version = 1, exportSchema = false)
+@Database(entities = {Task.class, Event.class}, version = 2, exportSchema = false)
 public abstract class TaskAppRoomDatabase extends RoomDatabase {
     private static volatile TaskAppRoomDatabase INSTANCE; // The singleton of the Room DB
 

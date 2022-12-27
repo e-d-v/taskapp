@@ -46,9 +46,11 @@ public class Task implements Comparable<Task> {
     private Date mDueDate;             // Date the task is due
     @ColumnInfo(name = "ttc")
     private int mTimeToComplete;       // Time (in minutes) to complete the tasks
+    @ColumnInfo(name = "priority")
+    private int mPriority;             // Priority
+
     @NonNull
     @ColumnInfo(name = "parents_list")
-
     // Runtime fields
     private final ArrayList<Long> mParentArr; // List of parent ids to be stored in Room.
     @Ignore
@@ -78,7 +80,7 @@ public class Task implements Comparable<Task> {
      * @param early The earliest possible day to complete the task (e.g. when it's assigned)
      * @param due When the task is due
      */
-    public Task(@NonNull String name, Date early, Date due, int time) {
+    public Task(@NonNull String name, Date early, Date due, int time, int priority) {
         this.mName = name;
         this.mEarlyDate = clearDate(early);
         this.mDoDate = new Date(0); // To stop null pointer exceptions
@@ -88,10 +90,22 @@ public class Task implements Comparable<Task> {
         mChildren = new ArrayList<>();
         mParentArr = new ArrayList<>();
         mParentArr.add(-1L);
+        mPriority = priority;
     }
 
+    /**
+     * Initializes an object representing a task
+     *
+     * @param name The name of the task
+     * @param parentArr Array of id's for the priority
+     * @param priority Priority of the task
+     * @param doDate When the task is scheduled to be completed.
+     * @param dueDate When the task is due.
+     * @param earlyDate Earliest date the task can be completed.
+     * @param timeToComplete Amount of time in minutes the task is estimated to complete.
+     */
     public Task(@NonNull String name, @NonNull Date earlyDate, @NonNull Date dueDate,
-                Date doDate, int timeToComplete, @NonNull ArrayList<Long> parentArr) {
+                Date doDate, int timeToComplete, @NonNull ArrayList<Long> parentArr, int priority) {
         mName = name;
         mEarlyDate = earlyDate;
         mDueDate = dueDate;
@@ -100,6 +114,7 @@ public class Task implements Comparable<Task> {
         mParents = new ArrayList<>();
         mChildren = new ArrayList<>();
         mParentArr = parentArr;
+        mPriority = priority;
     }
 
     /**
@@ -356,18 +371,48 @@ public class Task implements Comparable<Task> {
      * Compares this task with another given task
      *
      * @param other The other task to compare it with
-     * @return Returns a positive number if the other task is greater,
-     * negative if this task is greater, and 0 if they are equal
+     * @return Returns a positive number if this task is greater,
+     * negative if the other task is greater, and 0 if they are equal
      */
     @Override
     public int compareTo(Task other) {
+        // Check if task can only be completed for one day to get these tasks scheduled first.
+        boolean task1OneDay = mDueDate.getTime() == mEarlyDate.getTime();
+        boolean task2OneDay = other.getDueDate().getTime() == other.getEarlyDate().getTime();
+        if (task1OneDay && !task2OneDay) {
+            return -1;
+        }
+        else if (!task1OneDay && task2OneDay) {
+            return 1;
+        }
+
+        // Get task priorities
+        int priority1 = mPriority;
+        int priority2 = other.getPriority();
+
+        // Set priority to 5 if task is due today
+        if (mDueDate.getTime() == clearDate(new Date()).getTime()) {
+            priority1 = 5;
+        }
+        if (mDueDate.getTime() == clearDate(new Date()).getTime()) {
+            priority2 = 5;
+        }
+
+        // See if this task has higher priority than other task.
+        long diff = priority2 - priority1;
+
+        if (diff != 0) {
+            return (int) diff;
+        }
+
         // See if task is due before the other task
         Date otherDueDate = other.getDueDate();
-        long diff = mDueDate.compareTo(otherDueDate);
+        diff = mDueDate.compareTo(otherDueDate);
 
         if (diff == 0) {
             // See if task has more children than the other task
-            diff = mChildren.size() - other.getChildren().size();
+            // Go backwards as we want a higher number of children first
+            diff = other.getChildren().size() - mChildren.size();
 
             if (diff == 0) {
                 // See if task can be completed earlier than the other task
@@ -377,8 +422,13 @@ public class Task implements Comparable<Task> {
             }
         }
 
+        // Normalize value
         if (diff != 0) {
             diff = diff/Math.abs(diff);
+        }
+        // Sort by name as last case scenario (mostly for recycler)
+        else {
+            diff = mName.compareTo(other.getName());
         }
 
         return (int)diff;
@@ -402,6 +452,26 @@ public class Task implements Comparable<Task> {
     }
 
     /**
+     * Update the priority of the task.
+     * 3 = highest priority, 0 = minimum priority
+     *
+     * @param priority new priority
+     */
+    public void setPriority(int priority) {
+        mPriority = priority >= 0 && priority <= 3 ? priority : mPriority;
+    }
+
+    /**
+     * Get the priority of the task.
+     * 3 = highest priority, 0 = minimum priority
+     *
+     * @return priority number
+     */
+    public int getPriority() {
+        return mPriority;
+    }
+
+    /**
      * Get the difference (in days) between two dates. Often used to find index into taskSchedule
      * List, so is included as a static field here.
      *
@@ -414,5 +484,4 @@ public class Task implements Comparable<Task> {
         startDate = clearDate(startDate);
         return (int) ((endDate.getTime() - startDate.getTime()) / TimeUnit.DAYS.toMillis(1));
     }
-
 }

@@ -11,6 +11,8 @@ public class TaskItem {
     private final boolean mCompletable; // Can be completed today
     private final boolean mHasTimer;    // Task has active timer.
     private final int mPriority;        // Priority of task
+    private final String mProject;      // Name of the Project associated with the Task
+    private final int mProjectColor;    // Color of the Project associated with the Task
 
     /**
      * Creates an item representing a Task
@@ -19,12 +21,15 @@ public class TaskItem {
      * @param hasTimer true if task is timed, false otherwise.
      */
     @SuppressWarnings("unused")
-    public TaskItem(String name, int index, boolean completable, boolean hasTimer, int priority) {
+    public TaskItem(String name, int index, boolean completable, boolean hasTimer, int priority,
+                    String project, int projectColor) {
         mName = name;
         mIndex = index;
         mCompletable = completable;
         mHasTimer = hasTimer;
         mPriority = priority;
+        mProject = project;
+        mProjectColor = projectColor;
     }
 
     /**
@@ -70,5 +75,23 @@ public class TaskItem {
      */
     public int getPriority() {
         return mPriority;
+    }
+
+    /**
+     * Return the name of the Project.
+     *
+     * @return the name of the Project associated with the task.
+     */
+    public String getProject() {
+        return mProject;
+    }
+
+    /**
+     * Return the index into the color array of the Project's color.
+     *
+     * @return color of the project.
+     */
+    public int getProjectColor() {
+        return mProjectColor;
     }
 }

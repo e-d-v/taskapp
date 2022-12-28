@@ -47,6 +47,8 @@ public class AddItem extends AppCompatActivity {
     public static final String EXTRA_PARENTS = "com.evanv.taskapp.extra.PARENTS";
     // Key for the priority of the task.
     public static final String EXTRA_PRIORITY = "com.evanv.taskapp.extra.PRIORITY";
+    // Key for the project of the task.
+    public static final String EXTRA_PROJECT = "com.evanv.taskapp.extra.PROJECT";
 
     // Used by Event
     // Type value representing Event

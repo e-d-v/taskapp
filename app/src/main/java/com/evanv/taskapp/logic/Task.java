@@ -509,6 +509,11 @@ public class Task implements Comparable<Task> {
         mProjectID = project.getID();
     }
 
+    /**
+     * Update Project from Project ID as the DB cannot store references.
+     *
+     * @param projects List of projects.
+     */
     public void initializeProject(List<Project> projects) {
         if (mProjectID == -1) {
             mProject = null;

@@ -98,6 +98,15 @@ public class Project {
     }
 
     /**
+     * Remove a task from the Project.
+     *
+     * @param task The task to remove from the Project.
+     */
+    public void removeTask(Task task) {
+        mTasks.remove(task);
+    }
+
+    /**
      * Get the list of Tasks with this Project.
      *
      * @return The list of Tasks with this Project.
@@ -159,4 +168,5 @@ public class Project {
     public void setID(long id) {
         mID = id;
     }
+
 }

@@ -60,6 +60,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
     // Key for the extra that stores the list of Task names for the Parent Task Picker Dialog in
     public static final String EXTRA_TASKS = "com.evanv.taskapp.ui.main.extras.TASKS";
+    // Key for the extra that stores the list of Project names
+    private static final String EXTRA_PROJECTS = "com.evanv.taskapp.ui.main.extras.PROJECTS";
+    // Key for the extra that stores the list of colors fo each Project.
+    private static final String EXTRA_PROJECT_COLORS =
+            "com.evanv.taskapp.ui.main.extras.PROJECT_COLORS";
     // Keys into SharedPrefs to store todayTime
     private static final String PREF_FILE = "taskappPrefs"; // File name for sharedPrefs
     private static final String PREF_DAY = "taskappDay";    // Day for todayTime
@@ -300,8 +305,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
         // Get a list of task names for prerequisite list
         ArrayList<String> taskNames = mLogicSubsystem.getTaskNames();
+        ArrayList<String> projectNames = mLogicSubsystem.getProjectNames();
+        ArrayList<Integer> projectColors = mLogicSubsystem.getProjectColors();
 
         intent.putStringArrayListExtra(EXTRA_TASKS, taskNames);
+        intent.putStringArrayListExtra(EXTRA_PROJECTS, projectNames);
+        intent.putIntegerArrayListExtra(EXTRA_PROJECT_COLORS, projectColors);
         mStartForResult.launch(intent);
     }
 

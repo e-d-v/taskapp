@@ -48,6 +48,7 @@ public class LogicSubsystem {
     private Task mTimerTask;                      // Task currently being timed.
     private Date mTimer;                          // Start time of current timer
     @Nullable private List<Task> mWorkAheadTasks; // List of tasks currently work ahead.
+    private List<Project> mProjects;              // List of current projects.
 
     /**
      * Creates a new LogicSubsystem and loads data from database into internal data structures.
@@ -90,8 +91,14 @@ public class LogicSubsystem {
 
         overdueTasks = new ArrayList<>(); // Tasks that are overdue.
 
+        // Get projects from database
+        mProjects = mTaskAppViewModel.getAllProjects();
+
         // Add tasks to taskSchedule/add parents
         for (Task t : mTasks) {
+            // Add Project
+            t.initializeProject(mProjects);
+
             // Calculate how many days past today's date this task is scheduled for. Used to
             // index into taskSchedule
             Date doDate = t.getDoDate();
@@ -246,6 +253,9 @@ public class LogicSubsystem {
     public List<Integer> Complete(Task task) {
         mTasks.remove(task);
 
+        // Remove task from project
+        task.getProject().removeTask(task);
+
         Date doDate = task.getDoDate();
 
         List<Integer> toReturn = new ArrayList<>();
@@ -384,6 +394,7 @@ public class LogicSubsystem {
             String parents = result.getString(AddItem.EXTRA_PARENTS);
             Bundle recur = result.getBundle(AddItem.EXTRA_RECUR);
             int priority = result.getInt(AddItem.EXTRA_PRIORITY);
+            int project = result.getInt(AddItem.EXTRA_PROJECT);
 
             // Convert the earliest completion date String to a MyTime
             Date early;
@@ -422,6 +433,11 @@ public class LogicSubsystem {
                 dDue.add(Calendar.DAY_OF_YEAR, diff);
 
                 Task toAdd = new Task(name, d, dDue.getTime(), timeToComplete, priority);
+
+                if (project != -1) {
+                    toAdd.setProject(mProjects.get(project));
+                    mProjects.get(project).addTask(toAdd);
+                }
 
                 // The parents string in the Bundle is a String of the format "n1,n2,n3,...nN,"
                 // where each nx is an index to a Task in tasks that should be used as a parent
@@ -740,7 +756,10 @@ public class LogicSubsystem {
 
         int priority = !mStartDate.before(task.getDueDate()) ? 4 : task.getPriority();
 
-        return new TaskItem(name, position, completable, hasTimer, priority);
+        String project = task.getProject().getName();
+        int projectColor = task.getProject().getColor();
+
+        return new TaskItem(name, position, completable, hasTimer, priority, project, projectColor);
     }
 
     /**
@@ -922,5 +941,35 @@ public class LogicSubsystem {
         }
 
         return new Pair<>(position, day);
+    }
+
+    /**
+     * Return the project names for the AddItem screen.
+     *
+     * @return A list of names of Projects
+     */
+    public ArrayList<String> getProjectNames() {
+        ArrayList<String> toReturn = new ArrayList<>();
+
+        for (Project p : mProjects) {
+            toReturn.add(p.getName());
+        }
+
+        return toReturn;
+    }
+
+    /**
+     * Return the colors for each project.
+     *
+     * @return a list of colors for Projects.
+     */
+    public ArrayList<Integer> getProjectColors() {
+        ArrayList<Integer> toReturn = new ArrayList<>();
+
+        for (Project p : mProjects) {
+            toReturn.add(p.getColor());
+        }
+
+        return toReturn;
     }
 }

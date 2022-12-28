@@ -1,7 +1,5 @@
 package com.evanv.taskapp.logic;
 
-import android.graphics.Color;
-
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
@@ -28,7 +26,7 @@ public class Project {
     @ColumnInfo(name = "name")
     private String mName;            // Name of the Project
     @ColumnInfo(name = "color")
-    private Color mColor;            // Color of the Project
+    private int mColor;            // Color of the Project, index into ColorList
     @ColumnInfo(name = "goal")
     private String mGoal;            // Goal for completing the Project
     @ColumnInfo(name = "priority")
@@ -45,7 +43,7 @@ public class Project {
      * @param goal Goal for the Project.
      * @param priority Priority for the project. Between 1 and 4.
      */
-    public Project(String name, Color color, String goal, int priority) {
+    public Project(String name, int color, String goal, int priority) {
         mName = name;
         mColor = color;
         mGoal = goal;
@@ -77,7 +75,7 @@ public class Project {
      *
      * @return The color of the Project.
      */
-    public Color getColor() {
+    public int getColor() {
         return mColor;
     }
 
@@ -86,7 +84,7 @@ public class Project {
      *
      * @param color The new Color of the Project.
      */
-    public void setColor(Color color) {
+    public void setColor(int color) {
         mColor = color;
     }
 

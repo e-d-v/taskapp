@@ -7,6 +7,7 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
 import com.evanv.taskapp.logic.Event;
+import com.evanv.taskapp.logic.Project;
 import com.evanv.taskapp.logic.Task;
 
 /**
@@ -15,7 +16,7 @@ import com.evanv.taskapp.logic.Task;
  *
  * @author Evan Voogd
  */
-@Database(entities = {Task.class, Event.class}, version = 2, exportSchema = false)
+@Database(entities = {Task.class, Event.class, Project.class}, version = 3, exportSchema = false)
 public abstract class TaskAppRoomDatabase extends RoomDatabase {
     private static volatile TaskAppRoomDatabase INSTANCE; // The singleton of the Room DB
 
@@ -53,4 +54,11 @@ public abstract class TaskAppRoomDatabase extends RoomDatabase {
      * @return a Dao to interface with the event_table
      */
     public abstract EventDao eventDao();
+
+    /**
+     * Gets a Dao to interface with the project_table
+     *
+     * @return a Dao to interace with the project_table
+     */
+    public abstract ProjectDao projectDao();
 }

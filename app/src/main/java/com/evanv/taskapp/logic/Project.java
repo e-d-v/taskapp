@@ -4,6 +4,7 @@ import android.graphics.Color;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
@@ -12,6 +13,11 @@ import com.evanv.taskapp.db.Converters;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Project - way to organize tasks.
+ *
+ * @author Evan Voogd
+ */
 @Entity(tableName = "project_table")
 @TypeConverters(Converters.class)
 public class Project {
@@ -23,18 +29,29 @@ public class Project {
     private String mName;            // Name of the Project
     @ColumnInfo(name = "color")
     private Color mColor;            // Color of the Project
-    @ColumnInfo(name = "tasks")
-    private List<Task> mTasks;       // List of Tasks with this Project
     @ColumnInfo(name = "goal")
     private String mGoal;            // Goal for completing the Project
     @ColumnInfo(name = "priority")
     private int mPriority;           // Priority of the Project.
+    @Ignore
+    private final List<Task> mTasks;       // List of Tasks with this Project
 
+
+    /**
+     * Construct a new Project.
+     *
+     * @param name Name of the Project.
+     * @param color Color associated with the Project.
+     * @param goal Goal for the Project.
+     * @param priority Priority for the project. Between 1 and 4.
+     */
     public Project(String name, Color color, String goal, int priority) {
-        setName(name);
-        setColor(color);
+        mName = name;
+        mColor = color;
         mGoal = goal;
         mPriority = priority;
+
+        mTasks = new ArrayList<>();
     }
 
     /**
@@ -79,10 +96,6 @@ public class Project {
      * @param task The task to add to the Project.
      */
     public void addTask(Task task) {
-        if (mTasks == null) {
-            mTasks = new ArrayList<>();
-        }
-
         mTasks.add(task);
     }
 
@@ -129,5 +142,23 @@ public class Project {
      */
     public void setPriority(int priority) {
         mPriority = priority;
+    }
+
+    /**
+     * Get the ID for this specific project.
+     *
+     * @return The Project's ID.
+     */
+    public long getID() {
+        return mID;
+    }
+
+    /**
+     * Change the ID for this specific project.
+     *
+     * @param id the ID for the project.
+     */
+    public void setID(long id) {
+        mID = id;
     }
 }

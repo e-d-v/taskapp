@@ -3,6 +3,7 @@ package com.evanv.taskapp.db;
 import android.app.Application;
 
 import com.evanv.taskapp.logic.Event;
+import com.evanv.taskapp.logic.Project;
 import com.evanv.taskapp.logic.Task;
 
 import java.util.List;
@@ -15,8 +16,10 @@ import java.util.List;
 public class TaskAppRepository {
     private final TaskDao mTaskDao;       // Dao for the task table
     private final EventDao mEventDao;     // Dao for the event table
+    private final ProjectDao mProjectDao; // Dao for the project table
     private final List<Task> mAllTasks;   // List of all tasks
     private final List<Event> mAllEvents; // List of all events
+    private final List<Project> mAllProjects; // List of all projects
 
     /**
      * Constructs a new repository
@@ -27,8 +30,10 @@ public class TaskAppRepository {
         TaskAppRoomDatabase db = TaskAppRoomDatabase.getDatabase(application);
         mTaskDao = db.taskDao();
         mEventDao = db.eventDao();
+        mProjectDao = db.projectDao();
         mAllTasks = mTaskDao.getTasks();
         mAllEvents = mEventDao.getEvents();
+        mAllProjects = mProjectDao.getProjects();
     }
 
     /**
@@ -52,6 +57,16 @@ public class TaskAppRepository {
     }
 
     /**
+     * Gets a list of all projects upon start of app. LiveData not used due to race conditions
+     * inherent to app.
+     *
+     * @return a list of all projects
+     */
+    List<Project> getAllProjects() {
+        return mAllProjects;
+    }
+
+    /**
      * Asynchronously inserts a task into the task_table
      *
      * @param task Task to be inserted
@@ -67,6 +82,15 @@ public class TaskAppRepository {
      */
     public void insert(Event event) {
         (new Thread(new insertEventAsyncTask(mEventDao, event))).start();
+    }
+
+    /**
+     * Asynchronously inserts a project into the project_table
+     *
+     * @param project Project to be inserted
+     */
+    public void insert(Project project) {
+        (new Thread(new insertProjectAsyncTask(mProjectDao, project))).start();
     }
 
     /**
@@ -88,6 +112,15 @@ public class TaskAppRepository {
     }
 
     /**
+     * Asynchronously updates a project in the project_table
+     *
+     * @param project Project to be updated
+     */
+    public void update(Project project) {
+        (new Thread(new updateProjectAsyncTask(mProjectDao, project))).start();
+    }
+
+    /**
      * Asynchronously deletes a task in the task_table
      *
      * @param task Task to be deleted
@@ -103,6 +136,15 @@ public class TaskAppRepository {
      */
     public void delete(Event event) {
         (new Thread(new deleteEventAsyncTask(mEventDao, event))).start();
+    }
+
+    /**
+     * Asynchronously deletes a project in the project_table
+     *
+     * @param project Project to be deleted
+     */
+    public void delete(Project project) {
+        (new Thread(new deleteProjectAsyncTask(mProjectDao, project))).start();
     }
 
     /**
@@ -167,11 +209,38 @@ public class TaskAppRepository {
     }
 
     /**
+     * Runnable that inserts an Event into the DB
+     */
+    private static class insertProjectAsyncTask implements Runnable {
+        private final ProjectDao mAsyncProjectDao; // The Dao used to interface with the database
+        private final Project mProject;            // The Project to be inserted into the database
+
+        /**
+         * Initializes the thread with the event to be added and the Dao to interface with.
+         *
+         * @param dao The Dao used to interface with the database.
+         * @param project The Project to be inserted into the database.
+         */
+        public insertProjectAsyncTask(ProjectDao dao, Project project) {
+            mAsyncProjectDao = dao;
+            mProject = project;
+        }
+
+        /**
+         * The code to be run asynchronously - insert a Project and update the ID.
+         */
+        public void run() {
+            long id = mAsyncProjectDao.insert(mProject);
+            mProject.setID(id);
+        }
+    }
+
+    /**
      * Runnable that updates a Task currently in the DB
      */
     private static class updateTaskAsyncTask implements Runnable {
         private final TaskDao mAsyncTaskDao; // The Dao used to interface with the database
-        private final Task mTask;            // The Task to be inserted into the database
+        private final Task mTask;            // The Task to be updated in the database
 
         /**
          * Initializes the thread with the task to be updated and the Dao to interface with
@@ -198,7 +267,7 @@ public class TaskAppRepository {
      */
     private static class updateEventAsyncTask implements Runnable {
         private final EventDao mAsyncEventDao; // The Dao used to interface with the database
-        private final Event mEvent;            // The Event to be inserted into the database
+        private final Event mEvent;            // The Event to be updated in the database
 
         /**
          * Initializes the thread with the event to be updated and the Dao to interface with
@@ -221,11 +290,37 @@ public class TaskAppRepository {
     }
 
     /**
+     * Runnable that updates a Project currently in the DB
+     */
+    private static class updateProjectAsyncTask implements Runnable {
+        private final ProjectDao mAsyncProjectDao; // The Dao used to interface with the database
+        private final Project mProject;            // The Project to be updated in the database
+
+        /**
+         * Initializes the thread with the event to be updated and the Dao to interface with.
+         *
+         * @param dao The Dao used to interface with the database.
+         * @param project The Project to be updated in the database.
+         */
+        public updateProjectAsyncTask(ProjectDao dao, Project project) {
+            mAsyncProjectDao = dao;
+            mProject = project;
+        }
+
+        /**
+         * The code to be run asynchronously - insert a Project and update the ID.
+         */
+        public void run() {
+            mAsyncProjectDao.update(mProject);
+        }
+    }
+
+    /**
      * Runnable that deletes a task from the task_table
      */
     private static class deleteTaskAsyncTask implements Runnable {
         private final TaskDao mAsyncTaskDao; // The Dao used to interface with the database
-        private final Task mTask;            // The Task to be inserted into the database
+        private final Task mTask;            // The Task to be deleted from the database
 
         /**
          * Initializes the thread with the task to be deleted and the Dao to interface with
@@ -252,7 +347,7 @@ public class TaskAppRepository {
      */
     private static class deleteEventAsyncTask implements Runnable {
         private final EventDao mAsyncEventDao; // The Dao used to interface with the database
-        private final Event mEvent;            // The Event to be inserted into the database
+        private final Event mEvent;            // The Event to be deleted from into the database
 
         /**
          * Initializes the thread with the event to be deleted and the Dao to interface with
@@ -274,7 +369,29 @@ public class TaskAppRepository {
         }
     }
 
+    /**
+     * Runnable that deletes an
+     */
+    private static class deleteProjectAsyncTask implements Runnable {
+        private final ProjectDao mAsyncProjectDao; // The Dao used to interface with the database
+        private final Project mProject;            // The Project to be deleted from the database
 
+        /**
+         * Initializes the thread with the event to be deleted and the Dao to interface with.
+         *
+         * @param dao The Dao used to interface with the database.
+         * @param project The Project to be deleted from the database.
+         */
+        public deleteProjectAsyncTask(ProjectDao dao, Project project) {
+            mAsyncProjectDao = dao;
+            mProject = project;
+        }
 
-
+        /**
+         * The code to be run asynchronously - insert a Project and update the ID.
+         */
+        public void run() {
+            mAsyncProjectDao.deleteProject(mProject);
+        }
+    }
 }

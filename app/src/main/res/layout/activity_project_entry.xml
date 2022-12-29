@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_margin="6dp"
+    android:orientation="vertical"
+    tools:context=".ui.additem.ProjectEntry">
+
+    <LinearLayout
+        android:gravity="center_vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <EditText
+            android:id="@+id/editTextProjectName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:layout_weight="1"
+            android:hint="@string/project_name"
+            android:inputType="textShortMessage"
+            android:minHeight="48dp"
+            android:textColorHint="#757575"
+            android:importantForAutofill="no"/>
+        <ImageButton
+            app:tint="@color/text_primary"
+            android:background="@null"
+            android:backgroundTint="@color/white"
+            android:src="@drawable/ic_outline_info_24"
+            android:id="@+id/nameInfoButton"
+            android:layout_weight="0"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/info_button"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:gravity="center_vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/colorSelectTextView"
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:onClick="handleColorPress"
+            android:text="@string/default_color"
+            android:textSize="18sp" />
+        <ImageButton
+            app:tint="@color/text_primary"
+            android:background="@null"
+            android:backgroundTint="@color/white"
+            android:src="@drawable/ic_outline_info_24"
+            android:id="@+id/colorInfoButton"
+            android:layout_weight="0"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/info_button"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:gravity="center_vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <EditText
+            android:id="@+id/editTextGoal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:layout_weight="1"
+            android:hint="@string/project_goal"
+            android:inputType="textLongMessage"
+            android:minHeight="48dp"
+            android:textColorHint="#757575"
+            android:importantForAutofill="no"/>
+        <ImageButton
+            app:tint="@color/text_primary"
+            android:background="@null"
+            android:backgroundTint="@color/white"
+            android:src="@drawable/ic_outline_info_24"
+            android:id="@+id/goalInfoButton"
+            android:layout_weight="0"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/info_button"/>
+    </LinearLayout>
+
+
+</LinearLayout>

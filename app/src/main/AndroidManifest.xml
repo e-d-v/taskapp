@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.evanv.taskapp">
+    package="com.evanv.taskapp" >
 
     <application
         android:allowBackup="true"
@@ -12,13 +12,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Taskapp"
-        tools:targetApi="31">
+        tools:targetApi="31" >
         <activity
-            android:name=".ProjectEntry"
-            android:exported="false" />
+            android:name=".ui.additem.ProjectEntry"
+            android:exported="false"
+            android:label="@string/title_activity_project_entry"
+            android:theme="@style/Theme.Taskapp.NoActionBar" />
         <activity
             android:name=".ui.additem.recur.RecurActivity"
-            android:exported="false">
+            android:exported="false" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.evanv.taskapp.ui.additem.AddItem" />
@@ -31,7 +33,7 @@
             android:exported="false"
             android:label="@string/title_activity_add_item"
             android:launchMode="singleTop"
-            android:theme="@style/Theme.Taskapp.NoActionBar">
+            android:theme="@style/Theme.Taskapp.NoActionBar" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.evanv.taskapp.ui.main.MainActivity" />
@@ -39,7 +41,7 @@
         <activity
             android:name=".ui.main.MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.Taskapp.NoActionBar">
+            android:theme="@style/Theme.Taskapp.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

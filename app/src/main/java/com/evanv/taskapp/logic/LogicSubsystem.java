@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelStoreOwner;
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.db.TaskAppViewModel;
 import com.evanv.taskapp.ui.additem.AddItem;
+import com.evanv.taskapp.ui.additem.ProjectEntry;
 import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.main.recycler.DayItem;
 import com.evanv.taskapp.ui.main.recycler.EventItem;
@@ -395,6 +396,7 @@ public class LogicSubsystem {
             Bundle recur = result.getBundle(AddItem.EXTRA_RECUR);
             int priority = result.getInt(AddItem.EXTRA_PRIORITY);
             int project = result.getInt(AddItem.EXTRA_PROJECT);
+            Bundle newProject = result.getBundle(AddItem.EXTRA_NEW_PROJECT);
 
             // Convert the earliest completion date String to a MyTime
             Date early;
@@ -435,6 +437,16 @@ public class LogicSubsystem {
                 Task toAdd = new Task(name, d, dDue.getTime(), timeToComplete, priority);
 
                 if (project != -1) {
+                    if (project == mProjects.size()) {
+                        String projectName = newProject.getString(ProjectEntry.EXTRA_NAME);
+                        int projectColor = newProject.getInt(ProjectEntry.EXTRA_COLOR);
+                        String projectGoal = newProject.getString(ProjectEntry.EXTRA_GOAL);
+
+                        Project proj = new Project(projectName, projectColor, projectGoal);
+                        mProjects.add(proj);
+                        mTaskAppViewModel.insert(proj);
+                    }
+
                     toAdd.setProject(mProjects.get(project));
                     mProjects.get(project).addTask(toAdd);
                 }

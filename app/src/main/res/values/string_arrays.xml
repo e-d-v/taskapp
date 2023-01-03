@@ -34,4 +34,19 @@
         <item>@string/recur_times</item>
         <item>@string/recur_until</item>
     </string-array>
+
+    <string-array name="colors">
+        <item>Pale Blue</item>
+        <item>Blue</item>
+        <item>Pale Green</item>
+        <item>Green</item>
+        <item>Pink</item>
+        <item>Red</item>
+        <item>Pale Orange</item>
+        <item>Orange</item>
+        <item>Lavender</item>
+        <item>Purple</item>
+        <item>Yellow</item>
+        <item>Gray</item>
+    </string-array>
 </resources>

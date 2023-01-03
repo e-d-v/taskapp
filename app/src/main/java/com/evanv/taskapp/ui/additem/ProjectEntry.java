@@ -5,25 +5,30 @@ import androidx.core.content.ContextCompat;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.SpannedString;
+import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.evanv.taskapp.R;
 
 public class ProjectEntry extends AppCompatActivity {
     // Key for the String representing the Project name.
-    private static final String EXTRA_NAME = "com.evanv.taskapp.ui.additem.Project.EXTRA_NAME";
+    public static final String EXTRA_NAME = "com.evanv.taskapp.ui.additem.Project.EXTRA_NAME";
     // Key for the String representing the Project goal.
-    private static final String EXTRA_GOAL = "com.evanv.taskapp.ui.additem.Project.EXTRA_GOAL";
+    public static final String EXTRA_GOAL = "com.evanv.taskapp.ui.additem.Project.EXTRA_GOAL";
     // Key for the int representing the color.
-    private static final String EXTRA_COLOR = "com.evanv.taskapp.ui.additem.Project.EXTRA_COLOR";
+    public static final String EXTRA_COLOR = "com.evanv.taskapp.ui.additem.Project.EXTRA_COLOR";
     // Key for the bundle that contains information on the Project.
-    private static final String EXTRA_ITEM = "com.evanv.taskapp.ui.additem.Project.EXTRA_ITEM";
-    private int color; // User-selected project color
+    public static final String EXTRA_ITEM = "com.evanv.taskapp.ui.additem.Project.EXTRA_ITEM";
+    public int color; // User-selected project color
 
     /**
      * On creation of the project entry screen.
@@ -87,6 +92,61 @@ public class ProjectEntry extends AppCompatActivity {
                     break;
                 }
             }
+
+            TextView colorLabel = findViewById(R.id.colorSelectTextView);
+            String labelStart = getString(R.string.colorLabel);
+            SpannableString colorText = new SpannableString(labelStart +
+                    getResources().getStringArray(R.array.colors)[color]);
+
+            int colorResource;
+
+            switch (color) {
+                case 0:
+                    colorResource = getResources().getColor(R.color.pale_blue);
+                    break;
+                case 1:
+                    colorResource = getResources().getColor(R.color.blue);
+                    break;
+                case 2:
+                    colorResource = getResources().getColor(R.color.pale_green);
+                    break;
+                case 3:
+                    colorResource = getResources().getColor(R.color.green);
+                    break;
+                case 4:
+                    colorResource = getResources().getColor(R.color.pink);
+                    break;
+                case 5:
+                    colorResource = getResources().getColor(R.color.red);
+                    break;
+                case 6:
+                    colorResource = getResources().getColor(R.color.pale_orange);
+                    break;
+                case 7:
+                    colorResource = getResources().getColor(R.color.orange);
+                    break;
+                case 8:
+                    colorResource = getResources().getColor(R.color.lavender);
+                    break;
+                case 9:
+                    colorResource = getResources().getColor(R.color.purple);
+                    break;
+                case 10:
+                    colorResource = getResources().getColor(R.color.yellow);
+                    break;
+                case 11:
+                    colorResource = getResources().getColor(R.color.gray);
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + color);
+            }
+
+            colorText.setSpan(
+                    new ForegroundColorSpan(colorResource), labelStart.length(), colorText.length(), 0);
+
+            colorLabel.setText(colorText);
+
+            dialog.dismiss();
         });
 
         dialog.show();
@@ -94,8 +154,10 @@ public class ProjectEntry extends AppCompatActivity {
 
     /**
      * If no required fields are empty, pack user input into a bundle and send it.
+     *
+     * @param view not used
      */
-    public void submit() {
+    public void submit(View view) {
         String name = String.valueOf(((EditText)findViewById(R.id.editTextProjectName)).getText());
         String goal = String.valueOf(((EditText)findViewById(R.id.editTextGoal)).getText());
 

@@ -29,8 +29,6 @@ public class Project {
     private int mColor;            // Color of the Project, index into ColorList
     @ColumnInfo(name = "goal")
     private String mGoal;            // Goal for completing the Project
-    @ColumnInfo(name = "priority")
-    private int mPriority;           // Priority of the Project.
     @Ignore
     private final List<Task> mTasks;       // List of Tasks with this Project
 
@@ -41,13 +39,11 @@ public class Project {
      * @param name Name of the Project.
      * @param color Color associated with the Project.
      * @param goal Goal for the Project.
-     * @param priority Priority for the project. Between 1 and 4.
      */
-    public Project(String name, int color, String goal, int priority) {
+    public Project(String name, int color, String goal) {
         mName = name;
         mColor = color;
         mGoal = goal;
-        mPriority = priority;
 
         mTasks = new ArrayList<>();
     }
@@ -131,24 +127,6 @@ public class Project {
      */
     public void setGoal(String goal) {
         mGoal = goal;
-    }
-
-    /**
-     * Get the priority of the Project - a number between 1 and 4 (inclusive).
-     *
-     * @return The current priority of the project.
-     */
-    public int getPriority() {
-        return mPriority;
-    }
-
-    /**
-     * Change the priority of the Project - a number between 1 and 4 (inclusive).
-     *
-     * @param priority The new priority for the Project.
-     */
-    public void setPriority(int priority) {
-        mPriority = priority;
     }
 
     /**

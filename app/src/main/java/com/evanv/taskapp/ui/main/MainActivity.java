@@ -61,16 +61,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     // Key for the extra that stores the list of Task names for the Parent Task Picker Dialog in
     public static final String EXTRA_TASKS = "com.evanv.taskapp.ui.main.extras.TASKS";
     // Key for the extra that stores the list of Project names
-    private static final String EXTRA_PROJECTS = "com.evanv.taskapp.ui.main.extras.PROJECTS";
+    public static final String EXTRA_PROJECTS = "com.evanv.taskapp.ui.main.extras.PROJECTS";
     // Key for the extra that stores the list of colors fo each Project.
-    private static final String EXTRA_PROJECT_COLORS =
+    public static final String EXTRA_PROJECT_COLORS =
             "com.evanv.taskapp.ui.main.extras.PROJECT_COLORS";
     // Keys into SharedPrefs to store todayTime
-    private static final String PREF_FILE = "taskappPrefs"; // File name for sharedPrefs
-    private static final String PREF_DAY = "taskappDay";    // Day for todayTime
-    private static final String PREF_TIME = "taskappTime";  // Time for todayTime
-    private static final String PREF_TIMED_TASK = "taskappTimerTask"; // TaskID for timer
-    private static final String PREF_TIMER = "taskappTimerStart"; // Start Date for the timer
+    public static final String PREF_FILE = "taskappPrefs"; // File name for sharedPrefs
+    public static final String PREF_DAY = "taskappDay";    // Day for todayTime
+    public static final String PREF_TIME = "taskappTime";  // Time for todayTime
+    public static final String PREF_TIMED_TASK = "taskappTimerTask"; // TaskID for timer
+    public static final String PREF_TIMER = "taskappTimerStart"; // Start Date for the timer
 
     /**
      * Handles activities started for a result, in this case when the AddItem activity returns with

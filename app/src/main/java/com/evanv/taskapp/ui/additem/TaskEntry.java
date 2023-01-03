@@ -8,10 +8,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -20,7 +22,6 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import com.evanv.taskapp.R;
-import com.evanv.taskapp.logic.Event;
 import com.evanv.taskapp.logic.Task;
 import com.evanv.taskapp.ui.additem.recur.NoRecurFragment;
 import com.evanv.taskapp.ui.additem.recur.RecurActivity;
@@ -43,9 +44,13 @@ public class TaskEntry extends Fragment implements ItemEntry {
     private ViewGroup mContainer;  // The ViewGroup for the activity, allows easy access to views
     private String mCurrentParents; // The list of parents for task, returned when fab is clicked
     private Bundle mRecur;
+    private Bundle mNewProject;
     private EditText mEditTextECD; // The EditText for the earliest completion date
-    private ActivityResultLauncher<Intent> mStartForResult;
+    private ActivityResultLauncher<Intent> mLaunchRecur;
+    private ActivityResultLauncher<Intent> mLaunchProject;
     private SeekBar mSeekBar;      // The SeekBar used for priority.
+    private ArrayAdapter<String> mAdapter;
+    private Spinner mProjectSpinner;
 
     /**
      * Required empty public constructor, creates new TaskEntry fragment
@@ -63,13 +68,33 @@ public class TaskEntry extends Fragment implements ItemEntry {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mStartForResult = registerForActivityResult(
+        mLaunchRecur = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> handleRecurInput(result.getResultCode(),
+                        result.getData()));
+        mLaunchProject = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> handleProjectInput(result.getResultCode(),
                         result.getData()));
 
         // -1 signifies that the new task has no dependent tasks, as none were entered
         mCurrentParents = "-1";
+    }
+
+    /**
+     * Function that is called when result is received from project input activity.
+     *
+     * @param resultCode Is Activity.RESULT_OK if ran successfully
+     * @param data Contains a bundle of data that describes the recurrence chosen.
+     */
+    private void handleProjectInput(int resultCode, Intent data) {
+        if (resultCode == Activity.RESULT_OK) {
+            mNewProject = data.getBundleExtra(ProjectEntry.EXTRA_ITEM);
+
+            // Add name to list
+            mAdapter.add(mNewProject.getString(ProjectEntry.EXTRA_NAME));
+            mProjectSpinner.setSelection(mAdapter.getCount() - 1);
+        }
     }
 
     /**
@@ -115,6 +140,14 @@ public class TaskEntry extends Fragment implements ItemEntry {
 
         // Get the priority seek bar.
         mSeekBar = view.findViewById(R.id.seekBar);
+
+        // Set options in the project spinner
+        ArrayList<String> projects = getActivity().getIntent()
+                .getStringArrayListExtra(MainActivity.EXTRA_PROJECTS);
+        mProjectSpinner = (Spinner)view.findViewById(R.id.projectSpinner);
+        mAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, projects);
+        mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mProjectSpinner.setAdapter(mAdapter);
 
         // Add the default recurrence interval (none)
         mRecur = new Bundle();
@@ -184,6 +217,11 @@ public class TaskEntry extends Fragment implements ItemEntry {
             builder.show();
         });
 
+        ((ImageButton) view.findViewById(R.id.plus)).setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), ProjectEntry.class);
+            mLaunchProject.launch(intent);
+        });
+
         // Inflate the layout for this fragment
         return view;
     }
@@ -225,7 +263,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         intent.putExtra(EventEntry.EXTRA_TIME, time);
 
         // Launch RecurActivity
-        mStartForResult.launch(intent);
+        mLaunchRecur.launch(intent);
     }
 
     /**
@@ -316,6 +354,8 @@ public class TaskEntry extends Fragment implements ItemEntry {
         toReturn.putString(AddItem.EXTRA_END, ttc);
         toReturn.putString(AddItem.EXTRA_PARENTS, mCurrentParents);
         toReturn.putBundle(AddItem.EXTRA_RECUR, mRecur);
+        toReturn.putBundle(AddItem.EXTRA_NEW_PROJECT, mNewProject);
+        toReturn.putInt(AddItem.EXTRA_PROJECT, mProjectSpinner.getSelectedItemPosition());
         toReturn.putInt(AddItem.EXTRA_PRIORITY, priority);
 
         return toReturn;

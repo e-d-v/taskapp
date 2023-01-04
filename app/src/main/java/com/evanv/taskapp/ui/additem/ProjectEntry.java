@@ -93,53 +93,26 @@ public class ProjectEntry extends AppCompatActivity {
                 }
             }
 
+            // Change the color of the label to the chosen color.
             TextView colorLabel = findViewById(R.id.colorSelectTextView);
             String labelStart = getString(R.string.colorLabel);
             SpannableString colorText = new SpannableString(labelStart +
                     getResources().getStringArray(R.array.colors)[color]);
 
-            int colorResource;
+            int[] colors = {getResources().getColor(R.color.pale_blue),
+                    getResources().getColor(R.color.blue),
+                    getResources().getColor(R.color.pale_green),
+                    getResources().getColor(R.color.green),
+                    getResources().getColor(R.color.pink),
+                    getResources().getColor(R.color.red),
+                    getResources().getColor(R.color.pale_orange),
+                    getResources().getColor(R.color.orange),
+                    getResources().getColor(R.color.lavender),
+                    getResources().getColor(R.color.purple),
+                    getResources().getColor(R.color.yellow),
+                    getResources().getColor(R.color.gray)};
 
-            switch (color) {
-                case 0:
-                    colorResource = getResources().getColor(R.color.pale_blue);
-                    break;
-                case 1:
-                    colorResource = getResources().getColor(R.color.blue);
-                    break;
-                case 2:
-                    colorResource = getResources().getColor(R.color.pale_green);
-                    break;
-                case 3:
-                    colorResource = getResources().getColor(R.color.green);
-                    break;
-                case 4:
-                    colorResource = getResources().getColor(R.color.pink);
-                    break;
-                case 5:
-                    colorResource = getResources().getColor(R.color.red);
-                    break;
-                case 6:
-                    colorResource = getResources().getColor(R.color.pale_orange);
-                    break;
-                case 7:
-                    colorResource = getResources().getColor(R.color.orange);
-                    break;
-                case 8:
-                    colorResource = getResources().getColor(R.color.lavender);
-                    break;
-                case 9:
-                    colorResource = getResources().getColor(R.color.purple);
-                    break;
-                case 10:
-                    colorResource = getResources().getColor(R.color.yellow);
-                    break;
-                case 11:
-                    colorResource = getResources().getColor(R.color.gray);
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected value: " + color);
-            }
+            int colorResource = colors[color];
 
             colorText.setSpan(
                     new ForegroundColorSpan(colorResource), labelStart.length(), colorText.length(), 0);

@@ -142,8 +142,9 @@ public class TaskEntry extends Fragment implements ItemEntry {
         mSeekBar = view.findViewById(R.id.seekBar);
 
         // Set options in the project spinner
-        ArrayList<String> projects = getActivity().getIntent()
-                .getStringArrayListExtra(MainActivity.EXTRA_PROJECTS);
+        ArrayList<String> projects = new ArrayList<>();
+        projects.add(getString(R.string.project_spinner_default));
+        projects.addAll(getActivity().getIntent().getStringArrayListExtra(MainActivity.EXTRA_PROJECTS));
         mProjectSpinner = (Spinner)view.findViewById(R.id.projectSpinner);
         mAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, projects);
         mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

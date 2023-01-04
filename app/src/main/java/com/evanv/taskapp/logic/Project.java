@@ -32,7 +32,6 @@ public class Project {
     @Ignore
     private final List<Task> mTasks;       // List of Tasks with this Project
 
-
     /**
      * Construct a new Project.
      *

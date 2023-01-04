@@ -255,7 +255,9 @@ public class LogicSubsystem {
         mTasks.remove(task);
 
         // Remove task from project
-        task.getProject().removeTask(task);
+        if (task.getProject() != null) {
+            task.getProject().removeTask(task);
+        }
 
         Date doDate = task.getDoDate();
 
@@ -436,8 +438,8 @@ public class LogicSubsystem {
 
                 Task toAdd = new Task(name, d, dDue.getTime(), timeToComplete, priority);
 
-                if (project != -1) {
-                    if (project == mProjects.size()) {
+                if (project != 0) {
+                    if (project == mProjects.size() + 1) {
                         String projectName = newProject.getString(ProjectEntry.EXTRA_NAME);
                         int projectColor = newProject.getInt(ProjectEntry.EXTRA_COLOR);
                         String projectGoal = newProject.getString(ProjectEntry.EXTRA_GOAL);
@@ -447,8 +449,8 @@ public class LogicSubsystem {
                         mTaskAppViewModel.insert(proj);
                     }
 
-                    toAdd.setProject(mProjects.get(project));
-                    mProjects.get(project).addTask(toAdd);
+                    toAdd.setProject(mProjects.get(project - 1));
+                    mProjects.get(project - 1).addTask(toAdd);
                 }
 
                 // The parents string in the Bundle is a String of the format "n1,n2,n3,...nN,"
@@ -768,8 +770,8 @@ public class LogicSubsystem {
 
         int priority = !mStartDate.before(task.getDueDate()) ? 4 : task.getPriority();
 
-        String project = task.getProject().getName();
-        int projectColor = task.getProject().getColor();
+        String project = task.getProject() == null ? null : task.getProject().getName();
+        int projectColor = task.getProject() == null ? -1 : task.getProject().getColor();
 
         return new TaskItem(name, position, completable, hasTimer, priority, project, projectColor);
     }

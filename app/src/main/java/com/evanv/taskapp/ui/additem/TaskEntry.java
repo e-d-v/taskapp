@@ -51,6 +51,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
     private SeekBar mSeekBar;      // The SeekBar used for priority.
     private ArrayAdapter<String> mAdapter;
     private Spinner mProjectSpinner;
+    private boolean projectAdded;
 
     /**
      * Required empty public constructor, creates new TaskEntry fragment
@@ -79,6 +80,8 @@ public class TaskEntry extends Fragment implements ItemEntry {
 
         // -1 signifies that the new task has no dependent tasks, as none were entered
         mCurrentParents = "-1";
+
+        projectAdded = false;
     }
 
     /**
@@ -89,7 +92,15 @@ public class TaskEntry extends Fragment implements ItemEntry {
      */
     private void handleProjectInput(int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
+            // Ensure only one project is added at a time
+            if (projectAdded) {
+                mProjectSpinner.setSelection(0);
+                mAdapter.remove(mNewProject.getString(ProjectEntry.EXTRA_NAME));
+            }
+
             mNewProject = data.getBundleExtra(ProjectEntry.EXTRA_ITEM);
+
+            projectAdded = true;
 
             // Add name to list
             mAdapter.add(mNewProject.getString(ProjectEntry.EXTRA_NAME));

@@ -986,4 +986,19 @@ public class LogicSubsystem {
 
         return toReturn;
     }
+
+    /**
+     * Return the goals of each project.
+     *
+     * @return The goal of each project.
+     */
+    public ArrayList<String> getProjectGoals() {
+        ArrayList<String> toReturn = new ArrayList<>();
+
+        for (Project p : mProjects) {
+            toReturn.add(p.getGoal());
+        }
+
+        return toReturn;
+    }
 }

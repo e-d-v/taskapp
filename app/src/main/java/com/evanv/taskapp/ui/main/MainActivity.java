@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -29,6 +30,7 @@ import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.ui.additem.AddItem;
 import com.evanv.taskapp.ui.main.recycler.DayItem;
 import com.evanv.taskapp.ui.main.recycler.DayItemAdapter;
+import com.evanv.taskapp.ui.projects.ProjectActivity;
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     private ViewFlipper mVF;                       // Swaps between loading screen and recycler
     // Allows data to be pulled from activity
     private ActivityResultLauncher<Intent> mStartForResult;
+    private ActivityResultLauncher<Intent> mProjectsLauncher;
     // Allows us to manually show FAB when task/event completed/deleted.
     LogicSubsystem mLogicSubsystem;                // Subsystem that handles logic for taskapp
     private Date mStartDate;                       // The current date
@@ -62,9 +65,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     public static final String EXTRA_TASKS = "com.evanv.taskapp.ui.main.extras.TASKS";
     // Key for the extra that stores the list of Project names
     public static final String EXTRA_PROJECTS = "com.evanv.taskapp.ui.main.extras.PROJECTS";
-    // Key for the extra that stores the list of colors fo each Project.
+    // Key for the extra that stores the list of colors for each Project.
     public static final String EXTRA_PROJECT_COLORS =
             "com.evanv.taskapp.ui.main.extras.PROJECT_COLORS";
+    // Key for the extra that stores the list of goals for each Project.
+    public static final String EXTRA_GOALS = "com.evanv.taskapp.ui.main.extras.PROJECT_GOALS";
     // Keys into SharedPrefs to store todayTime
     public static final String PREF_FILE = "taskappPrefs"; // File name for sharedPrefs
     public static final String PREF_DAY = "taskappDay";    // Day for todayTime
@@ -181,6 +186,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> MainActivity.this.onActivityResult(result.getResultCode(),
                         result.getData()));
+
+        // Will eventually return info from projects
+        mProjectsLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> Log.d("taskapp", "returned"));
 
         String[] overdueNames = mLogicSubsystem.getOverdueTasks();
 
@@ -341,7 +351,20 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
         // Handles the settings menu item being chosen
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_projects) {
+            Intent intent = new Intent(this, ProjectActivity.class);
+
+            // Get lists of project information for prerequisite lists.
+            ArrayList<String> projectNames = mLogicSubsystem.getProjectNames();
+            ArrayList<String> projectGoals = mLogicSubsystem.getProjectGoals();
+            ArrayList<Integer> projectColors = mLogicSubsystem.getProjectColors();
+
+            intent.putStringArrayListExtra(EXTRA_PROJECTS, projectNames);
+            intent.putStringArrayListExtra(EXTRA_GOALS, projectGoals);
+            intent.putIntegerArrayListExtra(EXTRA_PROJECT_COLORS, projectColors);
+
+            mProjectsLauncher.launch(intent);
+
             return true;
         }
 

@@ -163,4 +163,7 @@
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="colorLabel">Color:\ </string>
     <string name="project_spinner_default">No Project</string>
+    <string name="title_activity_project">ProjectActivity</string>
+    <string name="right_arrow">Right arrow</string>
+    <string name="projects">Projects</string>
 </resources>

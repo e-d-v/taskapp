@@ -2,12 +2,13 @@ package com.evanv.taskapp.ui.main;
 
 import static com.evanv.taskapp.logic.Task.clearDate;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -68,8 +69,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     // Key for the extra that stores the list of colors for each Project.
     public static final String EXTRA_PROJECT_COLORS =
             "com.evanv.taskapp.ui.main.extras.PROJECT_COLORS";
+    // Key for the extra that stores if each task is completable.
+    public static final String EXTRA_COMPLETABLE = "com.evanv.taskapp.ui.main.extras.COMPLETABLE";
     // Key for the extra that stores the list of goals for each Project.
     public static final String EXTRA_GOALS = "com.evanv.taskapp.ui.main.extras.PROJECT_GOALS";
+    // Key for the extra that stores the index of the timed task.
+    public static final String EXTRA_TIMED_TASK = "com.evanv.taskapp.ui.main.extras.PROJECT_GOALS";
+    // Key for the extra that stores the priorities of the timed tasks.
+    public static final String EXTRA_PRIORITIES = "com.evanv.taskapp.ui.main.extras.PRIORITIES";
     // Keys into SharedPrefs to store todayTime
     public static final String PREF_FILE = "taskappPrefs"; // File name for sharedPrefs
     public static final String PREF_DAY = "taskappDay";    // Day for todayTime
@@ -99,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             }
         }
 
-        List<Integer> updatedIndices = mLogicSubsystem.addItem(data);
+        List<Integer> updatedIndices = mLogicSubsystem.addItem(data, this);
 
         if (updatedIndices == null) {
             Toast.makeText(this, "Error occurred when adding new item, try again.",
@@ -125,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         List<Pair<Integer, Integer>> changedIndices = mLogicSubsystem.Optimize();
 
         int oldSize = mDayItemAdapter.mDayItemList.size();
-        mDayItemAdapter.mDayItemList = mLogicSubsystem.DayItemList();
+        mDayItemAdapter.mDayItemList = mLogicSubsystem.DayItemList(this);
         int newSize = mDayItemAdapter.mDayItemList.size();
 
         if (oldSize > newSize) {
@@ -156,6 +163,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      *
      * @param savedInstanceState Not used.
      */
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -179,7 +187,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         long timedTaskID = sp.getLong(PREF_TIMED_TASK, -1);
         long timerStart = sp.getLong(PREF_TIMER, -1);
 
-        mLogicSubsystem = new LogicSubsystem(this, todayTime, timedTaskID, timerStart);
+        mLogicSubsystem = LogicSubsystem.getInstance();
+
+        if (mLogicSubsystem == null) {
+            mLogicSubsystem = new LogicSubsystem(this, todayTime, timedTaskID, timerStart);
+        }
 
         // Create activity result handler for AddItem
         mStartForResult = registerForActivityResult(
@@ -190,15 +202,20 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // Will eventually return info from projects
         mProjectsLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
-                result -> Log.d("taskapp", "returned"));
+                result -> {
+                    mDayItemAdapter.mDayItemList = mLogicSubsystem.DayItemList(this);
+                    mDayItemAdapter.notifyDataSetChanged();
+                });
 
-        String[] overdueNames = mLogicSubsystem.getOverdueTasks();
+        String[] overdueNames = mLogicSubsystem.getOverdueTasks(this);
 
         // Prompt the user with a dialog containing overdue tasks so they can mark overdue tasks
         // so taskapp can reoptimize the schedule if some tasks are overdue.
         if (overdueNames.length != 0) {
             // List of indices to tasks that were completed.
             ArrayList<Integer> selectedItems = new ArrayList<>();
+
+            Context context = this;
 
             // Show a dialog prompting the user to mark tasks that were completed as complete
             android.app.AlertDialog.Builder builder =
@@ -240,7 +257,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                                  */
                                 @Override
                                 public void onClick(DialogInterface di, int index) {
-                                    mLogicSubsystem.updateOverdueTasks(selectedItems);
+                                    mLogicSubsystem.updateOverdueTasks(selectedItems, context);
 
                                     finishProcessing(true);
                                 }
@@ -263,7 +280,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      *                   reoptimize it
      */
     private void finishProcessing(boolean reoptimize) {
-        List<DayItem> recyclerData = mLogicSubsystem.prepForDisplay(reoptimize);
+        List<DayItem> recyclerData = mLogicSubsystem.prepForDisplay(reoptimize, this);
 
         // Initialize the main recyclerview with data calculated in helper function DayItemList
         RecyclerView dayRecyclerView = findViewById(R.id.main_recyclerview);
@@ -314,7 +331,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         Intent intent = new Intent(this, AddItem.class);
 
         // Get a list of task names for prerequisite list
-        ArrayList<String> taskNames = mLogicSubsystem.getTaskNames();
+        ArrayList<String> taskNames = mLogicSubsystem.getTaskNames(this);
         ArrayList<String> projectNames = mLogicSubsystem.getProjectNames();
         ArrayList<Integer> projectColors = mLogicSubsystem.getProjectColors();
 
@@ -397,13 +414,13 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
             mLogicSubsystem.timer(position, day);
 
-            mDayItemAdapter.mDayItemList.set(day, mLogicSubsystem.DayItemHelper(day));
-            mDayItemAdapter.mDayItemList.set(0, mLogicSubsystem.DayItemHelper(0));
+            mDayItemAdapter.mDayItemList.set(day, mLogicSubsystem.DayItemHelper(day, this));
+            mDayItemAdapter.mDayItemList.set(0, mLogicSubsystem.DayItemHelper(0, this));
             mDayItemAdapter.notifyItemChanged(day);
             mDayItemAdapter.notifyItemChanged(0);
 
             if (oldTimer != -1 && oldTimer != day) {
-                mDayItemAdapter.mDayItemList.set(oldTimer, mLogicSubsystem.DayItemHelper(oldTimer));
+                mDayItemAdapter.mDayItemList.set(oldTimer, mLogicSubsystem.DayItemHelper(oldTimer, this));
                 mDayItemAdapter.notifyItemChanged(oldTimer);
             }
 
@@ -421,7 +438,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
 
         int oldDays = mLogicSubsystem.getNumDays();
-        List<Integer> changedDates = mLogicSubsystem.onButtonClick(position, day, action);
+        List<Integer> changedDates = mLogicSubsystem.onButtonClick(position, day, action, this);
         int newDays = mLogicSubsystem.getNumDays();
 
         // Make sure to always update the first day so "Work Ahead" can be redisplayed.
@@ -433,7 +450,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 continue;
             }
 
-            mDayItemAdapter.mDayItemList.set(d, mLogicSubsystem.DayItemHelper(d));
+            mDayItemAdapter.mDayItemList.set(d, mLogicSubsystem.DayItemHelper(d, this));
             mDayItemAdapter.notifyItemChanged(d);
         }
 
@@ -464,9 +481,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                 // If user chooses to use a different time, show the normal time to complete
                 // dialog.
-                builder.setNegativeButton("Manual Time", (dialogInterface, i) -> {
-                    ttcPrompt();
-                });
+                builder.setNegativeButton("Manual Time", (dialogInterface, i) -> ttcPrompt());
 
                 builder.show();
                 return;

@@ -11,15 +11,18 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.evanv.taskapp.R;
+import com.evanv.taskapp.ui.main.ClickListener;
 import com.google.android.material.chip.Chip;
 
 import java.util.List;
 
 public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.ProjectViewHolder> {
     public List<ProjectItem> mProjectsList;
+    private ClickListener mListener;
 
-    public ProjectItemAdapter(List<ProjectItem> list) {
+    public ProjectItemAdapter(List<ProjectItem> list, ClickListener clickListener) {
         mProjectsList = list;
+        mListener = clickListener;
     }
 
     @NonNull
@@ -35,7 +38,6 @@ public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.
     @Override
     public void onBindViewHolder(@NonNull ProjectViewHolder holder, int position) {
         ProjectItem curr = mProjectsList.get(position);
-
 
         // Set project name
         holder.mProjectChip.setText(curr.getName());
@@ -74,6 +76,8 @@ public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.
 
         // Set project goal
         holder.mGoalLabel.setText(curr.getGoal());
+
+        holder.mExpandButton.setOnClickListener(v -> { mListener.onButtonClick(position, -1, 0);});
     }
 
     @Override

@@ -33,7 +33,7 @@ import java.util.List;
  * @author Evan Voogd
  */
 public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskViewHolder> {
-    private final List<TaskItem> mTaskItemList; // List of tasks for this day
+    public final List<TaskItem> mTaskItemList; // List of tasks for this day
     // Listener that allows easy completion of tasks (see ClickListener)
     private final ClickListener mListener;
     private final int mDay; // Index into taskSchedule representing this day
@@ -55,6 +55,10 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         mContext = context;
 
         // If the task list is empty, hide the "Tasks" subheader
+        if (header == null) {
+            return;
+        }
+
         if (taskItemList.size() == 0) {
             header.setVisibility(View.INVISIBLE);
             header.setLayoutParams(

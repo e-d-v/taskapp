@@ -13,6 +13,7 @@ public class TaskItem {
     private final int mPriority;        // Priority of task
     private final String mProject;      // Name of the Project associated with the Task
     private final int mProjectColor;    // Color of the Project associated with the Task
+    private final long mID;              // The ID of the Task
 
     /**
      * Creates an item representing a Task
@@ -22,7 +23,7 @@ public class TaskItem {
      */
     @SuppressWarnings("unused")
     public TaskItem(String name, int index, boolean completable, boolean hasTimer, int priority,
-                    String project, int projectColor) {
+                    String project, int projectColor, long ID) {
         mName = name;
         mIndex = index;
         mCompletable = completable;
@@ -30,6 +31,7 @@ public class TaskItem {
         mPriority = priority;
         mProject = project;
         mProjectColor = projectColor;
+        mID = ID;
     }
 
     /**
@@ -93,5 +95,9 @@ public class TaskItem {
      */
     public int getProjectColor() {
         return mProjectColor;
+    }
+
+    public long getID() {
+        return mID;
     }
 }

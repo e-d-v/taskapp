@@ -8,6 +8,18 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="text_primary">#FF000000</color>
-    <color name="orange">#ffa500</color>
     <color name="gold">#FFD700</color>
+
+    <color name="pale_blue">#a6cee3</color>
+    <color name="blue">#1f78b4</color>
+    <color name="pale_green">#b2df8a</color>
+    <color name="green">#33a02c</color>
+    <color name="pink">#fb9a99</color>
+    <color name="red">#e31a1c</color>
+    <color name="pale_orange">#fdbf6f</color>
+    <color name="orange">#ff7f00</color>
+    <color name="lavender">#cab2d6</color>
+    <color name="purple">#6a3d9a</color>
+    <color name="yellow">#ffff99</color>
+    <color name="gray">#716f6f</color>
 </resources>

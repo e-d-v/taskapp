@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -48,6 +49,11 @@ public class Task implements Comparable<Task> {
     private int mTimeToComplete;       // Time (in minutes) to complete the tasks
     @ColumnInfo(name = "priority")
     private int mPriority;             // Priority
+    @Ignore
+    private Project mProject;          // Project for the task.
+
+    @ColumnInfo(name = "project")
+    private long mProjectID;           // Project ID for the task.
 
     @NonNull
     @ColumnInfo(name = "parents_list")
@@ -91,6 +97,8 @@ public class Task implements Comparable<Task> {
         mParentArr = new ArrayList<>();
         mParentArr.add(-1L);
         mPriority = priority;
+        mProjectID = -1;
+        mProject = null;
     }
 
     /**
@@ -103,9 +111,11 @@ public class Task implements Comparable<Task> {
      * @param dueDate When the task is due.
      * @param earlyDate Earliest date the task can be completed.
      * @param timeToComplete Amount of time in minutes the task is estimated to complete.
+     * @param projectID ID for the project.
      */
     public Task(@NonNull String name, @NonNull Date earlyDate, @NonNull Date dueDate,
-                Date doDate, int timeToComplete, @NonNull ArrayList<Long> parentArr, int priority) {
+                Date doDate, int timeToComplete, @NonNull ArrayList<Long> parentArr, int priority,
+                long projectID) {
         mName = name;
         mEarlyDate = earlyDate;
         mDueDate = dueDate;
@@ -115,6 +125,7 @@ public class Task implements Comparable<Task> {
         mChildren = new ArrayList<>();
         mParentArr = parentArr;
         mPriority = priority;
+        mProjectID = projectID;
     }
 
     /**
@@ -360,7 +371,6 @@ public class Task implements Comparable<Task> {
      * Copies children into working children and parents into working parents, so the optimizer can
      * utilize the inherent dependency tree.
      */
-    @SuppressWarnings("unchecked")
     public void initializeForOptimization() {
         mWorkingChildren = (ArrayList<Task>) mChildren.clone();
         mWorkingParents = (ArrayList<Task>) mParents.clone();
@@ -469,6 +479,54 @@ public class Task implements Comparable<Task> {
      */
     public int getPriority() {
         return mPriority;
+    }
+
+    /**
+     * Get the project the Task is associated with.
+     *
+     * @return the Project for the task.
+     */
+    public Project getProject() {
+        return mProject;
+    }
+
+    /**
+     * Get the ID of the current Project.
+     *
+     * @return the ID of the Project.
+     */
+    public long getProjectID() {
+        return mProjectID;
+    }
+
+    /**
+     * Change the Task's Project.
+     *
+     * @param project The new project for the task.
+     */
+    public void setProject(Project project) {
+        mProject = project;
+        mProjectID = project.getID();
+    }
+
+    /**
+     * Update Project from Project ID as the DB cannot store references.
+     *
+     * @param projects List of projects.
+     */
+    public void initializeProject(List<Project> projects) {
+        if (mProjectID == -1) {
+            mProject = null;
+            return;
+        }
+
+        for (Project p : projects) {
+            if (p.getID() == mProjectID) {
+                mProject = p;
+                p.addTask(this);
+                return;
+            }
+        }
     }
 
     /**

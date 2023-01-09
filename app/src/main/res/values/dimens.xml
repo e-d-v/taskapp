@@ -1,4 +1,5 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="subheader_height">19sp</dimen>
+    <dimen name="chip_height">26dp</dimen>
 </resources>

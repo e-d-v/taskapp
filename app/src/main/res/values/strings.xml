@@ -134,4 +134,36 @@
     <string name="work_ahead">Work Ahead</string>
     <string name="priority">Priority:</string>
     <string name="priority_info">How important a task is. Leftmost is lowest priority, rightmost is highest priority.</string>
+    <string name="project_name">Project Name</string>
+    <string name="default_color">Color: Gray</string>
+    <string name="project_goal">Project Goal</string>
+    <string name="pale_blue">Pale Blue</string>
+    <string name="blue">Blue</string>
+    <string name="pale_green">Pale Green</string>
+    <string name="green">Green</string>
+    <string name="pink">Pink</string>
+    <string name="red">Red</string>
+    <string name="pale_orange">Pale Orange</string>
+    <string name="orange">Orange</string>
+    <string name="lavender">Lavender</string>
+    <string name="purple">Purple</string>
+    <string name="yellow">Yellow</string>
+    <string name="gray">Gray</string>
+    <string name="select">Select</string>
+    <string name="name_reminder">Make sure to enter a name.</string>
+    <string name="goal_reminder">Make sure to enter a goal.</string>
+    <string name="title_activity_project_entry">ProjectEntry</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="colorLabel">Color:\ </string>
+    <string name="project_spinner_default">No Project</string>
+    <string name="title_activity_project">ProjectActivity</string>
+    <string name="right_arrow">Right arrow</string>
+    <string name="projects">Projects</string>
 </resources>

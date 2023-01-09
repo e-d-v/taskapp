@@ -4,16 +4,17 @@ import static com.evanv.taskapp.logic.Event.clearTime;
 import static com.evanv.taskapp.logic.Task.clearDate;
 import static com.evanv.taskapp.logic.Task.getDiff;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
 
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.db.TaskAppViewModel;
 import com.evanv.taskapp.ui.additem.AddItem;
+import com.evanv.taskapp.ui.additem.ProjectEntry;
 import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.main.recycler.DayItem;
 import com.evanv.taskapp.ui.main.recycler.EventItem;
@@ -31,12 +32,13 @@ import kotlin.Pair;
 
 /**
  * The subsystem that handles the logic for the app. All items/references are worked with here.
+ * Singleton so information can be found everywhere without constant use of ever-increasingly
+ * complex Intents.
  *
  * @author Evan Voogd
  */
 public class LogicSubsystem {
     private final Date mStartDate;              // The current date
-    private final MainActivity mMainActivity;   // MainActivity for resources
     // taskSchedule[i] represents the list of tasks for the day i days past startDate
     private final List<List<Task>> mTaskSchedule = new ArrayList<>();
     // eventSchedule[i] represents the list of events for the day i days past startDate
@@ -48,9 +50,14 @@ public class LogicSubsystem {
     private Task mTimerTask;                      // Task currently being timed.
     private Date mTimer;                          // Start time of current timer
     @Nullable private List<Task> mWorkAheadTasks; // List of tasks currently work ahead.
+    private final List<Project> mProjects;        // List of current projects.
+
+    private static volatile LogicSubsystem INSTANCE; // The singleton of the LogicSubsystem
 
     /**
      * Creates a new LogicSubsystem and loads data from database into internal data structures.
+     * Only call once.
+     *
      *  @param mainActivity The calling MainActivity. Don't love this from a coupling perspective,
      *                     but due to Android's design, it's necessary to extract resources.
      * @param todayTime The amount of time spent completing tasks so far today.
@@ -58,18 +65,19 @@ public class LogicSubsystem {
      * @param timerStart Start time of the current timer.
      */
     public LogicSubsystem(MainActivity mainActivity, int todayTime, long timedTaskID, long timerStart) {
-        this.mMainActivity = mainActivity;
+        if (INSTANCE != null) {
+            throw new IllegalStateException();
+        }
+
         this.mTodayTime = todayTime;
 
         // startDate is our representation for the current date upon the launch of TaskApp.
         mStartDate = clearDate(new Date());
 
-        ViewModelStoreOwner vmso = mMainActivity;
-
         // Populate from database;
         Thread thread = new Thread() {
             public void run() {
-                mTaskAppViewModel = new ViewModelProvider(vmso).get(TaskAppViewModel.class);
+                mTaskAppViewModel = new ViewModelProvider(mainActivity).get(TaskAppViewModel.class);
             }
         };
         thread.start();
@@ -90,8 +98,14 @@ public class LogicSubsystem {
 
         overdueTasks = new ArrayList<>(); // Tasks that are overdue.
 
+        // Get projects from database
+        mProjects = mTaskAppViewModel.getAllProjects();
+
         // Add tasks to taskSchedule/add parents
         for (Task t : mTasks) {
+            // Add Project
+            t.initializeProject(mProjects);
+
             // Calculate how many days past today's date this task is scheduled for. Used to
             // index into taskSchedule
             Date doDate = t.getDoDate();
@@ -132,6 +146,12 @@ public class LogicSubsystem {
                 }
             }
         }
+
+        INSTANCE = this;
+    }
+
+    public static LogicSubsystem getInstance() {
+        return INSTANCE;
     }
 
     /**
@@ -139,9 +159,11 @@ public class LogicSubsystem {
      * null. This is due to the fact that all overdue tasks need to be handled for the app to begin
      * operation.
      *
+     * @param context Give context for resources
+     *
      * @return Return list of currently unhandled overdue tasks.
      */
-    public String[] getOverdueTasks() {
+    public String[] getOverdueTasks(Context context) {
         if (overdueTasks == null) {
             return null;
         }
@@ -159,7 +181,7 @@ public class LogicSubsystem {
             }
 
             Date tDate = t.getDueDate();
-            overdueNames[i] = String.format(mMainActivity.getString(R.string.due_when), t.getName(),
+            overdueNames[i] = String.format(context.getString(R.string.due_when), t.getName(),
                     Task.dateFormat.format(tDate));
         }
 
@@ -172,11 +194,12 @@ public class LogicSubsystem {
      *
      * @param completedItems Indices into the overdue task names array that the user marked as
      *                       completed.
+     * @param context Context for resources
      */
-    public void updateOverdueTasks(List<Integer> completedItems) {
+    public void updateOverdueTasks(List<Integer> completedItems, Context context) {
         // As the user has marked these tasks as completed, remove them.
         for (int i = 0; i < completedItems.size(); i++) {
-            Complete(overdueTasks.get(completedItems.get(i)));
+            Complete(overdueTasks.get(completedItems.get(i)), context);
             mTaskAppViewModel.delete(overdueTasks.get(completedItems.get(i)));
         }
 
@@ -203,10 +226,11 @@ public class LogicSubsystem {
      * internal database and optimize if necessary.
      *
      * @param reoptimize If there was overdue tasks, reoptimize to account for them.
+     * @param context Context for resources
      *
      * @return A list of DayItems to be used by MainActivity's recycler.
      */
-    public List<DayItem> prepForDisplay(boolean reoptimize) {
+    public List<DayItem> prepForDisplay(boolean reoptimize, Context context) {
         // Get the event list.
         List<Event> events = mTaskAppViewModel.getAllEvents();
 
@@ -234,17 +258,24 @@ public class LogicSubsystem {
             Optimize();
         }
 
-        return DayItemList();
+        return DayItemList(context);
     }
 
     /**
      * Removes a task from the task dependency graph.
      *
      * @param task The task to be removed from the task dependency graph
+     * @param context Context for resources
+     *
      * @return List of days changed.
      */
-    public List<Integer> Complete(Task task) {
+    public List<Integer> Complete(Task task, Context context) {
         mTasks.remove(task);
+
+        // Remove task from project
+        if (task.getProject() != null) {
+            task.getProject().removeTask(task);
+        }
 
         Date doDate = task.getDoDate();
 
@@ -272,7 +303,7 @@ public class LogicSubsystem {
 
 
         if (diff >= 0) {
-            DayItemHelper(diff);
+            DayItemHelper(diff, context);
         }
         return toReturn;
     }
@@ -300,10 +331,11 @@ public class LogicSubsystem {
      * activity.
      *
      * @param data Information passed in by the AddItem activity.
+     * @param context Context for resources
      *
      * @return Indices whose recycler positions need to be updated.
      */
-    public List<Integer> addItem(@Nullable Intent data) {
+    public List<Integer> addItem(@Nullable Intent data, Context context) {
         // Get the data to build the item
         Bundle result = Objects.requireNonNull(data).getBundleExtra(AddItem.EXTRA_ITEM);
         String type = result.getString(AddItem.EXTRA_TYPE);
@@ -354,7 +386,7 @@ public class LogicSubsystem {
                 return null;
             }
 
-            RecurrenceParser rp = new RecurrenceParser(mMainActivity);
+            RecurrenceParser rp = new RecurrenceParser(context);
             List<Date> recurrenceDates = rp.parseBundle(recur, start);
 
             int ttc =(int) ((end.getTime() - start.getTime()) / TimeUnit.MINUTES.toMillis(1));
@@ -384,6 +416,8 @@ public class LogicSubsystem {
             String parents = result.getString(AddItem.EXTRA_PARENTS);
             Bundle recur = result.getBundle(AddItem.EXTRA_RECUR);
             int priority = result.getInt(AddItem.EXTRA_PRIORITY);
+            int project = result.getInt(AddItem.EXTRA_PROJECT);
+            Bundle newProject = result.getBundle(AddItem.EXTRA_NEW_PROJECT);
 
             // Convert the earliest completion date String to a MyTime
             Date early;
@@ -403,7 +437,7 @@ public class LogicSubsystem {
                 return null;
             }
 
-            RecurrenceParser rp = new RecurrenceParser(mMainActivity);
+            RecurrenceParser rp = new RecurrenceParser(context);
             List<Date> recurrenceDates = rp.parseBundle(recur, early);
 
             int diff = getDiff(due, early);
@@ -422,6 +456,21 @@ public class LogicSubsystem {
                 dDue.add(Calendar.DAY_OF_YEAR, diff);
 
                 Task toAdd = new Task(name, d, dDue.getTime(), timeToComplete, priority);
+
+                if (project != 0) {
+                    if (project == mProjects.size() + 1) {
+                        String projectName = newProject.getString(ProjectEntry.EXTRA_NAME);
+                        int projectColor = newProject.getInt(ProjectEntry.EXTRA_COLOR);
+                        String projectGoal = newProject.getString(ProjectEntry.EXTRA_GOAL);
+
+                        Project proj = new Project(projectName, projectColor, projectGoal);
+                        mProjects.add(proj);
+                        mTaskAppViewModel.insert(proj);
+                    }
+
+                    toAdd.setProject(mProjects.get(project - 1));
+                    mProjects.get(project - 1).addTask(toAdd);
+                }
 
                 // The parents string in the Bundle is a String of the format "n1,n2,n3,...nN,"
                 // where each nx is an index to a Task in tasks that should be used as a parent
@@ -525,15 +574,17 @@ public class LogicSubsystem {
     /**
      * Builds a DayItem List representation of a user's tasks/events
      *
+     * @param context Context for resources
+     *
      * @return a DayItem List representation of a user's tasks/events
      */
-    public List<DayItem> DayItemList() {
+    public List<DayItem> DayItemList(Context context) {
         // The list of DayItem's to be displayed in the recycler
         List<DayItem> itemList = new ArrayList<>();
 
         // Generate a DayItem for the date i days past today's date
         for (int i = 0; i < mTaskSchedule.size() || i < mEventSchedule.size(); i++) {
-            itemList.add(DayItemHelper(i));
+            itemList.add(DayItemHelper(i, context));
         }
 
         return itemList;
@@ -545,10 +596,11 @@ public class LogicSubsystem {
      * for the updated days, not the entire schedule.
      *
      * @param i How many days past today's date to get the schedule for
+     * @param context Context for resources
      *
      * @return A DayItem representing that day's schedule
      */
-    public DayItem DayItemHelper(int i) {
+    public DayItem DayItemHelper(int i, Context context) {
         // Fields for the DayItem
         String dayString;
         List<EventItem> events;
@@ -561,10 +613,10 @@ public class LogicSubsystem {
         int totalTime = getTotalTime(i);
 
         // Set the fields
-        dayString = String.format(mMainActivity.getString(R.string.schedule_for),
+        dayString = String.format(context.getString(R.string.schedule_for),
                 Task.dateFormat.format(curr), totalTime);
         events = EventItemList(i);
-        tasks = TaskItemList(i);
+        tasks = TaskItemList(mTaskSchedule.get(i), context);
 
         // If it is today's date and there are currently no tasks scheduled today, add a
         // "Work Ahead" page to today.
@@ -578,7 +630,7 @@ public class LogicSubsystem {
 
             // For each task, check if it can be completed today. If it can, then add it.
             for (Task t : mTasks) {
-                TaskItem temp = TaskItemHelper(t, numTasks);
+                TaskItem temp = TaskItemHelper(t, numTasks, context);
 
                 if (temp.isCompletable()) {
                     tasks.add(temp);
@@ -691,24 +743,25 @@ public class LogicSubsystem {
     /**
      * Builds a TaskItem List representation of a user's tasks on a given day
      *
-     * @param index The index into the data structure representing the day
+     * @param taskList The list of tasks to build a TaskItem list out of.
+     * @param context Context for resources
      *
      * @return a TaskItem List representation of a user's tasks on a given day
      */
-    private List<TaskItem> TaskItemList(int index) {
+    private List<TaskItem> TaskItemList(List<Task> taskList, Context context) {
         // The list of TaskItems representing the tasks scheduled for the date index days past
         // today's date
         List<TaskItem> itemList = new ArrayList<>();
 
-        Collections.sort(mTaskSchedule.get(index));
+        Collections.sort(taskList);
 
         // Add all the tasks scheduled for the given date to itemList
-        if (index < mTaskSchedule.size() && mTaskSchedule.get(index).size() > 0) {
-            for (int j = 0; j < mTaskSchedule.get(index).size(); j++) {
+        if (!taskList.isEmpty()) {
+            for (int j = 0; j < taskList.size(); j++) {
                 // Get the jth task scheduled for the given day.
-                Task task = mTaskSchedule.get(index).get(j);
+                Task task = taskList.get(j);
 
-                itemList.add(TaskItemHelper(task, j));
+                itemList.add(TaskItemHelper(task, j, context));
             }
         }
 
@@ -720,17 +773,18 @@ public class LogicSubsystem {
      *
      * @param task The Task to make a TaskItem based off of
      * @param position The position in the recycler of the task
+     * @param context Context for resources
      *
      * @return A TaskItem based off of the given event.
      */
-    private TaskItem TaskItemHelper(Task task, int position) {
+    private TaskItem TaskItemHelper(Task task, int position, Context context) {
         // DayItem's only field
         String name;
         boolean completable;
 
         // Create the name in the format NAME (TTC minutes to complete)
         name = task.getName() + "\n" +
-                String.format(mMainActivity.getString(R.string.minutes_to_complete),
+                String.format(context.getString(R.string.minutes_to_complete),
                         task.getTimeToComplete());
 
         completable = (task.getEarlyDate().equals(mStartDate))
@@ -740,7 +794,32 @@ public class LogicSubsystem {
 
         int priority = !mStartDate.before(task.getDueDate()) ? 4 : task.getPriority();
 
-        return new TaskItem(name, position, completable, hasTimer, priority);
+        String project = task.getProject() == null ? null : task.getProject().getName();
+        int projectColor = task.getProject() == null ? -1 : task.getProject().getColor();
+
+        long ID = task.getID();
+
+        return new TaskItem(name, position, completable, hasTimer, priority, project, projectColor,
+                ID);
+    }
+
+    /**
+     * Return a new TaskItem based on a given event.
+     *
+     * @param ID The ID of the Task to make a TaskItem based off of
+     * @param position The position in the recycler of the task
+     * @param context Context for resources
+     *
+     * @return A TaskItem based off of the given event.
+     */
+    public TaskItem TaskItemHelper(long ID, int position, Context context) {
+        for (Task t : mTasks) {
+            if (t.getID() == ID) {
+                return TaskItemHelper(t, position, context);
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -755,13 +834,15 @@ public class LogicSubsystem {
     /**
      * Get a list of task names for the prerequisite picker in AddItem
      *
+     * @param context The context for resources
+     *
      * @return A list of task names for the prerequisite picker in AddItem
      */
-    public ArrayList<String> getTaskNames() {
+    public ArrayList<String> getTaskNames(Context context) {
         ArrayList<String> taskNames = new ArrayList<>();
         for (Task t : mTasks) {
             Date tDate = t.getDueDate();
-            taskNames.add(String.format(mMainActivity.getString(R.string.due_when), t.getName(),
+            taskNames.add(String.format(context.getString(R.string.due_when), t.getName(),
                     Task.dateFormat.format(tDate)));
         }
 
@@ -774,10 +855,11 @@ public class LogicSubsystem {
      * @param position Position in given day of event/task
      * @param day How many days past today's date task/event was scheduled for
      * @param action 0 to complete task, 1 to delete task, 2 to delete event
+     * @param context Context for resources
      *
      * @return list of updated dates if ran successfully, false if error occurred.
      */
-    public List<Integer> onButtonClick(int position, int day, int action) {
+    public List<Integer> onButtonClick(int position, int day, int action, Context context) {
         List<Integer> toReturn = new ArrayList<>();
 
         if (action == 0 || action == 1) {
@@ -794,7 +876,7 @@ public class LogicSubsystem {
             }
 
             mTaskAppViewModel.delete(toRemove);
-            toReturn = Complete(mTaskSchedule.get(day).get(position));
+            toReturn = Complete(mTaskSchedule.get(day).get(position), context);
         }
         // Remove the given event from the schedule and re-optimize.
         if (action == 2) {
@@ -810,6 +892,35 @@ public class LogicSubsystem {
         }
 
         return toReturn;
+    }
+
+    /**
+     * Handle button clicks  by deleting tasks/events.
+     *
+     * @param ID the ID of the task to delete.
+     * @param action 0 to complete task, 1 to delete task
+     * @param context Context for resources
+     *
+     * @return list of updated dates if ran successfully, false if error occurred.
+     */
+    public List<Integer> onButtonClick(long ID, int action, Context context) {
+        Task toRemove = null;
+
+        for (Task t : mTasks) {
+            if (t.getID() == ID) {
+                toRemove = t;
+                break;
+            }
+        }
+
+        if (toRemove == null) {
+            return null;
+        }
+
+        int day = getDiff(toRemove.getDoDate(), mStartDate);
+        int position = mTaskSchedule.get(day).indexOf(toRemove);
+
+        return onButtonClick(position, day, action, context);
     }
 
     /**
@@ -842,6 +953,32 @@ public class LogicSubsystem {
     }
 
     /**
+     * Start or cancel a timer.
+     *
+     * @param ID the ID of the task to start timing
+     */
+    public void timer(long ID) {
+        Task toTime = null;
+
+        for (Task t : mTasks) {
+            if (t.getID() == ID) {
+                toTime = t;
+                break;
+            }
+        }
+
+        if (mTimerTask == toTime) {
+            mTimerTask = null;
+            mTimer = null;
+
+            return;
+        }
+
+        mTimer = new Date();
+        mTimerTask = toTime;
+    }
+
+    /**
      * Returns if the selected task is currently being timed.
      *
      * @param position Position in the task recycler for the given day
@@ -851,6 +988,23 @@ public class LogicSubsystem {
      */
     public boolean isTimed(int position, int day) {
         return mTaskSchedule.get(day).get(position) == mTimerTask;
+    }
+
+    /**
+     * Returns if the selected task is currently being timed.
+     *
+     * @param ID the ID of the given task
+     *
+     * @return true if given task is timed, false otherwise.
+     */
+    public boolean isTimed(long ID) {
+        for (Task task : mTasks) {
+            if (task.getID() == ID) {
+                return task == mTimerTask;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -922,5 +1076,150 @@ public class LogicSubsystem {
         }
 
         return new Pair<>(position, day);
+    }
+
+    /**
+     * Return the project names for the AddItem screen.
+     *
+     * @return A list of names of Projects
+     */
+    public ArrayList<String> getProjectNames() {
+        ArrayList<String> toReturn = new ArrayList<>();
+
+        for (Project p : mProjects) {
+            toReturn.add(p.getName());
+        }
+
+        return toReturn;
+    }
+
+    /**
+     * Return the colors for each project.
+     *
+     * @return a list of colors for Projects.
+     */
+    public ArrayList<Integer> getProjectColors() {
+        ArrayList<Integer> toReturn = new ArrayList<>();
+
+        for (Project p : mProjects) {
+            toReturn.add(p.getColor());
+        }
+
+        return toReturn;
+    }
+
+    /**
+     * Return the goals of each project.
+     *
+     * @return The goal of each project.
+     */
+    public ArrayList<String> getProjectGoals() {
+        ArrayList<String> toReturn = new ArrayList<>();
+
+        for (Project p : mProjects) {
+            toReturn.add(p.getGoal());
+        }
+
+        return toReturn;
+    }
+
+    /**
+     * Build a list of tasks that meet the given filters. Leave field null or -1 if not needed.
+     *
+     * @param startDate Earliest due date
+     * @param endDate Latest due date
+     * @param project Project ID to show
+     * @param name Name to search for
+     * @param minTime Minimum TTC to show
+     * @param maxTime Maximum TTC
+     * @param completable Show only completable tasks
+     * @param context Context for resources
+     *
+     * @return A TaskItem list with these parameters.
+     */
+    public List<TaskItem> filter(Date startDate, Date endDate, long project, String name,
+                                  int minTime, int maxTime, boolean completable, Context context) {
+        List<Task> toReturn = new ArrayList<>(mTasks);
+
+        if (startDate != null) {
+            for (int i = 0; i < toReturn.size(); i++) {
+                if (toReturn.get(i).getDueDate().before(startDate)) {
+                    toReturn.remove(i);
+                    i--;
+                }
+            }
+        }
+
+        if (endDate != null) {
+            for (int i = 0; i < toReturn.size(); i++) {
+                if (toReturn.get(i).getDueDate().after(endDate)) {
+                    toReturn.remove(i);
+                    i--;
+                }
+            }
+        }
+
+        if (project != -1) {
+            for (int i = 0; i < toReturn.size(); i++) {
+                if (toReturn.get(i).getProject().getID() != project) {
+                    toReturn.remove(i);
+                    i--;
+                }
+            }
+        }
+
+        if (name != null) {
+            for (int i = 0; i < toReturn.size(); i++) {
+                // If task does not contain searched substring
+                if (!toReturn.get(i).getName().toLowerCase().contains(name.toLowerCase())) {
+                    toReturn.remove(i);
+                    i--;
+                }
+            }
+        }
+
+        if (minTime != -1) {
+            for (int i = 0; i < toReturn.size(); i++) {
+                if (toReturn.get(i).getTimeToComplete() < minTime) {
+                    toReturn.remove(i);
+                    i--;
+                }
+            }
+        }
+
+        if (maxTime != -1) {
+            for (int i = 0; i < toReturn.size(); i++) {
+                if (toReturn.get(i).getTimeToComplete() > maxTime) {
+                    toReturn.remove(i);
+                    i--;
+                }
+            }
+        }
+
+        if (completable) {
+            for (int i = 0; i < toReturn.size(); i++) {
+                Task task = toReturn.get(i);
+
+                // Check if each task can be currently completed.
+                if ((task.getEarlyDate().equals(clearDate(new Date())))
+                        && (task.getParents().size() == 0)) {
+                    toReturn.remove(i);
+                    i--;
+                }
+            }
+        }
+
+        return TaskItemList(toReturn, context);
+    }
+
+    /**
+     * Get the ID of the index'th project in the project list.
+     *
+     * @param index Index into the project list
+     *
+     * @return index into the project list
+     */
+    public long getProjectID(int index) {
+        return mProjects.get(index).getID();
     }
 }

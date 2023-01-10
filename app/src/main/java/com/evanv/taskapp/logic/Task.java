@@ -51,9 +51,13 @@ public class Task implements Comparable<Task> {
     private int mPriority;             // Priority
     @Ignore
     private Project mProject;          // Project for the task.
+    @Ignore
+    private List<Label> mLabels;       // Label for the task.
 
     @ColumnInfo(name = "project")
     private long mProjectID;           // Project ID for the task.
+    @ColumnInfo(name = "labels")
+    private ArrayList<Long> mLabelIDs; // Label ID for the task.
 
     @NonNull
     @ColumnInfo(name = "parents_list")
@@ -95,6 +99,8 @@ public class Task implements Comparable<Task> {
         mParents = new ArrayList<>();
         mChildren = new ArrayList<>();
         mParentArr = new ArrayList<>();
+        mLabelIDs = new ArrayList<>();
+        mLabels = new ArrayList<>();
         mParentArr.add(-1L);
         mPriority = priority;
         mProjectID = -1;
@@ -112,10 +118,11 @@ public class Task implements Comparable<Task> {
      * @param earlyDate Earliest date the task can be completed.
      * @param timeToComplete Amount of time in minutes the task is estimated to complete.
      * @param projectID ID for the project.
+     * @param labelIDs List of IDs for the labels.
      */
     public Task(@NonNull String name, @NonNull Date earlyDate, @NonNull Date dueDate,
                 Date doDate, int timeToComplete, @NonNull ArrayList<Long> parentArr, int priority,
-                long projectID) {
+                long projectID, @NonNull ArrayList<Long> labelIDs) {
         mName = name;
         mEarlyDate = earlyDate;
         mDueDate = dueDate;
@@ -123,6 +130,7 @@ public class Task implements Comparable<Task> {
         mTimeToComplete = timeToComplete;
         mParents = new ArrayList<>();
         mChildren = new ArrayList<>();
+        mLabels = new ArrayList<>();
         mParentArr = parentArr;
         mPriority = priority;
         mProjectID = projectID;
@@ -491,12 +499,30 @@ public class Task implements Comparable<Task> {
     }
 
     /**
+     * Get the labels that the Task is associated with.
+     *
+     * @return a List of Labels the task is associated with.
+     */
+    public List<Label> getLabels() {
+        return mLabels;
+    }
+
+    /**
      * Get the ID of the current Project.
      *
      * @return the ID of the Project.
      */
     public long getProjectID() {
         return mProjectID;
+    }
+
+    /**
+     * Get a List of IDs of the current Labels.
+     *
+     * @return the ID of the Labels.
+     */
+    public List<Long> getLabelIDs() {
+        return mLabelIDs;
     }
 
     /**
@@ -507,6 +533,26 @@ public class Task implements Comparable<Task> {
     public void setProject(Project project) {
         mProject = project;
         mProjectID = project.getID();
+    }
+
+    /**
+     * Add a Label to this Task.
+     *
+     * @param label The new label for the Task.
+     */
+    public void addLabel(Label label) {
+        mLabels.add(label);
+        mLabelIDs.add(label.getID());
+    }
+
+    /**
+     * Remove a Label from this Task.
+     *
+     * @param label The label to remove from this Task.
+     */
+    public void removeLabel(Label label) {
+        mLabels.remove(label);
+        mLabelIDs.remove(label.getID());
     }
 
     /**
@@ -525,6 +571,26 @@ public class Task implements Comparable<Task> {
                 mProject = p;
                 p.addTask(this);
                 return;
+            }
+        }
+    }
+
+    /**
+     * Synchronize the list of Label IDs with the List of Labels.
+     *
+     * @param labels List of labels.
+     */
+    public void initializeLabels(List<Label> labels) {
+
+
+        if (labels.isEmpty()) {
+            return;
+        }
+
+        for (Label l : labels) {
+            if (mLabelIDs.contains(l.getID())) {
+                mLabels.add(l);
+                l.addTask(this);
             }
         }
     }

@@ -3,6 +3,7 @@ package com.evanv.taskapp.db;
 import android.app.Application;
 
 import com.evanv.taskapp.logic.Event;
+import com.evanv.taskapp.logic.Label;
 import com.evanv.taskapp.logic.Project;
 import com.evanv.taskapp.logic.Task;
 
@@ -17,9 +18,11 @@ public class TaskAppRepository {
     private final TaskDao mTaskDao;       // Dao for the task table
     private final EventDao mEventDao;     // Dao for the event table
     private final ProjectDao mProjectDao; // Dao for the project table
+    private final LabelDao mLabelDao;     // Dao for the label table
     private final List<Task> mAllTasks;   // List of all tasks
     private final List<Event> mAllEvents; // List of all events
     private final List<Project> mAllProjects; // List of all projects
+    private final List<Label> mAllLabels; // List of all labels
 
     /**
      * Constructs a new repository
@@ -31,9 +34,11 @@ public class TaskAppRepository {
         mTaskDao = db.taskDao();
         mEventDao = db.eventDao();
         mProjectDao = db.projectDao();
+        mLabelDao = db.labelDao();
         mAllTasks = mTaskDao.getTasks();
         mAllEvents = mEventDao.getEvents();
         mAllProjects = mProjectDao.getProjects();
+        mAllLabels = mLabelDao.getLabels();
     }
 
     /**
@@ -67,6 +72,16 @@ public class TaskAppRepository {
     }
 
     /**
+     * Gets a list of all labels upon start of app. LiveData not used due to race conditions
+     * inherent to app.
+     *
+     * @return a list of all projects
+     */
+    List<Label> getAllLabels() {
+        return mAllLabels;
+    }
+
+    /**
      * Asynchronously inserts a task into the task_table
      *
      * @param task Task to be inserted
@@ -91,6 +106,15 @@ public class TaskAppRepository {
      */
     public void insert(Project project) {
         (new Thread(new insertProjectAsyncTask(mProjectDao, project))).start();
+    }
+
+    /**
+     * Asynchronously inserts a label into the label_table
+     *
+     * @param label Label to be inserted
+     */
+    public void insert(Label label) {
+        (new Thread(new insertLabelAsyncTask(mLabelDao, label))).start();
     }
 
     /**
@@ -121,6 +145,15 @@ public class TaskAppRepository {
     }
 
     /**
+     * Asynchronously updates a label in the label_table
+     *
+     * @param label Label to be updated
+     */
+    public void update(Label label) {
+        (new Thread(new updateLabelAsyncTask(mLabelDao, label))).start();
+    }
+
+    /**
      * Asynchronously deletes a task in the task_table
      *
      * @param task Task to be deleted
@@ -145,6 +178,15 @@ public class TaskAppRepository {
      */
     public void delete(Project project) {
         (new Thread(new deleteProjectAsyncTask(mProjectDao, project))).start();
+    }
+
+    /**
+     * Asynchronously deletes a label in the label_table
+     *
+     * @param label Label to be deleted
+     */
+    public void delete(Label label) {
+        (new Thread(new deleteLabelAsyncTask(mLabelDao, label))).start();
     }
 
     /**
@@ -209,7 +251,7 @@ public class TaskAppRepository {
     }
 
     /**
-     * Runnable that inserts an Event into the DB
+     * Runnable that inserts a Project into the DB
      */
     private static class insertProjectAsyncTask implements Runnable {
         private final ProjectDao mAsyncProjectDao; // The Dao used to interface with the database
@@ -232,6 +274,33 @@ public class TaskAppRepository {
         public void run() {
             long id = mAsyncProjectDao.insert(mProject);
             mProject.setID(id);
+        }
+    }
+
+    /**
+     * Runnable that inserts a Label into the DB
+     */
+    private static class insertLabelAsyncTask implements Runnable {
+        private final LabelDao mAsyncLabelDao; // The Dao used to interface with the database
+        private final Label mLabel;            // The Label to be inserted into the database
+
+        /**
+         * Initializes the thread with the event to be added and the Dao to interface with.
+         *
+         * @param dao The Dao used to interface with the database.
+         * @param label The Label to be inserted into the database.
+         */
+        public insertLabelAsyncTask(LabelDao dao, Label label) {
+            mAsyncLabelDao = dao;
+            mLabel = label;
+        }
+
+        /**
+         * The code to be run asynchronously - insert a Label and update the ID.
+         */
+        public void run() {
+            long id = mAsyncLabelDao.insert(mLabel);
+            mLabel.setID(id);
         }
     }
 
@@ -297,7 +366,7 @@ public class TaskAppRepository {
         private final Project mProject;            // The Project to be updated in the database
 
         /**
-         * Initializes the thread with the event to be updated and the Dao to interface with.
+         * Initializes the thread with the project to be updated and the Dao to interface with.
          *
          * @param dao The Dao used to interface with the database.
          * @param project The Project to be updated in the database.
@@ -312,6 +381,32 @@ public class TaskAppRepository {
          */
         public void run() {
             mAsyncProjectDao.update(mProject);
+        }
+    }
+
+    /**
+     * Runnable that updates a Label currently in the DB
+     */
+    private static class updateLabelAsyncTask implements Runnable {
+        private final LabelDao mAsyncLabelDao; // The Dao used to interface with the database
+        private final Label mLabel;            // The Label to be updated in the database
+
+        /**
+         * Initializes the thread with the Label to be updated and the Dao to interface with.
+         *
+         * @param dao   The Dao used to interface with the database.
+         * @param label The Label to be updated in the database.
+         */
+        public updateLabelAsyncTask(LabelDao dao, Label label) {
+            mAsyncLabelDao = dao;
+            mLabel = label;
+        }
+
+        /**
+         * The code to be run asynchronously - insert a Label and update the ID.
+         */
+        public void run() {
+            mAsyncLabelDao.update(mLabel);
         }
     }
 
@@ -370,7 +465,7 @@ public class TaskAppRepository {
     }
 
     /**
-     * Runnable that deletes an
+     * Runnable that deletes a Project
      */
     private static class deleteProjectAsyncTask implements Runnable {
         private final ProjectDao mAsyncProjectDao; // The Dao used to interface with the database
@@ -394,4 +489,31 @@ public class TaskAppRepository {
             mAsyncProjectDao.deleteProject(mProject);
         }
     }
+
+    /**
+     * Runnable that deletes a Label
+     */
+    private static class deleteLabelAsyncTask implements Runnable {
+        private final LabelDao mAsyncLabelDao; // The Dao used to interface with the database
+        private final Label mLabel;            // The Label to be updated in the database
+
+        /**
+         * Initializes the thread with the Label to be deleted and the Dao to interface with.
+         *
+         * @param dao The Dao used to interface with the database.
+         * @param label The Label to be deleted from the database.
+         */
+        public deleteLabelAsyncTask(LabelDao dao, Label label) {
+            mAsyncLabelDao = dao;
+            mLabel = label;
+        }
+
+        /**
+         * The code to be run asynchronously - insert a Label and update the ID.
+         */
+        public void run() {
+            mAsyncLabelDao.delete(mLabel);
+        }
+    }
+
 }

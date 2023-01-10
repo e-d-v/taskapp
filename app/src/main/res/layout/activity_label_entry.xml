@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="6dp"
+    android:orientation="vertical"
+    tools:context=".ui.additem.LabelEntry">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:id="@+id/layout1"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <EditText
+            android:id="@+id/editTextLabelName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:hint="@string/label_name"
+            android:importantForAutofill="no"
+            android:inputType="textShortMessage"
+            android:minHeight="48dp"
+            android:textColorHint="#757575" />
+
+        <ImageButton
+            android:id="@+id/nameInfoButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_weight="0"
+            android:background="@null"
+            android:backgroundTint="@color/white"
+            android:contentDescription="@string/info_button"
+            android:src="@drawable/ic_outline_info_24"
+            app:tint="@color/text_primary" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/layout2"
+        app:layout_constraintTop_toBottomOf="@id/layout1"
+        app:layout_constraintStart_toStartOf="parent"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/colorSelectTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:layout_weight="1"
+            android:onClick="handleColorPress"
+            android:text="@string/default_color"
+            android:textSize="18sp" />
+
+        <ImageButton
+            android:id="@+id/colorInfoButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_weight="0"
+            android:background="@null"
+            android:backgroundTint="@color/white"
+            android:contentDescription="@string/info_button"
+            android:src="@drawable/ic_outline_info_24"
+            app:tint="@color/text_primary" />
+    </LinearLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="submit"
+        android:text="@string/submit"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

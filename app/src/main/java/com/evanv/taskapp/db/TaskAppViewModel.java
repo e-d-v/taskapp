@@ -5,6 +5,7 @@ import android.app.Application;
 import androidx.lifecycle.AndroidViewModel;
 
 import com.evanv.taskapp.logic.Event;
+import com.evanv.taskapp.logic.Label;
 import com.evanv.taskapp.logic.Project;
 import com.evanv.taskapp.logic.Task;
 
@@ -23,6 +24,7 @@ public class TaskAppViewModel extends AndroidViewModel {
     private final List<Task> mAllTasks;   // List of all tasks in DB at start of app
     private final List<Event> mAllEvents; // List of all events in DB at start of app
     private final List<Project> mAllProjects; // List of all projects in DB at start of app
+    private final List<Label> mAllLabels; // List of all labels in DB at start of app
 
     /**
      * Constructs a ViewModel to interface with a Repository
@@ -35,6 +37,7 @@ public class TaskAppViewModel extends AndroidViewModel {
         mAllTasks = mRepository.getAllTasks();
         mAllEvents = mRepository.getAllEvents();
         mAllProjects = mRepository.getAllProjects();
+        mAllLabels = mRepository.getAllLabels();
     }
 
     /**
@@ -64,6 +67,16 @@ public class TaskAppViewModel extends AndroidViewModel {
     }
 
     /**
+     * Gets a list of all labels upon start of app. LiveData not used due to race conditions
+     * inherent to app.
+     *
+     * @return a list of all labels
+     */
+    public List<Label> getAllLabels() {
+        return mAllLabels;
+    }
+
+    /**
      * Asynchronously inserts a task into the task_table
      *
      * @param task Task to be inserted
@@ -84,6 +97,15 @@ public class TaskAppViewModel extends AndroidViewModel {
      */
     public void insert(Project project) {
         mRepository.insert(project);
+    }
+
+    /**
+     * Asynchronously inserts a label into the label_table
+     *
+     * @param label Label to be inserted
+     */
+    public void insert(Label label) {
+        mRepository.insert(label);
     }
 
     /**
@@ -111,6 +133,15 @@ public class TaskAppViewModel extends AndroidViewModel {
     }
 
     /**
+     * Asynchronously updates a Label in the label_table
+     *
+     * @param label Label to be updated.
+     */
+    public void update(Label label) {
+        mRepository.update(label);
+    }
+
+    /**
      * Asynchronously deletes a task in the task_table
      *
      * @param task Task to be deleted
@@ -131,5 +162,14 @@ public class TaskAppViewModel extends AndroidViewModel {
      */
     public void delete(Project project) {
         mRepository.delete(project);
+    }
+
+    /**
+     * Asynchronously deletes a label in the label_table
+     *
+     * @param label Label to be deleted.
+     */
+    public void delete(Label label) {
+        mRepository.delete(label);
     }
 }

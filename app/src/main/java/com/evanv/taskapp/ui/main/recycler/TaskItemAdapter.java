@@ -21,8 +21,10 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.evanv.taskapp.R;
+import com.evanv.taskapp.logic.Label;
 import com.evanv.taskapp.ui.main.ClickListener;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -133,44 +135,44 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
                 holder.complete.setColorFilter(Color.RED);
                 break;
         }
-        
+
+        // Set project color
+        int[] colors = {R.color.pale_blue,
+                R.color.blue,
+                R.color.pale_green,
+                R.color.green,
+                R.color.pink,
+                R.color.red,
+                R.color.pale_orange,
+                R.color.orange,
+                R.color.lavender,
+                R.color.purple,
+                R.color.yellow,
+                R.color.gray};
+
+        // What color is most readable on the background
+        int[] textColors = { Color.BLACK,
+                Color.WHITE,
+                Color.BLACK,
+                Color.BLACK,
+                Color.BLACK,
+                Color.WHITE,
+                Color.BLACK,
+                Color.BLACK,
+                Color.BLACK,
+                Color.WHITE,
+                Color.BLACK,
+                Color.BLACK};
+
         // Set project chip
         if (taskItem.getProject() != null) {
             // Show chip
             holder.project.setChipMinHeightResource(R.dimen.chip_height);
-            holder.project.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+            holder.project.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
             holder.project.setVisibility(View.VISIBLE);
 
             // Set project name
             holder.project.setText(taskItem.getProject());
-
-            // Set project color
-            int[] colors = {R.color.pale_blue,
-                    R.color.blue,
-                    R.color.pale_green,
-                    R.color.green,
-                    R.color.pink,
-                    R.color.red,
-                    R.color.pale_orange,
-                    R.color.orange,
-                    R.color.lavender,
-                    R.color.purple,
-                    R.color.yellow,
-                    R.color.gray};
-
-            // What color is most readable on the background
-            int[] textColors = { Color.BLACK,
-                    Color.WHITE,
-                    Color.BLACK,
-                    Color.BLACK,
-                    Color.BLACK,
-                    Color.WHITE,
-                    Color.BLACK,
-                    Color.BLACK,
-                    Color.BLACK,
-                    Color.WHITE,
-                    Color.BLACK,
-                    Color.BLACK};
 
             // Set colors
             holder.project.setChipBackgroundColorResource(colors[taskItem.getProjectColor()]);
@@ -210,6 +212,22 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             }
         });
         holder.mIndex = taskItem.getIndex();
+
+        holder.labels.removeAllViews();
+
+        for (int i = 0; i < taskItem.getLabels().size(); i++) {
+            Chip toAdd = new Chip(mContext);
+            toAdd.setText(taskItem.getLabels().get(i).trim());
+            toAdd.setChipStartPadding(10);
+            toAdd.setChipEndPadding(20);
+            toAdd.setClickable(false);
+            toAdd.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+            toAdd.setChipBackgroundColorResource(colors[taskItem.getLabelColors().get(i)]);
+            toAdd.setTextColor(textColors[taskItem.getLabelColors().get(i)]);
+            toAdd.setEnsureMinTouchTargetSize(false);
+            toAdd.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+            holder.labels.addView(toAdd);
+        }
     }
 
     /**
@@ -237,6 +255,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         final ImageButton delete;
         final ImageButton timer;
         final Chip project;
+        final ChipGroup labels;
         int mIndex; // Index into taskSchedule.get(day) for this event
 
         /**
@@ -260,6 +279,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             delete = itemView.findViewById(R.id.buttonDeleteTask);
             timer = itemView.findViewById(R.id.buttonTimer);
             project = itemView.findViewById(R.id.projectChip);
+            labels = itemView.findViewById(R.id.labelChipGroup);
         }
     }
 }

@@ -34,17 +34,36 @@
             style="@style/item_name"
             tools:ignore="HardcodedText" />
 
-        <com.google.android.material.chip.Chip
-            android:clickable="false"
-            android:id="@+id/projectChip"
-            app:chipMinTouchTargetSize="0dp"
-            app:chipCornerRadius="12dp"
-            app:chipMinHeight="26dp"
-            android:text="CSCI 4011"
-            android:layout_marginTop="4dp"
-            android:textSize="12sp"
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal">
+            <com.google.android.material.chip.Chip
+                android:clickable="false"
+                android:id="@+id/projectChip"
+                app:chipCornerRadius="12dp"
+                app:chipMinTouchTargetSize="0dp"
+                app:chipMinHeight="26dp"
+                android:text="CSCI 4011"
+                android:textSize="12sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <View
+                android:layout_width="1dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_height="match_parent"
+                android:background="@color/light_gray" />
+            <com.google.android.material.chip.ChipGroup
+                android:layout_width="match_parent"
+                app:chipSpacingVertical="6dp"
+                app:chipCornerRadius="12dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/labelChipGroup">
+            </com.google.android.material.chip.ChipGroup>
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout

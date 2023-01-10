@@ -166,4 +166,8 @@
     <string name="title_activity_project">ProjectActivity</string>
     <string name="right_arrow">Right arrow</string>
     <string name="projects">Projects</string>
+    <string name="add_labels">Choose Labels</string>
+    <string name="label_name">Label Name</string>
+    <string name="pick_label_color">Pick Label Color</string>
+    <string name="pick_labels">Pick Labels for Task</string>
 </resources>

@@ -51,6 +51,7 @@ public class LogicSubsystem {
     private Date mTimer;                          // Start time of current timer
     @Nullable private List<Task> mWorkAheadTasks; // List of tasks currently work ahead.
     private final List<Project> mProjects;        // List of current projects.
+    private final List<Label> mLabels;            // List of current labels.
 
     private static volatile LogicSubsystem INSTANCE; // The singleton of the LogicSubsystem
 
@@ -101,10 +102,14 @@ public class LogicSubsystem {
         // Get projects from database
         mProjects = mTaskAppViewModel.getAllProjects();
 
+        // Get labels from database
+        mLabels = mTaskAppViewModel.getAllLabels();
+
         // Add tasks to taskSchedule/add parents
         for (Task t : mTasks) {
             // Add Project
             t.initializeProject(mProjects);
+            t.initializeLabels(mLabels);
 
             // Calculate how many days past today's date this task is scheduled for. Used to
             // index into taskSchedule
@@ -277,6 +282,11 @@ public class LogicSubsystem {
             task.getProject().removeTask(task);
         }
 
+        // Remove task from labels
+        for (Label l : task.getLabels()) {
+            l.removeTask(task);
+        }
+
         Date doDate = task.getDoDate();
 
         List<Integer> toReturn = new ArrayList<>();
@@ -418,6 +428,7 @@ public class LogicSubsystem {
             int priority = result.getInt(AddItem.EXTRA_PRIORITY);
             int project = result.getInt(AddItem.EXTRA_PROJECT);
             Bundle newProject = result.getBundle(AddItem.EXTRA_NEW_PROJECT);
+            long[] labelIDs = result.getLongArray(AddItem.EXTRA_LABELS);
 
             // Convert the earliest completion date String to a MyTime
             Date early;
@@ -458,6 +469,7 @@ public class LogicSubsystem {
                 Task toAdd = new Task(name, d, dDue.getTime(), timeToComplete, priority);
 
                 if (project != 0) {
+                    // Add new project if one was added
                     if (project == mProjects.size() + 1) {
                         String projectName = newProject.getString(ProjectEntry.EXTRA_NAME);
                         int projectColor = newProject.getInt(ProjectEntry.EXTRA_COLOR);
@@ -468,8 +480,19 @@ public class LogicSubsystem {
                         mTaskAppViewModel.insert(proj);
                     }
 
+                    // Add task to selected project
                     toAdd.setProject(mProjects.get(project - 1));
                     mProjects.get(project - 1).addTask(toAdd);
+                }
+
+                // Add all selected labels to task.
+                for (Label label : mLabels) {
+                    for (long id : labelIDs) {
+                        if (label.getID() == id) {
+                            toAdd.addLabel(label);
+                            label.addTask(toAdd);
+                        }
+                    }
                 }
 
                 // The parents string in the Bundle is a String of the format "n1,n2,n3,...nN,"
@@ -1124,6 +1147,36 @@ public class LogicSubsystem {
     }
 
     /**
+     * Return the label names for the AddItem screen.
+     *
+     * @return A list of names of Labels
+     */
+    public ArrayList<String> getLabelNames() {
+        ArrayList<String> toReturn = new ArrayList<>();
+
+        for (Label l : mLabels) {
+            toReturn.add(l.getName());
+        }
+
+        return toReturn;
+    }
+
+    /**
+     * Return the colors for each label.
+     *
+     * @return a list of colors for Label.
+     */
+    public ArrayList<Integer> getProjectLabels() {
+        ArrayList<Integer> toReturn = new ArrayList<>();
+
+        for (Label l : mLabels) {
+            toReturn.add(l.getColor());
+        }
+
+        return toReturn;
+    }
+
+    /**
      * Build a list of tasks that meet the given filters. Leave field null or -1 if not needed.
      *
      * @param startDate Earliest due date
@@ -1221,5 +1274,16 @@ public class LogicSubsystem {
      */
     public long getProjectID(int index) {
         return mProjects.get(index).getID();
+    }
+
+    /**
+     * Get the ID of the index'th label in the label list.
+     *
+     * @param index Index into the label list
+     *
+     * @return index into the label list
+     */
+    public long getLabelID(int index) {
+        return mLabels.get(index).getID();
     }
 }

@@ -51,6 +51,8 @@ public class AddItem extends AppCompatActivity {
     public static final String EXTRA_PROJECT = "com.evanv.taskapp.extra.PROJECT";
     // Information for new project.
     public static final String EXTRA_NEW_PROJECT = "com.evanv.taskapp.extra.NEW_PROJECT";
+    // Labels that the task is associated with.
+    public static final String EXTRA_LABELS = "com.evanv.taskapp.extra.LABELS";
 
     // Used by Event
     // Type value representing Event

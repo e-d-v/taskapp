@@ -47,6 +47,10 @@ public class Converters {
 
         ArrayList<Long> toReturn = new ArrayList<>();
 
+        if (stringLongs[0].equals("")) {
+            return toReturn;
+        }
+
         for (String s : stringLongs) {
             toReturn.add(Long.parseLong(s));
         }

@@ -134,6 +134,7 @@ public class Task implements Comparable<Task> {
         mParentArr = parentArr;
         mPriority = priority;
         mProjectID = projectID;
+        mLabelIDs = labelIDs;
     }
 
     /**
@@ -521,7 +522,7 @@ public class Task implements Comparable<Task> {
      *
      * @return the ID of the Labels.
      */
-    public List<Long> getLabelIDs() {
+    public ArrayList<Long> getLabelIDs() {
         return mLabelIDs;
     }
 
@@ -581,8 +582,6 @@ public class Task implements Comparable<Task> {
      * @param labels List of labels.
      */
     public void initializeLabels(List<Label> labels) {
-
-
         if (labels.isEmpty()) {
             return;
         }

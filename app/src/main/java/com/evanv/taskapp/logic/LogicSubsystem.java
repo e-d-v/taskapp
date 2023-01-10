@@ -822,8 +822,16 @@ public class LogicSubsystem {
 
         long ID = task.getID();
 
+        List<String> labels = new ArrayList<>();
+        List<Integer> labelColors = new ArrayList<>();
+
+        for (Label l : task.getLabels()) {
+            labels.add(l.getName());
+            labelColors.add(l.getColor());
+        }
+
         return new TaskItem(name, position, completable, hasTimer, priority, project, projectColor,
-                ID);
+                labels, labelColors, ID);
     }
 
     /**
@@ -1285,5 +1293,17 @@ public class LogicSubsystem {
      */
     public long getLabelID(int index) {
         return mLabels.get(index).getID();
+    }
+
+    /**
+     * Add a new label to the Label list
+     *
+     * @param name Name of the new label
+     * @param color Color of the new label
+     */
+    public void addLabel(String name, int color) {
+        Label toAdd = new Label(name, color);
+        mLabels.add(toAdd);
+        mTaskAppViewModel.insert(toAdd);
     }
 }

@@ -13,6 +13,7 @@
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/drawable/ic_unchecked_button.xml" value="0.4185" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout-v23/fragment_event_entry.xml" value="0.5583333333333333" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/activity_add_item.xml" value="0.5583333333333333" />
+        <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/activity_label_entry.xml" value="0.43333333333333335" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/activity_main.xml" value="0.4499494438827098" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/activity_no_entries.xml" value="0.44518272425249167" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/activity_optimizing.xml" value="0.5583333333333333" />
@@ -36,7 +37,7 @@
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/fragment_weekly_recur.xml" value="0.5583333333333333" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/fragment_yearly_recur.xml" value="0.5583333333333333" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/project_item.xml" value="0.4322916666666667" />
-        <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/task_item.xml" value="0.6458112407211029" />
+        <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/layout/task_item.xml" value="1.1" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/menu/menu_main.xml" value="0.43333333333333335" />
         <entry key="..\:/Users/evanv/AndroidStudioProjects/taskapp/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.239" />
       </map>

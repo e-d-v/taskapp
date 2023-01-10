@@ -22,6 +22,8 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import com.evanv.taskapp.R;
+import com.evanv.taskapp.logic.Label;
+import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.logic.Task;
 import com.evanv.taskapp.ui.additem.recur.NoRecurFragment;
 import com.evanv.taskapp.ui.additem.recur.RecurActivity;
@@ -52,6 +54,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
     private ArrayAdapter<String> mAdapter;
     private Spinner mProjectSpinner;
     private boolean projectAdded;
+    private long[] mLabels; // Array of labels added to this task.
 
     /**
      * Required empty public constructor, creates new TaskEntry fragment
@@ -82,6 +85,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         mCurrentParents = "-1";
 
         projectAdded = false;
+        mLabels = new long[0];
     }
 
     /**
@@ -140,6 +144,9 @@ public class TaskEntry extends Fragment implements ItemEntry {
         // wants to give the new task
         ((Button) view.findViewById(R.id.buttonAddParents)).setOnClickListener
                 (new AddParentsListener());
+
+        ((Button) view.findViewById(R.id.buttonAddLabels)).setOnClickListener
+                (new AddLabelsListener());
 
         // Get the EditTexts for dates`
         mEditTextECD = view.findViewById(R.id.editTextECD);
@@ -229,9 +236,14 @@ public class TaskEntry extends Fragment implements ItemEntry {
             builder.show();
         });
 
-        ((ImageButton) view.findViewById(R.id.plus)).setOnClickListener(v -> {
+        // Set up the add project and add label buttons
+        ((ImageButton) view.findViewById(R.id.addProject)).setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), ProjectEntry.class);
             mLaunchProject.launch(intent);
+        });
+        ((ImageButton) view.findViewById(R.id.addLabel)).setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), LabelEntry.class);
+            startActivity(intent);
         });
 
         // Inflate the layout for this fragment
@@ -369,6 +381,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         toReturn.putBundle(AddItem.EXTRA_NEW_PROJECT, mNewProject);
         toReturn.putInt(AddItem.EXTRA_PROJECT, mProjectSpinner.getSelectedItemPosition());
         toReturn.putInt(AddItem.EXTRA_PRIORITY, priority);
+        toReturn.putLongArray(AddItem.EXTRA_LABELS, mLabels);
 
         return toReturn;
     }
@@ -388,13 +401,8 @@ public class TaskEntry extends Fragment implements ItemEntry {
             // the alert dialog
             ArrayList<String> taskNames = requireActivity().getIntent()
                     .getStringArrayListExtra(MainActivity.EXTRA_TASKS);
-            String[] taskNamesArr = new String[taskNames.size()];
-            Object[] taskNamesObjs = taskNames.toArray();
-            for (int i = 0; i < taskNames.size(); i++) {
-                taskNamesArr[i] = (String) taskNamesObjs[i];
-            }
 
-            showPickerDialog(taskNamesArr);
+            showPickerDialog(convertListToArray(taskNames));
         }
 
         /**
@@ -431,6 +439,76 @@ public class TaskEntry extends Fragment implements ItemEntry {
                                 mCurrentParents = (selectedItems.size() != 0) ? sb.toString()
                                         : "-1";
 
+                            }));
+
+            builder.create();
+            builder.show();
+        }
+    }
+
+    /**
+     * Converts an ArrayList of Strings to an array of Strings.
+     *
+     * @param list The list to convert to an array
+     *
+     * @return An array with the same items as the ArrayList
+     */
+    private String[] convertListToArray(ArrayList<String> list) {
+        String[] toReturn = new String[list.size()];
+        Object[] toReturnObjs = list.toArray();
+        for (int i = 0; i < toReturnObjs.length; i++) {
+            toReturn[i] = (String) toReturnObjs[i];
+        }
+
+        return toReturn;
+    }
+
+    private class AddLabelsListener implements View.OnClickListener {
+        /**
+         * Opens a dialog allowing the user to set labels for the task
+         *
+         * @param view the button
+         */
+        @Override
+        public void onClick(View view) {
+            // Get the list of labels for the dialog
+            ArrayList<String> labelNames = LogicSubsystem.getInstance().getLabelNames();
+
+            showPickerDialog(convertListToArray(labelNames));
+        }
+
+        /**
+         * Builds and shows a picker dialog based on a list of label names.
+         *
+         * @param labelNamesArr List of names of labels
+         */
+        private void showPickerDialog(String[] labelNamesArr) {
+            ArrayList<Integer> selectedItems = new ArrayList<>();
+            // Define the dialog used to pick parent tasks
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle(R.string.pick_labels)
+                    .setMultiChoiceItems(labelNamesArr, null,
+                            ((dialogInterface, index, isChecked) -> {
+                                // If checked, add to list of Tasks to be added as parents
+                                if (isChecked) {
+                                    selectedItems.add(index);
+                                }
+                                // If unchecked, remove form list of Tasks to be added as
+                                // parents
+                                else if (selectedItems.contains(index)) {
+                                    selectedItems.remove(index);
+                                }
+                            })).setPositiveButton(R.string.ok,
+                            ((dialogInterface, unused) -> {
+                                // Convert selectedItems to array of label IDs
+
+                                mLabels = new long[selectedItems.size()];
+
+                                // For each label selected by the user, add it to the list
+                                for (int i = 0; i < mLabels.length; i++) {
+                                    mLabels[i] = LogicSubsystem.getInstance()
+                                            .getLabelID(selectedItems.get(i));
+                                }
                             }));
 
             builder.create();

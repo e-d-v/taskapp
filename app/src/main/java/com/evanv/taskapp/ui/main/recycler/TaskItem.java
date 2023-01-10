@@ -1,5 +1,7 @@
 package com.evanv.taskapp.ui.main.recycler;
 
+import java.util.List;
+
 /**
  * Class representing a Task for use in the DayItem's recyclerview
  *
@@ -13,17 +15,28 @@ public class TaskItem {
     private final int mPriority;        // Priority of task
     private final String mProject;      // Name of the Project associated with the Task
     private final int mProjectColor;    // Color of the Project associated with the Task
-    private final long mID;              // The ID of the Task
+    private final long mID;             // The ID of the Task
+    private final List<String> mLabels; // Names of Labels associated with the Task
+    private final List<Integer> mLabelColors; // Colors of the Labels associated with the Task
 
     /**
      * Creates an item representing a Task
-     *  @param name a string representing the name of the Task
-     * @param completable a boolean representing if the task can be completed today
-     * @param hasTimer true if task is timed, false otherwise.
+     *
+     * @param name The name of the Task
+     * @param index Index in the recycler of the task
+     * @param completable Can the task be completed right now?
+     * @param hasTimer Does the task currently have an active timer?
+     * @param priority Priority of the Task
+     * @param project Name of the task's project
+     * @param projectColor Color of the task's project
+     * @param labels List of names of the Labels associated with this Task
+     * @param labelColors List of colors of the Labels associated with this Task
+     * @param ID the ID of the Task.
      */
     @SuppressWarnings("unused")
     public TaskItem(String name, int index, boolean completable, boolean hasTimer, int priority,
-                    String project, int projectColor, long ID) {
+                    String project, int projectColor, List<String> labels, List<Integer> labelColors,
+                    long ID) {
         mName = name;
         mIndex = index;
         mCompletable = completable;
@@ -32,6 +45,8 @@ public class TaskItem {
         mProject = project;
         mProjectColor = projectColor;
         mID = ID;
+        mLabels = labels;
+        mLabelColors = labelColors;
     }
 
     /**
@@ -97,7 +112,30 @@ public class TaskItem {
         return mProjectColor;
     }
 
+    /**
+     * Return the ID of the Task
+     *
+     * @return The ID of the Task
+     */
     public long getID() {
         return mID;
+    }
+
+    /**
+     * Return the names of the Labels
+     *
+     * @return a list of names of the Labels
+     */
+    public List<String> getLabels() {
+        return mLabels;
+    }
+
+    /**
+     * Return the colors of the Labels
+     *
+     * @return a list of colors of the Labels
+     */
+    public List<Integer> getLabelColors() {
+        return mLabelColors;
     }
 }

@@ -274,6 +274,11 @@ public class TaskAppRepository {
         public void run() {
             long id = mAsyncProjectDao.insert(mProject);
             mProject.setID(id);
+
+            // Make sure that all projects have correct project ID.
+            for (Task t : mProject.getTasks()) {
+                t.setProject(mProject);
+            }
         }
     }
 

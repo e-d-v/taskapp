@@ -7,6 +7,7 @@ import static com.evanv.taskapp.logic.Task.getDiff;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
@@ -1199,7 +1200,8 @@ public class LogicSubsystem {
      * @return A TaskItem list with these parameters.
      */
     public List<TaskItem> filter(Date startDate, Date endDate, long project, String name,
-                                  int minTime, int maxTime, boolean completable, Context context) {
+                                 int minTime, int maxTime, boolean completable, List<Long> labels,
+                                 int priority, Context context) {
         List<Task> toReturn = new ArrayList<>(mTasks);
 
         if (startDate != null) {
@@ -1214,6 +1216,8 @@ public class LogicSubsystem {
         if (endDate != null) {
             for (int i = 0; i < toReturn.size(); i++) {
                 if (toReturn.get(i).getDueDate().after(endDate)) {
+                    Log.d("date1", Event.dateFormat.format(endDate));
+                    Log.d("date2", Event.dateFormat.format(toReturn.get(i).getDueDate()));
                     toReturn.remove(i);
                     i--;
                 }
@@ -1262,8 +1266,42 @@ public class LogicSubsystem {
                 Task task = toReturn.get(i);
 
                 // Check if each task can be currently completed.
-                if ((task.getEarlyDate().equals(clearDate(new Date())))
-                        && (task.getParents().size() == 0)) {
+                if (!(task.getEarlyDate().equals(clearDate(new Date())))
+                        || !(task.getParents().size() == 0)) {
+                    toReturn.remove(i);
+                    i--;
+                }
+            }
+        }
+
+        if (labels != null) {
+            for (int i = 0; i < toReturn.size(); i++) {
+                Task task = toReturn.get(i);
+
+                // Check if task has all chosen labels
+                for (long id : labels) {
+                    boolean found = false;
+
+                    // Make sure task has chosen label
+                    for (Label label : task.getLabels()) {
+                        if (label.getID() == id) {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        toReturn.remove(i);
+                        i--;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (priority != -1) {
+            for (int i = 0; i < toReturn.size(); i++) {
+                if (toReturn.get(i).getPriority() < priority) {
                     toReturn.remove(i);
                     i--;
                 }
@@ -1305,5 +1343,15 @@ public class LogicSubsystem {
         Label toAdd = new Label(name, color);
         mLabels.add(toAdd);
         mTaskAppViewModel.insert(toAdd);
+    }
+
+    public String getProjectName(long ID, Context context) {
+        for (Project p : mProjects) {
+            if (p.getID() == ID) {
+                return p.getName();
+            }
+        }
+
+        return context.getString(R.string.none_chosen);
     }
 }

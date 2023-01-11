@@ -170,4 +170,17 @@
     <string name="label_name">Label Name</string>
     <string name="pick_label_color">Pick Label Color</string>
     <string name="pick_labels">Pick Labels for Task</string>
+    <string name="search">Search</string>
+    <string name="start_date_label">Start Date:\nNone Chosen</string>
+    <string name="start_date_replace">Start Date:\n%s</string>
+    <string name="end_date_label">End Date:\nNone Chosen</string>
+    <string name="end_date_replace">End Date:\n%s</string>
+    <string name="project_label">Project:\nNone Chosen</string>
+    <string name="project_replace">Project:\n%s</string>
+    <string name="label_label">Labels:\nNone Chosen</string>
+    <string name="label_replace">Labels:\n%d Chosen</string>
+    <string name="min_priority">Minimum Priority</string>
+    <string name="start_date">Start Date</string>
+    <string name="pick_project">Pick Project</string>
+    <string name="none_chosen">None Chosen</string>
 </resources>

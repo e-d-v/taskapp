@@ -17,6 +17,7 @@ import com.evanv.taskapp.ui.main.recycler.TaskItem;
 import com.evanv.taskapp.ui.main.recycler.TaskItemAdapter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -42,6 +43,10 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
     public static final String EXTRA_MAX_TIME = "com.evanv.taskapp.ui.TaskListActivity.EXTRA_MAX_TIME";
     // Key for the value of only showing completable tasks.
     public static final String EXTRA_COMPLETABLE = "com.evanv.taskapp.ui.TaskListActivity.EXTRA_COMPLETABLE";
+    // Key for the value of the requested labels.
+    public static final String EXTRA_LABELS = "com.evanv.taskapp.ui.TaskListActivity.EXTRA_LABELS";
+    // Key for the value of the priority.
+    public static final String EXTRA_PRIORITY = "com.evanv.taskapp.ui.TaskListActivity.EXTRA_PRIORITY";
 
     private TaskItemAdapter mAdapter;           // The adapter for the recycler
 
@@ -64,15 +69,17 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         Date startDate = new Date(getIntent().getLongExtra(EXTRA_START_DATE, 0));
         startDate = startDate.getTime() == 0 ? null : startDate;
         Date endDate = new Date(getIntent().getLongExtra(EXTRA_END_DATE, 0));
-        endDate = endDate.getTime() == 0 ? null : startDate;
+        endDate = endDate.getTime() == 0 ? null : endDate;
         long project = getIntent().getLongExtra(EXTRA_PROJECT, 0);
         String name = getIntent().getStringExtra(EXTRA_NAME);
         int minTime = getIntent().getIntExtra(EXTRA_MIN_TIME, -1);
         int maxTime = getIntent().getIntExtra(EXTRA_MAX_TIME, -1);
         boolean completable = getIntent().getBooleanExtra(EXTRA_COMPLETABLE, false);
+        List<Long> labels = convertArrayToList(getIntent().getLongArrayExtra(EXTRA_LABELS));
+        int priority = getIntent().getIntExtra(EXTRA_PRIORITY, -1);
 
         List<TaskItem> taskItemList = LogicSubsystem.getInstance().filter(startDate, endDate,
-                project, name, minTime, maxTime, completable, this);
+                project, name, minTime, maxTime, completable, labels, priority, this);
 
         IDs = new ArrayList<>();
         for (TaskItem item : taskItemList) {
@@ -85,6 +92,27 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
                 (taskItemList, this, -1, null, false, this);
         recycler.setAdapter(mAdapter);
         recycler.setLayoutManager(layoutManager);
+    }
+
+    /**
+     * Converts an array of Longs to a List of Longs.
+     *
+     * @param array The array to turn into a List
+     *
+     * @return A list with the same items as the array
+     */
+    private List<Long> convertArrayToList(long[] array) {
+        List<Long> toReturn = new ArrayList<>();
+
+        if (array == null) {
+            return null;
+        }
+
+        for (long l : array) {
+            toReturn.add(l);
+        }
+
+        return toReturn;
     }
 
     /**

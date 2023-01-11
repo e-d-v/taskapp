@@ -22,7 +22,6 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import com.evanv.taskapp.R;
-import com.evanv.taskapp.logic.Label;
 import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.logic.Task;
 import com.evanv.taskapp.ui.additem.recur.NoRecurFragment;
@@ -463,6 +462,9 @@ public class TaskEntry extends Fragment implements ItemEntry {
         return toReturn;
     }
 
+    /**
+     * Handles the pick labels dialog
+     */
     private class AddLabelsListener implements View.OnClickListener {
         /**
          * Opens a dialog allowing the user to set labels for the task

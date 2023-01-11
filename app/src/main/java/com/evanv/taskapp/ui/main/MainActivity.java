@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.databinding.ActivityMainBinding;
 import com.evanv.taskapp.logic.LogicSubsystem;
+import com.evanv.taskapp.ui.FilterActivity;
 import com.evanv.taskapp.ui.additem.AddItem;
 import com.evanv.taskapp.ui.main.recycler.DayItem;
 import com.evanv.taskapp.ui.main.recycler.DayItemAdapter;
@@ -57,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     private ViewFlipper mVF;                       // Swaps between loading screen and recycler
     // Allows data to be pulled from activity
     private ActivityResultLauncher<Intent> mStartForResult;
-    private ActivityResultLauncher<Intent> mProjectsLauncher;
+    private ActivityResultLauncher<Intent> mUpdateUILauncher;
     // Allows us to manually show FAB when task/event completed/deleted.
     LogicSubsystem mLogicSubsystem;                // Subsystem that handles logic for taskapp
     private Date mStartDate;                       // The current date
@@ -200,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                         result.getData()));
 
         // Will eventually return info from projects
-        mProjectsLauncher = registerForActivityResult(
+        mUpdateUILauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     mDayItemAdapter.mDayItemList = mLogicSubsystem.DayItemList(this);
@@ -380,9 +381,13 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             intent.putStringArrayListExtra(EXTRA_GOALS, projectGoals);
             intent.putIntegerArrayListExtra(EXTRA_PROJECT_COLORS, projectColors);
 
-            mProjectsLauncher.launch(intent);
+            mUpdateUILauncher.launch(intent);
 
             return true;
+        }
+        else if (id == R.id.action_search) {
+            Intent intent = new Intent(this, FilterActivity.class);
+            mUpdateUILauncher.launch(intent);
         }
 
         return super.onOptionsItemSelected(item);

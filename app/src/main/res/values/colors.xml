@@ -23,4 +23,6 @@
     <color name="yellow">#ffff99</color>
     <color name="gray">#716f6f</color>
     <color name="light_gray">#CCCCCC</color>
+
+    <color name="checkbox_text">#8a000000</color>
 </resources>

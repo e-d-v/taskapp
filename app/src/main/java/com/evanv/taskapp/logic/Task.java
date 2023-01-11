@@ -1,5 +1,6 @@
 package com.evanv.taskapp.logic;
 import android.annotation.SuppressLint;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;

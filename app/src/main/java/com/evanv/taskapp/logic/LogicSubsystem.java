@@ -1199,7 +1199,8 @@ public class LogicSubsystem {
      * @return A TaskItem list with these parameters.
      */
     public List<TaskItem> filter(Date startDate, Date endDate, long project, String name,
-                                  int minTime, int maxTime, boolean completable, Context context) {
+                                  int minTime, int maxTime, boolean completable, List<Long> labels,
+                                 Context context) {
         List<Task> toReturn = new ArrayList<>(mTasks);
 
         if (startDate != null) {
@@ -1266,6 +1267,31 @@ public class LogicSubsystem {
                         && (task.getParents().size() == 0)) {
                     toReturn.remove(i);
                     i--;
+                }
+            }
+        }
+
+        if (labels != null) {
+            for (int i = 0; i < toReturn.size(); i++) {
+                Task task = toReturn.get(i);
+
+                // Check if task has all chosen labels
+                for (long id : labels) {
+                    boolean found = false;
+
+                    // Make sure task has chosen label
+                    for (Label label : task.getLabels()) {
+                        if (label.getID() == id) {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        toReturn.remove(i);
+                        i--;
+                        break;
+                    }
                 }
             }
         }

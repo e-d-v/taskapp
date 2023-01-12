@@ -183,4 +183,8 @@
     <string name="start_date">Start Date</string>
     <string name="pick_project">Pick Project</string>
     <string name="none_chosen">None Chosen</string>
+    <string name="options">Options</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="start_timer">Start/Stop Timer</string>
 </resources>

@@ -2,6 +2,8 @@ package com.evanv.taskapp.ui.additem;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
@@ -14,6 +16,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.databinding.ActivityAddItemBinding;
+import com.evanv.taskapp.ui.main.MainActivity;
 
 import java.util.Objects;
 
@@ -117,6 +120,12 @@ public class AddItem extends AppCompatActivity {
         AppBarConfiguration mAppBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController,
                 mAppBarConfiguration);
+
+        // Move to Event screen if editing event
+        String type = getIntent().getStringExtra(MainActivity.EXTRA_TYPE);
+        if (type != null && type.equals(AddItem.EXTRA_VAL_EVENT)) {
+            navController.navigate(R.id.action_taskEntry_to_eventEntry);
+        }
 
         binding.toolbar.setTitle(getString(R.string.add_task));
 

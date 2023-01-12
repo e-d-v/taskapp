@@ -9,8 +9,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
+
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
@@ -62,6 +65,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     // Allows us to manually show FAB when task/event completed/deleted.
     LogicSubsystem mLogicSubsystem;                // Subsystem that handles logic for taskapp
     private Date mStartDate;                       // The current date
+    private long mEditedID;                        // ID of the currently edited task
+    private int mPosition;                         // Position of button press
+    private int mDay;                              // Day of button press
 
     // Key for the extra that stores the list of Task names for the Parent Task Picker Dialog in
     public static final String EXTRA_TASKS = "com.evanv.taskapp.ui.main.extras.TASKS";
@@ -78,6 +84,10 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     public static final String EXTRA_TIMED_TASK = "com.evanv.taskapp.ui.main.extras.PROJECT_GOALS";
     // Key for the extra that stores the priorities of the timed tasks.
     public static final String EXTRA_PRIORITIES = "com.evanv.taskapp.ui.main.extras.PRIORITIES";
+    // Key for the extra that stores the type of edit
+    public static final String EXTRA_TYPE = "com.evanv.taskapp.ui.main.extras.TYPE";
+    // Key for the extra that stores the ID of the item to edit
+    public static final String EXTRA_ID = "com.evanv.taskapp.ui.main.extras.ID";
     // Keys into SharedPrefs to store todayTime
     public static final String PREF_FILE = "taskappPrefs"; // File name for sharedPrefs
     public static final String PREF_DAY = "taskappDay";    // Day for todayTime
@@ -107,7 +117,15 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             }
         }
 
-        List<Integer> updatedIndices = mLogicSubsystem.addItem(data, this);
+        List<Integer> updatedIndices;
+
+        if (mEditedID != -1) {
+            updatedIndices = mLogicSubsystem.editItem(data, mEditedID, this);
+            mEditedID = -1;
+        }
+        else {
+            updatedIndices = mLogicSubsystem.addItem(data, this);
+        }
 
         if (updatedIndices == null) {
             Toast.makeText(this, "Error occurred when adding new item, try again.",
@@ -183,6 +201,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         if (!todayTimeDate.before(mStartDate)) {
             todayTime = sp.getInt(PREF_TIME, 0);
         }
+
+        mEditedID = -1;
 
         // Get current timer
         long timedTaskID = sp.getLong(PREF_TIMED_TASK, -1);
@@ -294,7 +314,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         setSupportActionBar(mBinding.toolbar);
 
         // When the FAB is clicked, run intentAddItem to open the AddItem Activity
-        mBinding.fab.setOnClickListener(view -> intentAddItem());
+        mBinding.fab.setOnClickListener(view -> intentAddItem(null, -1));
 
         // Make visible the main content
         mVF = findViewById(R.id.vf);
@@ -322,13 +342,17 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         edit.putInt(PREF_TIME, mLogicSubsystem.getTodayTime());
         edit.putLong(PREF_TIMED_TASK, mLogicSubsystem.getTimedID());
         edit.putLong(PREF_TIMER, mLogicSubsystem.getTimerStart());
+
         edit.apply();
     }
 
     /**
      * Launches the AddItem activity. Must be separate function so FAB handler can call it.
+     *
+     * @param type Null if adding an item, one of EXTRA_TASK or EXTRA_EVENT if editing
+     * @param id ID of the task/event if editing, unused if not
      */
-    private void intentAddItem() {
+    private void intentAddItem(String type, long id) {
         Intent intent = new Intent(this, AddItem.class);
 
         // Get a list of task names for prerequisite list
@@ -339,6 +363,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         intent.putStringArrayListExtra(EXTRA_TASKS, taskNames);
         intent.putStringArrayListExtra(EXTRA_PROJECTS, projectNames);
         intent.putIntegerArrayListExtra(EXTRA_PROJECT_COLORS, projectColors);
+
+        // Handles Editing case
+        if (type != null) {
+            intent.putExtra(EXTRA_TYPE, type);
+            intent.putExtra(EXTRA_ID, id);
+        }
+        else {
+            mEditedID = -1;
+        }
+
         mStartForResult.launch(intent);
     }
 
@@ -403,39 +437,152 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     @Override
     public void onButtonClick(int position, int day, int action) {
+        switch (action) {
+            // Normal button press, mark task as complete
+            case 0:
+                // Show optimizing... screen
+                mVF.setDisplayedChild(0);
+                completeTask(position, day);
+                break;
+            // Options button pressed, set mPosition/mDay
+            case 1:
+            case 2:
+                mPosition = position;
+                mDay = day;
+                break;
+        }
+    }
+
+    /**
+     * Show a prompt asking the user how much time a task took to complete, and then add that time
+     * to todayTime.
+     */
+    private void ttcPrompt(List<Integer> changedDates, int newDays, int oldDays) {
+        int completionTime = -1;
+
+        // Prompt the user to ask how long it took to complete the task, and add this time to
+        // todayTime to prevent the user from being overscheduled on today's date.
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(getString(R.string.complete_dialog_message));
+
+        builder.setTitle(R.string.complete_dialog_title);
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+        builder.setPositiveButton(R.string.complete_task, (dialogInterface, i) -> {
+            mLogicSubsystem.addTodayTime(Integer.parseInt(input.getText().toString()));
+
+            finishButtonPress(changedDates, newDays, oldDays);
+        });
+
+        builder.show();
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+
+        if (v.getId() == R.id.buttonEventOptions) {
+            getMenuInflater().inflate(R.menu.event_options, menu);
+        }
+        else if (v.getId() == R.id.buttonTaskOptions) {
+            getMenuInflater().inflate(R.menu.task_options, menu);
+        }
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case (R.id.action_delete_task):
+                // Show optimizing... screen
+                mVF.setDisplayedChild(0);
+                deleteTask();
+                break;
+            case (R.id.action_edit_task):
+                // Show optimizing... screen
+                mVF.setDisplayedChild(0);
+                editTask();
+                break;
+            case (R.id.action_time_task):
+                timeTask();
+                break;
+            case (R.id.action_delete_event):
+                // Show optimizing... screen
+                mVF.setDisplayedChild(0);
+                deleteEvent();
+                break;
+            case (R.id.action_edit_event):
+                // Show optimizing... screen
+                mVF.setDisplayedChild(0);
+                editEvent();
+                break;
+        }
+
+        return true;
+    }
+
+    private void editEvent() {
+        mEditedID = mLogicSubsystem.getEventID(mPosition, mDay);
+
+        // Launch an edit intent
+        intentAddItem(AddItem.EXTRA_VAL_EVENT, mEditedID);
+    }
+
+    private void deleteEvent() {
+        int oldDays = mLogicSubsystem.getNumDays();
+        List<Integer> changedDates = mLogicSubsystem.onButtonClick(mPosition, mDay, 2, this);
+        int newDays = mLogicSubsystem.getNumDays();
+
+        finishButtonPress(changedDates, newDays, oldDays);
+    }
+
+    private void timeTask() {
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
-        if (day == 0 && (action == 0 || action == 1)) {
-            Pair<Integer, Integer> convertedDates = mLogicSubsystem.convertDay(position);
+        convertDay();
 
-            if (convertedDates != null) {
-                position = convertedDates.getFirst();
-                day = convertedDates.getSecond();
-            }
+        int oldTimer = mLogicSubsystem.getTimerDay();
+
+        mLogicSubsystem.timer(mPosition, mDay);
+
+        mDayItemAdapter.mDayItemList.set(mDay, mLogicSubsystem.DayItemHelper(mDay, this));
+        mDayItemAdapter.mDayItemList.set(0, mLogicSubsystem.DayItemHelper(0, this));
+        mDayItemAdapter.notifyItemChanged(mDay);
+        mDayItemAdapter.notifyItemChanged(0);
+
+        if (oldTimer != -1 && oldTimer != mDay) {
+            mDayItemAdapter.mDayItemList.set(oldTimer, mLogicSubsystem.DayItemHelper(oldTimer, this));
+            mDayItemAdapter.notifyItemChanged(oldTimer);
         }
+    }
 
-        // If starting a timer, tell mLogicSubsystem.
-        if (action == 3) {
-            int oldTimer = mLogicSubsystem.getTimerDay();
+    private void editTask() {
+        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
+        convertDay();
 
-            mLogicSubsystem.timer(position, day);
+        mEditedID = mLogicSubsystem.getTaskID(mPosition, mDay);
 
-            mDayItemAdapter.mDayItemList.set(day, mLogicSubsystem.DayItemHelper(day, this));
-            mDayItemAdapter.mDayItemList.set(0, mLogicSubsystem.DayItemHelper(0, this));
-            mDayItemAdapter.notifyItemChanged(day);
-            mDayItemAdapter.notifyItemChanged(0);
+        // Launch an edit intent
+        intentAddItem(AddItem.EXTRA_VAL_TASK, mEditedID);
+    }
 
-            if (oldTimer != -1 && oldTimer != day) {
-                mDayItemAdapter.mDayItemList.set(oldTimer, mLogicSubsystem.DayItemHelper(oldTimer, this));
-                mDayItemAdapter.notifyItemChanged(oldTimer);
-            }
+    private void deleteTask() {
+        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
+        convertDay();
 
-            return;
-        }
+        int oldDays = mLogicSubsystem.getNumDays();
+        List<Integer> changedDates = mLogicSubsystem.onButtonClick(mPosition, mDay, 1, this);
+        int newDays = mLogicSubsystem.getNumDays();
 
-        // Remove the given task from the task dependency graph
-        mVF.setDisplayedChild(0);
+        finishButtonPress(changedDates, newDays, oldDays);
+    }
 
-        boolean isTimed = (action == 0) && mLogicSubsystem.isTimed(position, day);
+    private void completeTask(int position, int day) {
+        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
+        convertDay();
+
+        boolean isTimed = mLogicSubsystem.isTimed(position, day);
         int timerVal = -1;
 
         if (isTimed) {
@@ -443,9 +590,48 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
 
         int oldDays = mLogicSubsystem.getNumDays();
-        List<Integer> changedDates = mLogicSubsystem.onButtonClick(position, day, action, this);
+        List<Integer> changedDates = mLogicSubsystem.onButtonClick(mPosition, mDay, 0, this);
         int newDays = mLogicSubsystem.getNumDays();
 
+        if (isTimed) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            builder.setMessage(String.format(getString(R.string.timer_prompt), timerVal));
+
+            // If user chooses to accept the given time, then add it to the today time and
+            // continue.
+            int finalTimerVal = timerVal;
+            builder.setPositiveButton("OK", (dialogInterface, i) -> {
+                mLogicSubsystem.addTodayTime(finalTimerVal);
+
+                finishButtonPress(changedDates, newDays, oldDays);
+            });
+
+            // If user chooses to use a different time, show the normal time to complete
+            // dialog.
+            builder.setNegativeButton("Manual Time", (dialogInterface, i) ->
+                    ttcPrompt(changedDates, newDays, oldDays));
+
+            builder.show();
+            return;
+        }
+
+        // User did not have a timer set, so use the normal time to complete dialog.
+        ttcPrompt(changedDates, newDays, oldDays);
+    }
+
+    private void convertDay() {
+        if (mDay == 0) {
+            Pair<Integer, Integer> convertedDates = mLogicSubsystem.convertDay(mPosition);
+
+            if (convertedDates != null) {
+                mPosition = convertedDates.getFirst();
+                mDay = convertedDates.getSecond();
+            }
+        }
+    }
+
+    private void finishButtonPress(List<Integer> changedDates, int newDays, int oldDays) {
         // Make sure to always update the first day so "Work Ahead" can be redisplayed.
         changedDates = changedDates == null ? new ArrayList<>() : changedDates;
         changedDates.add(0);
@@ -459,57 +645,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             mDayItemAdapter.notifyItemChanged(d);
         }
 
-        if (action == 0) {
-            if (isTimed) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-                builder.setMessage(String.format(getString(R.string.timer_prompt), timerVal));
-
-                // If user chooses to accept the given time, then add it to the today time and
-                // continue.
-                int finalTimerVal = timerVal;
-                builder.setPositiveButton("OK", (dialogInterface, i) -> {
-                    mLogicSubsystem.addTodayTime(finalTimerVal);
-
-                    // As the task dependency graph has been updated, we must reoptimize it
-                    Optimize();
-
-                    // If there are any tasks/events scheduled, show the recycler
-                    if (!mLogicSubsystem.isEmpty()) {
-                        mVF.setDisplayedChild(1);
-                    }
-                    // If there aren't any, show the "add a task" fragment
-                    else {
-                        mVF.setDisplayedChild(2);
-                    }
-                });
-
-                // If user chooses to use a different time, show the normal time to complete
-                // dialog.
-                builder.setNegativeButton("Manual Time", (dialogInterface, i) -> ttcPrompt());
-
-                builder.show();
-                return;
-            }
-
-            // User did not have a timer set, so use the normal time to complete dialog.
-            ttcPrompt();
-            return;
+        while (mDayItemAdapter.mDayItemList.size() != newDays) {
+            mDayItemAdapter.mDayItemList.remove(newDays);
         }
-        else if (action == 1) {
-            Optimize();
-        }
-        // Remove the given event from the schedule and re-optimize.
-        else if (action == 2) {
-            while (mDayItemAdapter.mDayItemList.size() != newDays) {
-                mDayItemAdapter.mDayItemList.remove(newDays);
-            }
 
-            Optimize();
+        Optimize();
 
-            if (oldDays != newDays) {
-                mDayItemAdapter.notifyItemRangeRemoved(newDays, oldDays - newDays);
-            }
+        if (oldDays != newDays) {
+            mDayItemAdapter.notifyItemRangeRemoved(newDays, oldDays - newDays);
         }
 
         // If there are any tasks/events scheduled, show the recycler
@@ -531,42 +674,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         if (fabBehavior != null) {
             fabBehavior.slideUp(mBinding.fab);
         }
-    }
 
-    /**
-     * Show a prompt asking the user how much time a task took to complete, and then add that time
-     * to todayTime.
-     */
-    private void ttcPrompt() {
-        int completionTime = -1;
-
-        // Prompt the user to ask how long it took to complete the task, and add this time to
-        // todayTime to prevent the user from being overscheduled on today's date.
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(getString(R.string.complete_dialog_message));
-
-        builder.setTitle(R.string.complete_dialog_title);
-
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER);
-        builder.setView(input);
-
-        builder.setPositiveButton(R.string.complete_task, (dialogInterface, i) -> {
-            mLogicSubsystem.addTodayTime(Integer.parseInt(input.getText().toString()));
-
-            // As the task dependency graph has been updated, we must reoptimize it
-            Optimize();
-
-            // If there are any tasks/events scheduled, show the recycler
-            if (!mLogicSubsystem.isEmpty()) {
-                mVF.setDisplayedChild(1);
-            }
-            // If there aren't any, show the "add a task" fragment
-            else {
-                mVF.setDisplayedChild(2);
-            }
-        });
-
-        builder.show();
+        mPosition = mDay = -1;
     }
 }

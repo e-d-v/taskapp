@@ -1,5 +1,7 @@
 package com.evanv.taskapp.ui.main.recycler;
 
+import android.app.Activity;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +28,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
     // Listener that allows easy deletion of events (see ClickListener)
     private final ClickListener mListener;
     private final int mDay; // How many days past today's date this Event list represents
+    private final Activity mActivity; // Parent Activity
 
     /**
      * Constructs an adapter for a given DayItem's event recyclerview
@@ -36,7 +39,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
      *               this adapter
      */
     public EventItemAdapter(List<EventItem> eventItemList, ClickListener listener, int day,
-                            TextView header) {
+                            TextView header, Activity activity) {
         mEventItemList = eventItemList;
         mListener = listener;
         mDay = day;
@@ -52,6 +55,8 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
             header.setLayoutParams(new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         }
+
+        mActivity = activity;
     }
 
     /**
@@ -82,15 +87,17 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
         EventItem eventItem = mEventItemList.get(position);
         holder.mEventItemName.setText(eventItem.getName());
         holder.mEventItemTimespan.setText(eventItem.getTimespan());
-        holder.delete.setOnClickListener(view -> {
-            // If the view clicked was the button, tell the DayViewHolder the index of the event to
-            // be deleted. As the TaskViewHolder doesn't know the day index, this is -1, and will be
-            // filled in by the DayViewHolder
-            if (view.getId() == holder.DELETE_ID) {
-                holder.mListenerRef.get().onButtonClick(holder.mIndex, mDay, 2);
-            }
-        });
         holder.mIndex = eventItem.getIndex();
+
+        holder.options.setOnClickListener(v -> {
+            // Tell MainActivity what item to perform actions on
+            mListener.onButtonClick(position, mDay, 2);
+
+            // Handle onClickListener
+            mActivity.registerForContextMenu(holder.options);
+            mActivity.openContextMenu(v);
+            mActivity.unregisterForContextMenu(v);
+        });
     }
 
     /**
@@ -112,8 +119,8 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
         final TextView mEventItemTimespan; // The TextView representing the timespan in event_item
         // Listener that allows easy completion of tasks (see ClickListener)
         final WeakReference<ClickListener> mListenerRef;
-        private final int DELETE_ID; // The ID of the delete button;
-        final ImageButton delete;
+        private final int OPTIONS_ID; // The ID of the delete button;
+        final ImageButton options;
         int mIndex; // Index into eventSchedule.get(day) for this event
 
         /**
@@ -127,12 +134,12 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
             mEventItemName = itemView.findViewById(R.id.eventName);
             mEventItemTimespan = itemView.findViewById(R.id.timespan);
             mListenerRef = new WeakReference<>(listener);
-            DELETE_ID = R.id.buttonDeleteEvent;
+            OPTIONS_ID = R.id.buttonEventOptions;
 
             // Sets this as the OnClickListener for the button, so when the button is clicked, we
             // can move up the ClickListener chain to mark the event as deleted in MainActivity's
             // data structures and refresh the recyclerview
-            delete = itemView.findViewById(R.id.buttonDeleteEvent);
+            options = itemView.findViewById(R.id.buttonEventOptions);
         }
     }
 }

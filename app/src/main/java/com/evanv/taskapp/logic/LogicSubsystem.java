@@ -347,175 +347,7 @@ public class LogicSubsystem {
      * @return Indices whose recycler positions need to be updated.
      */
     public List<Integer> addItem(@Nullable Intent data, Context context) {
-        // Get the data to build the item
-        Bundle result = Objects.requireNonNull(data).getBundleExtra(AddItem.EXTRA_ITEM);
-        String type = result.getString(AddItem.EXTRA_TYPE);
-
-        List<Integer> updatedIndices = new ArrayList<>();
-
-        // If the item type is Event
-        if (type.equals(AddItem.EXTRA_VAL_EVENT)) {
-            // Get the fields from the bundle
-            String name = result.getString(AddItem.EXTRA_NAME);
-            String startStr = result.getString(AddItem.EXTRA_START);
-            String endStr = result.getString(AddItem.EXTRA_END);
-            Bundle recur = result.getBundle(AddItem.EXTRA_RECUR);
-
-            // Convert the String start time into a Date
-            Date start;
-            Calendar userStart;
-            try {
-                start = Event.dateFormat.parse(startStr);
-                userStart = Calendar.getInstance();
-                if (start != null) {
-                    userStart.setTime(start);
-                }
-                else {
-                    return null;
-                }
-            }
-            catch (Exception e) {
-                System.out.println(e.getMessage());
-                return null;
-            }
-
-            // Convert the String end time into a Date
-            Date end;
-            Calendar userEnd;
-            try {
-                end = Event.dateFormat.parse(endStr);
-                userEnd = Calendar.getInstance();
-                if (end != null) {
-                    userEnd.setTime(end);
-                }
-                else {
-                    return null;
-                }
-            }
-            catch (Exception e) {
-                System.out.println(e.getMessage());
-                return null;
-            }
-
-            RecurrenceParser rp = new RecurrenceParser(context);
-            List<Date> recurrenceDates = rp.parseBundle(recur, start);
-
-            int ttc =(int) ((end.getTime() - start.getTime()) / TimeUnit.MINUTES.toMillis(1));
-
-            for (Date d : recurrenceDates) {
-                int index = getDiff(d, mStartDate);
-
-                // Make sure there is enough mEventSchedules.
-                for (int i = mEventSchedule.size(); i <= index; i++) {
-                    mEventSchedule.add(new ArrayList<>());
-                    updatedIndices.add(i);
-                }
-
-                Event toAdd = new Event(name, ttc, d);
-                mEventSchedule.get(index).add(toAdd);
-                mTaskAppViewModel.insert(toAdd);
-                updatedIndices.add(index);
-            }
-        }
-        // If the item type is Task
-        else if (type.equals(AddItem.EXTRA_VAL_TASK)) {
-            // Get the fields from the Bundle
-            String name = result.getString(AddItem.EXTRA_NAME);
-            int timeToComplete = Integer.parseInt(result.getString(AddItem.EXTRA_END));
-            String ecd = result.getString(AddItem.EXTRA_ECD);
-            String dd = result.getString(AddItem.EXTRA_DUE);
-            String parents = result.getString(AddItem.EXTRA_PARENTS);
-            Bundle recur = result.getBundle(AddItem.EXTRA_RECUR);
-            int priority = result.getInt(AddItem.EXTRA_PRIORITY);
-            int project = result.getInt(AddItem.EXTRA_PROJECT);
-            Bundle newProject = result.getBundle(AddItem.EXTRA_NEW_PROJECT);
-            long[] labelIDs = result.getLongArray(AddItem.EXTRA_LABELS);
-
-            // Convert the earliest completion date String to a MyTime
-            Date early;
-            try {
-                early = Task.dateFormat.parse(ecd);
-            }
-            catch (Exception e) {
-                return null;
-            }
-
-            // Convert the due date String to a MyTime
-            Date due;
-            try {
-                due = Task.dateFormat.parse(dd);
-            }
-            catch (Exception e) {
-                return null;
-            }
-
-            RecurrenceParser rp = new RecurrenceParser(context);
-            List<Date> recurrenceDates = rp.parseBundle(recur, early);
-
-            int diff = getDiff(due, early);
-
-            for (Date d : recurrenceDates) {
-                int index = getDiff(d, mStartDate);
-
-                // Make sure there is enough mEventSchedules.
-                for (int i = mTaskSchedule.size(); i <= index; i++) {
-                    mTaskSchedule.add(new ArrayList<>());
-                    updatedIndices.add(i);
-                }
-
-                Calendar dDue = Calendar.getInstance();
-                dDue.setTime(d);
-                dDue.add(Calendar.DAY_OF_YEAR, diff);
-
-                Task toAdd = new Task(name, d, dDue.getTime(), timeToComplete, priority);
-
-                if (project != 0) {
-                    // Add new project if one was added
-                    if (project == mProjects.size() + 1) {
-                        String projectName = newProject.getString(ProjectEntry.EXTRA_NAME);
-                        int projectColor = newProject.getInt(ProjectEntry.EXTRA_COLOR);
-                        String projectGoal = newProject.getString(ProjectEntry.EXTRA_GOAL);
-
-                        Project proj = new Project(projectName, projectColor, projectGoal);
-                        mProjects.add(proj);
-                        mTaskAppViewModel.insert(proj);
-                    }
-
-                    // Add task to selected project
-                    toAdd.setProject(mProjects.get(project - 1));
-                    mProjects.get(project - 1).addTask(toAdd);
-                }
-
-                // Add all selected labels to task.
-                for (Label label : mLabels) {
-                    for (long id : labelIDs) {
-                        if (label.getID() == id) {
-                            toAdd.addLabel(label);
-                            label.addTask(toAdd);
-                        }
-                    }
-                }
-
-                // The parents string in the Bundle is a String of the format "n1,n2,n3,...nN,"
-                // where each nx is an index to a Task in tasks that should be used as a parent
-                // for the task to be added.
-                String[] parentIndices = parents.split(",");
-                for (String parentIndex : parentIndices) {
-                    if (!parentIndex.equals("-1")) {
-                        Task parent = mTasks.get(Integer.parseInt(parentIndex));
-                        toAdd.addParent(parent);
-                        parent.addChild(toAdd);
-                    }
-                }
-
-                // Add the event to the data structure and database
-                mTasks.add(toAdd);
-                mTaskAppViewModel.insert(toAdd);
-                updatedIndices.add(index);
-            }
-        }
-
-        return updatedIndices;
+        return editItem(data, -1, context);
     }
 
     /**
@@ -640,7 +472,8 @@ public class LogicSubsystem {
         dayString = String.format(context.getString(R.string.schedule_for),
                 Task.dateFormat.format(curr), totalTime);
         events = EventItemList(i);
-        tasks = TaskItemList(mTaskSchedule.get(i), context);
+        tasks = i < mTaskSchedule.size() ? TaskItemList(mTaskSchedule.get(i), context) :
+                new ArrayList<>();
 
         // If it is today's date and there are currently no tasks scheduled today, add a
         // "Work Ahead" page to today.
@@ -1175,7 +1008,7 @@ public class LogicSubsystem {
      *
      * @return a list of colors for Label.
      */
-    public ArrayList<Integer> getProjectLabels() {
+    public ArrayList<Integer> getLabelColors() {
         ArrayList<Integer> toReturn = new ArrayList<>();
 
         for (Label l : mLabels) {
@@ -1323,6 +1156,22 @@ public class LogicSubsystem {
     }
 
     /**
+     * Get the index of the ID'th project in the project list
+     *
+     * @param ID ID to lookup
+     * @return the index of the project with this ID
+     */
+    public int getProjectIndex(long ID) {
+        for (int i = 0; i < mProjects.size(); i++) {
+            if (mProjects.get(i).getID() == ID) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    /**
      * Get the ID of the index'th label in the label list.
      *
      * @param index Index into the label list
@@ -1345,6 +1194,13 @@ public class LogicSubsystem {
         mTaskAppViewModel.insert(toAdd);
     }
 
+    /**
+     * Get the name of a specific project by ID
+     *
+     * @param ID ID of the project
+     * @param context Context for resources
+     * @return the Name of the project with the given ID
+     */
     public String getProjectName(long ID, Context context) {
         for (Project p : mProjects) {
             if (p.getID() == ID) {
@@ -1353,5 +1209,354 @@ public class LogicSubsystem {
         }
 
         return context.getString(R.string.none_chosen);
+    }
+
+    public String getTaskName(long id) {
+        for (Task t : mTasks) {
+            if (t.getID() == id) {
+                return t.getName();
+            }
+        }
+
+        return "";
+    }
+
+    public Date getTaskECD(long id) {
+        for (Task t : mTasks) {
+            if (t.getID() == id) {
+                return t.getEarlyDate();
+            }
+        }
+
+        return null;
+    }
+
+    public Date getTaskDD(long id) {
+        for (Task t : mTasks) {
+            if (t.getID() == id) {
+                return t.getDueDate();
+            }
+        }
+
+        return null;
+    }
+
+    public int getTaskTTC(long id) {
+        for (Task t : mTasks) {
+            if (t.getID() == id) {
+                return t.getTimeToComplete();
+            }
+        }
+
+        return 0;
+    }
+
+    public int getTaskPriority(long id) {
+        for (Task t : mTasks) {
+            if (t.getID() == id) {
+                return t.getPriority();
+            }
+        }
+
+        return 0;
+
+    }
+
+    public long getTaskProject(long id) {
+        for (Task t : mTasks) {
+            if (t.getID() == id) {
+                return t.getProjectID();
+            }
+        }
+
+        return -1;
+    }
+
+    public List<Long> getTaskLabels(long id) {
+        List<Long> toReturn = new ArrayList<>();
+        for (Task t : mTasks) {
+            if (t.getID() == id) {
+                for (Label l : t.getLabels()) {
+                    toReturn.add(l.getID());
+                }
+                return toReturn;
+            }
+        }
+        return toReturn;
+    }
+
+    public List<Long> getTaskParents(long id) {
+        for (Task t : mTasks) {
+            if (t.getID() == id) {
+                return t.getParentArr();
+            }
+        }
+
+        return new ArrayList<>();
+    }
+
+    public int getTaskIndex(long id) {
+        for (int i = 0; i < mTasks.size(); i++) {
+            if (mTasks.get(i).getID() == id) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public List<Integer> editItem(Intent data, long id, Context context) {
+        // Get the data to build the item
+        Bundle result = Objects.requireNonNull(data).getBundleExtra(AddItem.EXTRA_ITEM);
+        String type = result.getString(AddItem.EXTRA_TYPE);
+
+        List<Integer> updatedIndices = new ArrayList<>();
+
+        // Make sure ID is only reused once if it's supposed to edit an item.
+        boolean first = id != -1;
+
+        // If the item type is Event
+        if (type.equals(AddItem.EXTRA_VAL_EVENT)) {
+            // Get the fields from the bundle
+            String name = result.getString(AddItem.EXTRA_NAME);
+            String startStr = result.getString(AddItem.EXTRA_START);
+            String endStr = result.getString(AddItem.EXTRA_END);
+            Bundle recur = result.getBundle(AddItem.EXTRA_RECUR);
+
+            // Convert the String start time into a Date
+            Date start;
+            Calendar userStart;
+            try {
+                start = Event.dateFormat.parse(startStr);
+                userStart = Calendar.getInstance();
+                if (start != null) {
+                    userStart.setTime(start);
+                }
+                else {
+                    return null;
+                }
+            }
+            catch (Exception e) {
+                System.out.println(e.getMessage());
+                return null;
+            }
+
+            // Convert the String end time into a Date
+            Date end;
+            Calendar userEnd;
+            try {
+                end = Event.dateFormat.parse(endStr);
+                userEnd = Calendar.getInstance();
+                if (end != null) {
+                    userEnd.setTime(end);
+                }
+                else {
+                    return null;
+                }
+            }
+            catch (Exception e) {
+                System.out.println(e.getMessage());
+                return null;
+            }
+
+            RecurrenceParser rp = new RecurrenceParser(context);
+            List<Date> recurrenceDates = rp.parseBundle(recur, start);
+
+            int ttc =(int) ((end.getTime() - start.getTime()) / TimeUnit.MINUTES.toMillis(1));
+
+
+            for (Date d : recurrenceDates) {
+                int index = getDiff(d, mStartDate);
+
+                // Make sure there is enough mEventSchedules.
+                for (int i = mEventSchedule.size(); i <= index; i++) {
+                    mEventSchedule.add(new ArrayList<>());
+                    updatedIndices.add(i);
+                }
+
+                Event toAdd = new Event(name, ttc, d);
+
+                // Update the event if necessary
+                if (first) {
+                    toAdd.setID(id);
+
+                    for (int i = 0; i < mEventSchedule.get(index).size(); i++) {
+                        if (mEventSchedule.get(index).get(i).getID() == id) {
+                            mEventSchedule.get(index).set(i, toAdd);
+                        }
+                    }
+
+                    mTaskAppViewModel.update(toAdd);
+
+                    first = false;
+                }
+                // If not necessary, insert a new event
+                else {
+                    mEventSchedule.get(index).add(toAdd);
+                    mTaskAppViewModel.insert(toAdd);
+                }
+
+                updatedIndices.add(index);
+            }
+        }
+        // If the item type is Task
+        else if (type.equals(AddItem.EXTRA_VAL_TASK)) {
+            // Get the fields from the Bundle
+            String name = result.getString(AddItem.EXTRA_NAME);
+            int timeToComplete = Integer.parseInt(result.getString(AddItem.EXTRA_END));
+            String ecd = result.getString(AddItem.EXTRA_ECD);
+            String dd = result.getString(AddItem.EXTRA_DUE);
+            String parents = result.getString(AddItem.EXTRA_PARENTS);
+            Bundle recur = result.getBundle(AddItem.EXTRA_RECUR);
+            int priority = result.getInt(AddItem.EXTRA_PRIORITY);
+            int project = result.getInt(AddItem.EXTRA_PROJECT);
+            Bundle newProject = result.getBundle(AddItem.EXTRA_NEW_PROJECT);
+            long[] labelIDs = result.getLongArray(AddItem.EXTRA_LABELS);
+
+            // Convert the earliest completion date String to a MyTime
+            Date early;
+            try {
+                early = Task.dateFormat.parse(ecd);
+            }
+            catch (Exception e) {
+                return null;
+            }
+
+            // Convert the due date String to a MyTime
+            Date due;
+            try {
+                due = Task.dateFormat.parse(dd);
+            }
+            catch (Exception e) {
+                return null;
+            }
+
+            RecurrenceParser rp = new RecurrenceParser(context);
+            List<Date> recurrenceDates = rp.parseBundle(recur, early);
+
+            int diff = getDiff(due, early);
+
+            for (Date d : recurrenceDates) {
+                int index = getDiff(d, mStartDate);
+
+                // Make sure there is enough mEventSchedules.
+                for (int i = mTaskSchedule.size(); i <= index; i++) {
+                    mTaskSchedule.add(new ArrayList<>());
+                    updatedIndices.add(i);
+                }
+
+                Calendar dDue = Calendar.getInstance();
+                dDue.setTime(d);
+                dDue.add(Calendar.DAY_OF_YEAR, diff);
+
+                Task toAdd = new Task(name, d, dDue.getTime(), timeToComplete, priority);
+
+                if (project != 0) {
+                    // Add new project if one was added
+                    if (project == mProjects.size() + 1) {
+                        String projectName = newProject.getString(ProjectEntry.EXTRA_NAME);
+                        int projectColor = newProject.getInt(ProjectEntry.EXTRA_COLOR);
+                        String projectGoal = newProject.getString(ProjectEntry.EXTRA_GOAL);
+
+                        Project proj = new Project(projectName, projectColor, projectGoal);
+                        mProjects.add(proj);
+                        mTaskAppViewModel.insert(proj);
+                    }
+
+                    // Add task to selected project
+                    toAdd.setProject(mProjects.get(project - 1));
+                    mProjects.get(project - 1).addTask(toAdd);
+                }
+
+                // Add all selected labels to task.
+                for (Label label : mLabels) {
+                    for (long labelID : labelIDs) {
+                        if (label.getID() == labelID) {
+                            toAdd.addLabel(label);
+                            label.addTask(toAdd);
+                        }
+                    }
+                }
+
+                // The parents string in the Bundle is a String of the format "n1,n2,n3,...nN,"
+                // where each nx is an index to a Task in tasks that should be used as a parent
+                // for the task to be added.
+                String[] parentIndices = parents.split(",");
+                for (String parentIndex : parentIndices) {
+                    if (!parentIndex.equals("-1")) {
+                        Task parent = mTasks.get(Integer.parseInt(parentIndex));
+                        toAdd.addParent(parent);
+                        parent.addChild(toAdd);
+                    }
+                }
+
+                // Update the task if necessary
+                if (first) {
+                    toAdd.setID(id);
+
+                    for (int i = 0; i < mTasks.size(); i++) {
+                        if (mTasks.get(i).getID() == id) {
+                            mTasks.set(i, toAdd);
+                        }
+                    }
+
+                    mTaskAppViewModel.update(toAdd);
+
+                    first = false;
+                }
+                // Add the task to the DB if not editing
+                else {
+                    mTasks.add(toAdd);
+                    mTaskAppViewModel.insert(toAdd);
+                }
+
+                updatedIndices.add(index);
+            }
+        }
+
+        return updatedIndices;
+    }
+
+    public String getEventName(long id) {
+        for (List<Event> day : mEventSchedule) {
+            for (Event e : day) {
+                if (e.getID() == id) {
+                    return e.getName();
+                }
+            }
+        }
+
+        return "";
+    }
+
+    public Date getEventECD(long id) {
+        for (List<Event> day : mEventSchedule) {
+            for (Event e : day) {
+                if (e.getID() == id) {
+                    return e.getDoDate();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public int getEventTTC(long id) {
+        for (List<Event> day : mEventSchedule) {
+            for (Event e : day) {
+                if (e.getID() == id) {
+                    return e.getLength();
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    public long getTaskID(int mPosition, int mDay) {
+        return mTaskSchedule.get(mDay).get(mPosition).getID();
+    }
+
+    public long getEventID(int mPosition, int mDay) {
+        return mEventSchedule.get(mDay).get(mPosition).getID();
     }
 }

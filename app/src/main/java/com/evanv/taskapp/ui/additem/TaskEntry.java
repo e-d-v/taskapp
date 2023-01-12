@@ -11,13 +11,13 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.compose.ui.text.intl.Locale;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
@@ -34,6 +34,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -82,6 +83,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
 
         // -1 signifies that the new task has no dependent tasks, as none were entered
         mCurrentParents = "-1";
+
 
         projectAdded = false;
         mLabels = new long[0];
@@ -141,10 +143,10 @@ public class TaskEntry extends Fragment implements ItemEntry {
 
         // Sets the onClick behavior to the button to creating a dialog asking what parents the user
         // wants to give the new task
-        ((Button) view.findViewById(R.id.buttonAddParents)).setOnClickListener
+        view.findViewById(R.id.buttonAddParents).setOnClickListener
                 (new AddParentsListener());
 
-        ((Button) view.findViewById(R.id.buttonAddLabels)).setOnClickListener
+        view.findViewById(R.id.buttonAddLabels).setOnClickListener
                 (new AddLabelsListener());
 
         // Get the EditTexts for dates`
@@ -161,9 +163,9 @@ public class TaskEntry extends Fragment implements ItemEntry {
         // Set options in the project spinner
         ArrayList<String> projects = new ArrayList<>();
         projects.add(getString(R.string.project_spinner_default));
-        projects.addAll(getActivity().getIntent().getStringArrayListExtra(MainActivity.EXTRA_PROJECTS));
-        mProjectSpinner = (Spinner)view.findViewById(R.id.projectSpinner);
-        mAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, projects);
+        projects.addAll(requireActivity().getIntent().getStringArrayListExtra(MainActivity.EXTRA_PROJECTS));
+        mProjectSpinner = view.findViewById(R.id.projectSpinner);
+        mAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, projects);
         mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mProjectSpinner.setAdapter(mAdapter);
 
@@ -207,28 +209,28 @@ public class TaskEntry extends Fragment implements ItemEntry {
         });
 
         // Initialize the information buttons to help the user understand the fields.
-        ((ImageButton) view.findViewById(R.id.ecdInfoButton)).setOnClickListener(v -> {
+        view.findViewById(R.id.ecdInfoButton).setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.task_ecd_info);
             builder.setTitle(R.string.ecd);
             builder.show();
         });
 
-        ((ImageButton) view.findViewById(R.id.ddInfoButton)).setOnClickListener(v -> {
+        view.findViewById(R.id.ddInfoButton).setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.task_dd_info);
             builder.setTitle(R.string.due_date);
             builder.show();
         });
 
-        ((ImageButton) view.findViewById(R.id.ttcInfoButton)).setOnClickListener(v -> {
+        view.findViewById(R.id.ttcInfoButton).setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.task_ttc_info);
             builder.setTitle(R.string.ttc);
             builder.show();
         });
 
-        ((ImageButton) view.findViewById(R.id.priorityInfoButton)).setOnClickListener(v -> {
+        view.findViewById(R.id.priorityInfoButton).setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.priority_info);
             builder.setTitle(R.string.priority);
@@ -236,14 +238,56 @@ public class TaskEntry extends Fragment implements ItemEntry {
         });
 
         // Set up the add project and add label buttons
-        ((ImageButton) view.findViewById(R.id.addProject)).setOnClickListener(v -> {
+        view.findViewById(R.id.addProject).setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), ProjectEntry.class);
             mLaunchProject.launch(intent);
         });
-        ((ImageButton) view.findViewById(R.id.addLabel)).setOnClickListener(v -> {
+        view.findViewById(R.id.addLabel).setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), LabelEntry.class);
             startActivity(intent);
         });
+
+        // Load id from intent to see if we're editing a task.
+        long id = requireActivity().getIntent().getLongExtra(MainActivity.EXTRA_ID, -1);
+        boolean editOn = id != -1;
+        String type = requireActivity().getIntent().getStringExtra(MainActivity.EXTRA_TYPE);
+
+        // Load data about task onto screen
+        if (type != null && type.equals(AddItem.EXTRA_VAL_TASK) && editOn) {
+            // Set the task name
+            EditText etName = view.findViewById(R.id.editTextTaskName);
+            etName.setText(LogicSubsystem.getInstance().getTaskName(id));
+
+            // Set the task ECD
+            mEditTextECD.setText(Task.dateFormat.format(LogicSubsystem.getInstance().getTaskECD(id)));
+
+            // Set the task Due Date
+            editTextDueDate.setText(Task.dateFormat.format(LogicSubsystem.getInstance().getTaskDD(id)));
+
+            // Set the task TTC
+            EditText etTTC = view.findViewById(R.id.editTextTTC);
+            etTTC.setText(Integer.toString(LogicSubsystem.getInstance().getTaskTTC(id)));
+
+            // Set the task Priority
+            mSeekBar.setProgress(LogicSubsystem.getInstance().getTaskPriority(id));
+
+            // Set the task Project
+            long projectID = LogicSubsystem.getInstance().getTaskProject(id);
+            mProjectSpinner.setSelection(LogicSubsystem.getInstance().getProjectIndex(projectID));
+
+            // Set the task Labels
+            mLabels = convertLongListToArray(LogicSubsystem.getInstance().getTaskLabels(id));
+
+            // Set the task Parents
+            List<Long> taskParents = LogicSubsystem.getInstance().getTaskParents(id);
+            StringBuilder sb = new StringBuilder();
+            for (long parentID : taskParents) {
+                int index = LogicSubsystem.getInstance().getTaskIndex(parentID);
+                sb.append(index);
+                sb.append(",");
+            }
+            mCurrentParents = (taskParents.size() != 0) ? sb.toString() : "-1";
+        }
 
         // Inflate the layout for this fragment
         return view;
@@ -443,6 +487,23 @@ public class TaskEntry extends Fragment implements ItemEntry {
             builder.create();
             builder.show();
         }
+    }
+
+    /**
+     * Converts an ArrayList of Strings to an array of Strings.
+     *
+     * @param list The list to convert to an array
+     *
+     * @return An array with the same items as the ArrayList
+     */
+    private long[] convertLongListToArray(List<Long> list) {
+        long[] toReturn = new long[list.size()];
+        Object[] toReturnObjs = list.toArray();
+        for (int i = 0; i < toReturnObjs.length; i++) {
+            toReturn[i] = (long) toReturnObjs[i];
+        }
+
+        return toReturn;
     }
 
     /**

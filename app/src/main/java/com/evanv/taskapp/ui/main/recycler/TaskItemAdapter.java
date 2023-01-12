@@ -1,13 +1,10 @@
 package com.evanv.taskapp.ui.main.recycler;
 
+import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.ColorFilter;
-import android.graphics.Typeface;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
-import android.text.style.UnderlineSpan;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,7 +18,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.evanv.taskapp.R;
-import com.evanv.taskapp.logic.Label;
 import com.evanv.taskapp.ui.main.ClickListener;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -40,6 +36,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
     private final ClickListener mListener;
     private final int mDay; // Index into taskSchedule representing this day
     private final Context mContext; // Context for resources.
+    private final Activity mActivity; // Activity for Context Menu
 
     /**
      * Constructs an adapter for a given DayItem's task recyclerview
@@ -50,11 +47,12 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
      * @param workAhead true if "Work Ahead" should be displayed in header.
      */
     public TaskItemAdapter(List<TaskItem> taskItemList, ClickListener listener, int day,
-                           TextView header, boolean workAhead, Context context) {
+                           TextView header, boolean workAhead, Activity activity) {
         mTaskItemList = taskItemList;
         mListener = listener;
         mDay = day;
-        mContext = context;
+        mContext = activity;
+        mActivity = activity;
 
         // If the task list is empty, hide the "Tasks" subheader
         if (header == null) {
@@ -113,10 +111,10 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
 
         // If a task is timed, set it's name to be red.
         if (taskItem.isTimed()) {
-            holder.timer.setColorFilter(Color.RED);
+            holder.options.setColorFilter(Color.RED);
         }
         else {
-            holder.timer.setColorFilter(ContextCompat.getColor(mContext, R.color.text_primary));
+            holder.options.setColorFilter(ContextCompat.getColor(mContext, R.color.text_primary));
         }
 
         switch (taskItem.getPriority()) {
@@ -183,7 +181,6 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             holder.project.setTextSize(TypedValue.COMPLEX_UNIT_SP, 0);
             holder.project.setVisibility(View.INVISIBLE);
         }
-        
 
         holder.mTaskItemName.setText(name);
 
@@ -195,21 +192,14 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
                 holder.mListenerRef.get().onButtonClick(holder.mIndex, mDay, 0);
             }
         });
-        holder.delete.setOnClickListener(view -> {
-            // If the view clicked was a button, tell the DayViewHolder the index of the task to be
-            // completed or deleted. As the TaskViewHolder doesn't know the day index, this is -1,
-            // and will be filled in by the DayViewHolder
-            if (view.getId() == holder.DELETE_ID) {
-                holder.mListenerRef.get().onButtonClick(holder.mIndex, mDay, 1);
-            }
-        });
-        holder.timer.setOnClickListener(view -> {
-            // If the view clicked was a button, tell the DayViewHolder the index of the task to be
-            // completed or deleted. As the TaskViewHolder doesn't know the day index, this is -1,
-            // and will be filled in by the DayViewHolder
-            if (view.getId() == holder.TIMER_ID) {
-                holder.mListenerRef.get().onButtonClick(holder.mIndex, mDay, 3);
-            }
+        holder.options.setOnClickListener(view -> {
+            // Tell MainActivity what item to perform actions on
+            mListener.onButtonClick(position, mDay, 2);
+
+            // Handle onClickListener
+            mActivity.registerForContextMenu(holder.options);
+            mActivity.openContextMenu(view);
+            mActivity.unregisterForContextMenu(view);
         });
         holder.mIndex = taskItem.getIndex();
 
@@ -247,13 +237,10 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
     public class TaskViewHolder extends RecyclerView.ViewHolder {
         final TextView mTaskItemName; // The TextView representing the name in task_item
         private final int COMPLETE_ID; // ID of the completion button.
-        private final int DELETE_ID; // ID of the deletion button.
-        private final int TIMER_ID; // ID of the timer button.
         // Listener that allows easy completion of tasks (see ClickListener)
         final WeakReference<ClickListener> mListenerRef;
         final ImageButton complete;
-        final ImageButton delete;
-        final ImageButton timer;
+        final ImageButton options;
         final Chip project;
         final ChipGroup labels;
         int mIndex; // Index into taskSchedule.get(day) for this event
@@ -269,15 +256,12 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             mTaskItemName = itemView.findViewById(R.id.taskName);
             mListenerRef = new WeakReference<>(listener);
             COMPLETE_ID = R.id.buttonComplete;
-            DELETE_ID = R.id.buttonDeleteTask;
-            TIMER_ID = R.id.buttonTimer;
 
             // Sets this as the OnClickListener for the button, so when the button is clicked, we
             // can move up the ClickListener chain to mark the task as complete in MainActivity's
             // data structures and refresh the recyclerview
             complete = itemView.findViewById(R.id.buttonComplete);
-            delete = itemView.findViewById(R.id.buttonDeleteTask);
-            timer = itemView.findViewById(R.id.buttonTimer);
+            options = itemView.findViewById(R.id.buttonTaskOptions);
             project = itemView.findViewById(R.id.projectChip);
             labels = itemView.findViewById(R.id.labelChipGroup);
         }

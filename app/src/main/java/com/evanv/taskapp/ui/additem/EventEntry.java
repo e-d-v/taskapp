@@ -19,10 +19,13 @@ import androidx.fragment.app.Fragment;
 
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.Event;
+import com.evanv.taskapp.logic.LogicSubsystem;
+import com.evanv.taskapp.logic.Task;
 import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
 import com.evanv.taskapp.ui.additem.recur.NoRecurFragment;
 import com.evanv.taskapp.ui.additem.recur.RecurActivity;
 import com.evanv.taskapp.ui.additem.recur.RecurInput;
+import com.evanv.taskapp.ui.main.MainActivity;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
 import java.text.ParseException;
@@ -165,20 +168,20 @@ public class EventEntry extends Fragment implements ItemEntry {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View toReturn = inflater.inflate(R.layout.fragment_event_entry, container, false);
+        View view = inflater.inflate(R.layout.fragment_event_entry, container, false);
 
         // Get needed views
-        mEditTextEventName = toReturn.findViewById(R.id.editTextEventName);
-        mEditTextECD = toReturn.findViewById(R.id.editTextECD);
-        mEditTextEndTime = toReturn.findViewById(R.id.editTextEndTime);
+        mEditTextEventName = view.findViewById(R.id.editTextEventName);
+        mEditTextECD = view.findViewById(R.id.editTextECD);
+        mEditTextEndTime = view.findViewById(R.id.editTextEndTime);
 
         // Add the default recurrence interval (none)
         mRecur = new Bundle();
         mRecur.putString(RecurInput.EXTRA_TYPE, NoRecurFragment.EXTRA_VAL_TYPE);
 
         // Add click handler to button
-        Button button = toReturn.findViewById(R.id.recurButton);
-        button.setOnClickListener(view -> intentRecur());
+        Button button = view.findViewById(R.id.recurButton);
+        button.setOnClickListener(v -> intentRecur());
 
         mEditTextECD.setOnClickListener(v -> new DatePickerFragment(mEditTextECD,
                 getString(R.string.start_time), new Date(), null, true)
@@ -188,8 +191,8 @@ public class EventEntry extends Fragment implements ItemEntry {
                 .show(getParentFragmentManager(), getTag()));
 
         // Initialize the information buttons to help the user understand the fields.
-        ImageButton infoECD = toReturn.findViewById(R.id.ecdInfoButton);
-        ImageButton infoLength = toReturn.findViewById(R.id.lengthInfoButton);
+        ImageButton infoECD = view.findViewById(R.id.ecdInfoButton);
+        ImageButton infoLength = view.findViewById(R.id.lengthInfoButton);
         infoECD.setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.event_ecd_info);
@@ -203,8 +206,27 @@ public class EventEntry extends Fragment implements ItemEntry {
             builder.show();
         });
 
+        // Load id from intent to see if we're editing a task.
+        long id = requireActivity().getIntent().getLongExtra(MainActivity.EXTRA_ID, -1);
+        String type = requireActivity().getIntent().getStringExtra(MainActivity.EXTRA_TYPE);
+
+        if (type != null && type.equals(AddItem.EXTRA_VAL_EVENT) && id != -1) {
+            // Set the event name
+            mEditTextEventName.setText(LogicSubsystem.getInstance().getEventName(id));
+
+            // Set the start time
+            mEditTextECD.setText(Event.dateFormat.format(LogicSubsystem.getInstance().getEventECD(id)));
+
+            // Set the end time
+            Calendar calculateEndTime = Calendar.getInstance();
+            calculateEndTime.setTime(LogicSubsystem.getInstance().getEventECD(id));
+            calculateEndTime.add(Calendar.MINUTE, LogicSubsystem.getInstance().getEventTTC(id));
+
+            mEditTextEndTime.setText(Event.dateFormat.format(calculateEndTime.getTime()));
+        }
+
         // Inflate the layout for this fragment
-        return toReturn;
+        return view;
     }
 
     /**

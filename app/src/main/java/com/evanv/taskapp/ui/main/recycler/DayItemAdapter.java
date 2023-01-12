@@ -1,5 +1,6 @@
 package com.evanv.taskapp.ui.main.recycler;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,7 +31,7 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
     private final RecyclerView.RecycledViewPool mEventViewPool = new RecyclerView.RecycledViewPool();
     // Listener that allows easy completion of tasks (see ClickListener)
     private final ClickListener mListener;
-    private final Context mContext; // Context of current Activity
+    private final Activity mActivity; // Context of current Activity
 
     /**
      * Constructs an adapter for MainActivity's recyclerview
@@ -38,10 +39,10 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
      * @param dayItemList the list of days for this user
      */
     @SuppressWarnings("unused")
-    public DayItemAdapter(List<DayItem> dayItemList, ClickListener listener, Context context) {
+    public DayItemAdapter(List<DayItem> dayItemList, ClickListener listener, Activity activity) {
         mDayItemList = dayItemList;
         mListener = listener;
-        mContext = context;
+        mActivity = activity;
     }
 
     /**
@@ -89,9 +90,9 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
 
         // Initialize the Event/Task Item Adapters
         EventItemAdapter eventItemAdapter = new EventItemAdapter(dayItem.getEvents(), holder,
-                dayItem.getIndex(), holder.mEventHeader);
+                dayItem.getIndex(), holder.mEventHeader, mActivity);
         TaskItemAdapter taskItemAdapter = new TaskItemAdapter(dayItem.getTasks(), holder,
-                dayItem.getIndex(), holder.mTaskHeader, dayItem.isWorkAhead(), mContext);
+                dayItem.getIndex(), holder.mTaskHeader, dayItem.isWorkAhead(), mActivity);
         holder.mEventRecyclerView.setLayoutManager(eventLayoutManager);
         holder.mTaskRecyclerView.setLayoutManager(taskLayoutManager);
         holder.mEventRecyclerView.setAdapter(eventItemAdapter);

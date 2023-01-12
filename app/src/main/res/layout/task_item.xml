@@ -67,37 +67,19 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/timerLayout"
+        android:id="@+id/optionsLayout"
         android:layout_weight="0"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:gravity="end">
         <ImageButton
-            android:id="@+id/buttonTimer"
+            android:id="@+id/buttonTaskOptions"
             android:layout_height="32dp"
             app:tint="@color/text_primary"
             android:background="@null"
             android:scaleType="fitXY"
-            android:contentDescription="@string/hourglass"
-            android:src="@drawable/ic_baseline_hourglass_top_24"
-            android:layout_width="32dp"/>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/deleteLayout"
-        android:layout_weight="0"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:gravity="end">
-        <ImageButton
-            android:id="@+id/buttonDeleteTask"
-            android:layout_height="32dp"
-            app:tint="@color/text_primary"
-            android:background="@null"
-            android:scaleType="fitXY"
-            android:contentDescription="@string/desc_delete_button"
-            android:src="@drawable/ic_delete_24"
+            android:contentDescription="@string/options"
+            android:src="@drawable/ic_baseline_more_vert_32"
             android:layout_width="32dp"/>
 
     </LinearLayout>

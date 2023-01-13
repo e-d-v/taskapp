@@ -15,14 +15,14 @@ import java.util.List;
  * @author Evan Voogd
  */
 public class TaskAppRepository {
-    private final TaskDao mTaskDao;       // Dao for the task table
-    private final EventDao mEventDao;     // Dao for the event table
-    private final ProjectDao mProjectDao; // Dao for the project table
-    private final LabelDao mLabelDao;     // Dao for the label table
-    private final List<Task> mAllTasks;   // List of all tasks
-    private final List<Event> mAllEvents; // List of all events
+    private final TaskDao mTaskDao;           // Dao for the task table
+    private final EventDao mEventDao;         // Dao for the event table
+    private final ProjectDao mProjectDao;     // Dao for the project table
+    private final LabelDao mLabelDao;         // Dao for the label table
+    private final List<Task> mAllTasks;       // List of all tasks
+    private final List<Event> mAllEvents;     // List of all events
     private final List<Project> mAllProjects; // List of all projects
-    private final List<Label> mAllLabels; // List of all labels
+    private final List<Label> mAllLabels;     // List of all labels
 
     /**
      * Constructs a new repository

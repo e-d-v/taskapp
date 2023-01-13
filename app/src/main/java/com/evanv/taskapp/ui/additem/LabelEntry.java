@@ -18,12 +18,6 @@ import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.LogicSubsystem;
 
 public class LabelEntry extends AppCompatActivity {
-    // Key for the String representing the Label name.
-    public static final String EXTRA_NAME = "com.evanv.taskapp.ui.additem.Label.EXTRA_NAME";
-    // Key for the int representing the color.
-    public static final String EXTRA_COLOR = "com.evanv.taskapp.ui.additem.Label.EXTRA_COLOR";
-    // Key for the bundle that contains information on the Label.
-    public static final String EXTRA_ITEM = "com.evanv.taskapp.ui.additem.Label.EXTRA_ITEM";
     public int color; // User-selected label color
 
     /**

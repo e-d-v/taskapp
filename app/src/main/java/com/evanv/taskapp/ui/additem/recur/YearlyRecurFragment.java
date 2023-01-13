@@ -286,6 +286,12 @@ public class YearlyRecurFragment extends Fragment implements RecurInput {
             this.layout = inflatedLayout;
         }
 
+        /**
+         * Update the UI when a different recurrence option is selected
+         *
+         * @param radioGroup The list of radioButtons in the fragment
+         * @param i The index selected in the group
+         */
         @Override
         public void onCheckedChanged(RadioGroup radioGroup, int i) {
             int index = radioGroup.indexOfChild(layout.findViewById(i));

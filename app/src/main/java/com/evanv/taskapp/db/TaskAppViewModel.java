@@ -21,10 +21,10 @@ public class TaskAppViewModel extends AndroidViewModel {
     // Repository that interfaces with the database
     private final TaskAppRepository mRepository;
 
-    private final List<Task> mAllTasks;   // List of all tasks in DB at start of app
-    private final List<Event> mAllEvents; // List of all events in DB at start of app
+    private final List<Task> mAllTasks;       // List of all tasks in DB at start of app
+    private final List<Event> mAllEvents;     // List of all events in DB at start of app
     private final List<Project> mAllProjects; // List of all projects in DB at start of app
-    private final List<Label> mAllLabels; // List of all labels in DB at start of app
+    private final List<Label> mAllLabels;     // List of all labels in DB at start of app
 
     /**
      * Constructs a ViewModel to interface with a Repository

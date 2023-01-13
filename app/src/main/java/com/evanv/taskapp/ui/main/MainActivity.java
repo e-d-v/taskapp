@@ -69,25 +69,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     private int mPosition;                         // Position of button press
     private int mDay;                              // Day of button press
 
-    // Key for the extra that stores the list of Task names for the Parent Task Picker Dialog in
-    public static final String EXTRA_TASKS = "com.evanv.taskapp.ui.main.extras.TASKS";
-    // Key for the extra that stores the list of Project names
-    public static final String EXTRA_PROJECTS = "com.evanv.taskapp.ui.main.extras.PROJECTS";
-    // Key for the extra that stores the list of colors for each Project.
-    public static final String EXTRA_PROJECT_COLORS =
-            "com.evanv.taskapp.ui.main.extras.PROJECT_COLORS";
-    // Key for the extra that stores if each task is completable.
-    public static final String EXTRA_COMPLETABLE = "com.evanv.taskapp.ui.main.extras.COMPLETABLE";
-    // Key for the extra that stores the list of goals for each Project.
-    public static final String EXTRA_GOALS = "com.evanv.taskapp.ui.main.extras.PROJECT_GOALS";
-    // Key for the extra that stores the index of the timed task.
-    public static final String EXTRA_TIMED_TASK = "com.evanv.taskapp.ui.main.extras.PROJECT_GOALS";
-    // Key for the extra that stores the priorities of the timed tasks.
-    public static final String EXTRA_PRIORITIES = "com.evanv.taskapp.ui.main.extras.PRIORITIES";
     // Key for the extra that stores the type of edit
     public static final String EXTRA_TYPE = "com.evanv.taskapp.ui.main.extras.TYPE";
     // Key for the extra that stores the ID of the item to edit
     public static final String EXTRA_ID = "com.evanv.taskapp.ui.main.extras.ID";
+
     // Keys into SharedPrefs to store todayTime
     public static final String PREF_FILE = "taskappPrefs"; // File name for sharedPrefs
     public static final String PREF_DAY = "taskappDay";    // Day for todayTime
@@ -347,15 +333,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     private void intentAddItem(String type, long id) {
         Intent intent = new Intent(this, AddItem.class);
 
-        // Get a list of task names for prerequisite list
-        ArrayList<String> taskNames = mLogicSubsystem.getTaskNames(this);
-        ArrayList<String> projectNames = mLogicSubsystem.getProjectNames();
-        ArrayList<Integer> projectColors = mLogicSubsystem.getProjectColors();
-
-        intent.putStringArrayListExtra(EXTRA_TASKS, taskNames);
-        intent.putStringArrayListExtra(EXTRA_PROJECTS, projectNames);
-        intent.putIntegerArrayListExtra(EXTRA_PROJECT_COLORS, projectColors);
-
         // Handles Editing case
         if (type != null) {
             intent.putExtra(EXTRA_TYPE, type);
@@ -397,15 +374,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_projects) {
             Intent intent = new Intent(this, ProjectActivity.class);
-
-            // Get lists of project information for prerequisite lists.
-            ArrayList<String> projectNames = mLogicSubsystem.getProjectNames();
-            ArrayList<String> projectGoals = mLogicSubsystem.getProjectGoals();
-            ArrayList<Integer> projectColors = mLogicSubsystem.getProjectColors();
-
-            intent.putStringArrayListExtra(EXTRA_PROJECTS, projectNames);
-            intent.putStringArrayListExtra(EXTRA_GOALS, projectGoals);
-            intent.putIntegerArrayListExtra(EXTRA_PROJECT_COLORS, projectColors);
 
             mUpdateUILauncher.launch(intent);
 

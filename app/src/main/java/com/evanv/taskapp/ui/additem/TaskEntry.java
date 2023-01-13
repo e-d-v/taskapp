@@ -156,7 +156,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         // Set options in the project spinner
         ArrayList<String> projects = new ArrayList<>();
         projects.add(getString(R.string.project_spinner_default));
-        projects.addAll(requireActivity().getIntent().getStringArrayListExtra(MainActivity.EXTRA_PROJECTS));
+        projects.addAll(LogicSubsystem.getInstance().getProjectNames());
         mProjectSpinner = view.findViewById(R.id.projectSpinner);
         mAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, projects);
         mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -421,8 +421,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         public void onClick(View view) {
             // Converts the bundled arraylist of task names to a String[] that can be used by
             // the alert dialog
-            ArrayList<String> taskNames = requireActivity().getIntent()
-                    .getStringArrayListExtra(MainActivity.EXTRA_TASKS);
+            ArrayList<String> taskNames = LogicSubsystem.getInstance().getTaskNames(getContext());
 
             showPickerDialog(convertListToArray(taskNames));
         }

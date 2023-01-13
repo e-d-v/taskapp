@@ -277,15 +277,6 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
     private void intentAddItem(long id) {
         Intent intent = new Intent(this, AddItem.class);
 
-        // Get a list of task names for prerequisite list
-        ArrayList<String> taskNames = LogicSubsystem.getInstance().getTaskNames(this);
-        ArrayList<String> projectNames = LogicSubsystem.getInstance().getProjectNames();
-        ArrayList<Integer> projectColors = LogicSubsystem.getInstance().getProjectColors();
-
-        intent.putStringArrayListExtra(MainActivity.EXTRA_TASKS, taskNames);
-        intent.putStringArrayListExtra(MainActivity.EXTRA_PROJECTS, projectNames);
-        intent.putIntegerArrayListExtra(MainActivity.EXTRA_PROJECT_COLORS, projectColors);
-
         // Handles Editing case
         intent.putExtra(MainActivity.EXTRA_TYPE, AddItem.EXTRA_VAL_TASK);
         intent.putExtra(MainActivity.EXTRA_ID, id);

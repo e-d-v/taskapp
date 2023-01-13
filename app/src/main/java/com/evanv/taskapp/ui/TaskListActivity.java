@@ -381,6 +381,9 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         builder.show();
     }
 
+    /**
+     * Remove the currently selected item and update the reycler
+     */
     private void removeItem() {
         // Remove item from list
         int index = mIDs.indexOf(mID);

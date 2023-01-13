@@ -102,7 +102,6 @@ public class Task implements Comparable<Task> {
         mParentArr = new ArrayList<>();
         mLabelIDs = new ArrayList<>();
         mLabels = new ArrayList<>();
-        mParentArr.add(-1L);
         mPriority = priority;
         mProjectID = -1;
         mProject = null;

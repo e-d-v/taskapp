@@ -1595,7 +1595,22 @@ public class LogicSubsystem {
 
                 for (int i = 0; i < mTasks.size(); i++) {
                     if (mTasks.get(i).getID() == id) {
+                        Task oldTask = mTasks.get(i);
+
                         mTasks.set(i, toAdd);
+
+                        // Replace the parent for each of the remaining children.
+                        for (Task child : oldTask.getChildren()) {
+                            child.removeParent(oldTask);
+                            child.addParent(toAdd);
+                            toAdd.addChild(child);
+                        }
+
+                        // Remove old task from each parent task, as new parents were already
+                        // added earlier.
+                        for (Task parent : oldTask.getParents()) {
+                            parent.removeChild(oldTask);
+                        }
                     }
                 }
 

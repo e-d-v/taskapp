@@ -20,7 +20,6 @@ import androidx.fragment.app.Fragment;
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.Event;
 import com.evanv.taskapp.logic.LogicSubsystem;
-import com.evanv.taskapp.logic.Task;
 import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
 import com.evanv.taskapp.ui.additem.recur.NoRecurFragment;
 import com.evanv.taskapp.ui.additem.recur.RecurActivity;
@@ -44,7 +43,8 @@ public class EventEntry extends Fragment implements ItemEntry {
     private Bundle mRecur;               // The value returned by the recur activity.
     private EditText mEditTextEventName; // EditText containing the name of the event
     private EditText mEditTextECD;       // EditText containing the date/time of the event
-    private EditText mEditTextEndTime;    // EditText containing the length of the event
+    private EditText mEditTextEndTime;   // EditText containing the length of the event
+    private long mID;                    // ID of the Event to update, -1 if adding an event
     // Allows data to be pulled from activity
     private ActivityResultLauncher<Intent> mStartForResult;
 
@@ -94,10 +94,10 @@ public class EventEntry extends Fragment implements ItemEntry {
     /**
      * If no required fields are empty, pack user input into a bundle and return it.
      *
-     * @return a Bundle containing user input if all fields are filled, null otherwise
+     * @return true if ran successfully, false otherwise.
      */
     @SuppressWarnings("unused")
-    public Bundle getItem() {
+    public boolean addItem() {
         // Get user input from views
         String eventName = mEditTextEventName.getText().toString();
         String ecd = mEditTextECD.getText().toString();
@@ -107,7 +107,7 @@ public class EventEntry extends Fragment implements ItemEntry {
         if (eventName.length() == 0) {
             Toast.makeText(getActivity(), R.string.name_error_event,
                     Toast.LENGTH_LONG).show();
-            return null;
+            return false;
         }
 
         Date startTime = null;
@@ -117,44 +117,42 @@ public class EventEntry extends Fragment implements ItemEntry {
             Toast.makeText(getActivity(),
                     R.string.ecd_empty_event,
                     Toast.LENGTH_LONG).show();
-            return null;
+            return false;
         }
         else {
             try {
                 startTime = Event.dateFormat.parse(ecd);
             } catch (ParseException e) {
                 Toast.makeText(getActivity(), R.string.ecd_empty_event, Toast.LENGTH_LONG).show();
-                return null;
+                return false;
             }
         }
-        // Check if ECD is valid
+
+        // Check if End Time is valid
+        Date endTimeDate;
         if (endTime.length() == 0) {
             Toast.makeText(getActivity(),
                     R.string.enter_end_time,
                     Toast.LENGTH_LONG).show();
-            return null;
+            return false;
         }
         else {
             try {
-                Date endTimeDate = Event.dateFormat.parse(endTime);
+                endTimeDate = Event.dateFormat.parse(endTime);
                 assert endTimeDate != null;
                 assert !endTimeDate.before(startTime);
             } catch (Throwable e) {
                 Toast.makeText(getActivity(), R.string.enter_end_time, Toast.LENGTH_LONG).show();
-                return null;
+                return false;
             }
         }
 
-        // Put user input into a bundle
-        Bundle bundle = new Bundle();
-        bundle.putString(AddItem.EXTRA_TYPE, AddItem.EXTRA_VAL_EVENT);
-        bundle.putString(AddItem.EXTRA_NAME, eventName);
-        bundle.putString(AddItem.EXTRA_START, ecd);
-        bundle.putString(AddItem.EXTRA_END, endTime);
-        bundle.putBundle(AddItem.EXTRA_RECUR, mRecur);
+        // Add/Edit the event in the LogicSubsystem
+        LogicSubsystem.getInstance().editEvent(eventName, startTime, endTimeDate, mRecur, mID,
+                getContext());
 
-        // Return bundle containing user input
-        return bundle;
+        // Return true as item was added successfully.
+        return true;
     }
 
     /**
@@ -207,20 +205,20 @@ public class EventEntry extends Fragment implements ItemEntry {
         });
 
         // Load id from intent to see if we're editing a task.
-        long id = requireActivity().getIntent().getLongExtra(MainActivity.EXTRA_ID, -1);
+        mID = requireActivity().getIntent().getLongExtra(MainActivity.EXTRA_ID, -1);
         String type = requireActivity().getIntent().getStringExtra(MainActivity.EXTRA_TYPE);
 
-        if (type != null && type.equals(AddItem.EXTRA_VAL_EVENT) && id != -1) {
+        if (type != null && type.equals(AddItem.EXTRA_VAL_EVENT) && mID != -1) {
             // Set the event name
-            mEditTextEventName.setText(LogicSubsystem.getInstance().getEventName(id));
+            mEditTextEventName.setText(LogicSubsystem.getInstance().getEventName(mID));
 
             // Set the start time
-            mEditTextECD.setText(Event.dateFormat.format(LogicSubsystem.getInstance().getEventECD(id)));
+            mEditTextECD.setText(Event.dateFormat.format(LogicSubsystem.getInstance().getEventECD(mID)));
 
             // Set the end time
             Calendar calculateEndTime = Calendar.getInstance();
-            calculateEndTime.setTime(LogicSubsystem.getInstance().getEventECD(id));
-            calculateEndTime.add(Calendar.MINUTE, LogicSubsystem.getInstance().getEventTTC(id));
+            calculateEndTime.setTime(LogicSubsystem.getInstance().getEventECD(mID));
+            calculateEndTime.add(Calendar.MINUTE, LogicSubsystem.getInstance().getEventTTC(mID));
 
             mEditTextEndTime.setText(Event.dateFormat.format(calculateEndTime.getTime()));
         }

@@ -5,7 +5,6 @@ import static com.evanv.taskapp.logic.Task.clearDate;
 import static com.evanv.taskapp.logic.Task.getDiff;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -14,8 +13,6 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.db.TaskAppViewModel;
-import com.evanv.taskapp.ui.additem.AddItem;
-import com.evanv.taskapp.ui.additem.ProjectEntry;
 import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.main.recycler.DayItem;
 import com.evanv.taskapp.ui.main.recycler.EventItem;
@@ -26,7 +23,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import kotlin.Pair;
@@ -53,6 +49,7 @@ public class LogicSubsystem {
     @Nullable private List<Task> mWorkAheadTasks; // List of tasks currently work ahead.
     private final List<Project> mProjects;        // List of current projects.
     private final List<Label> mLabels;            // List of current labels.
+    private List<Integer> mUpdatedIndices;        // List of updated indices.
 
     private static volatile LogicSubsystem INSTANCE; // The singleton of the LogicSubsystem
 
@@ -152,6 +149,9 @@ public class LogicSubsystem {
                 }
             }
         }
+
+        // List of updated indices for the recycler
+        mUpdatedIndices = new ArrayList<>();
 
         INSTANCE = this;
     }
@@ -340,19 +340,6 @@ public class LogicSubsystem {
      */
     public boolean isEmpty() {
         return mTaskSchedule.size() == 0 && mEventSchedule.size() == 0;
-    }
-
-    /**
-     * Adds an item to the internal data structure based on the information passed in by the AddItem
-     * activity.
-     *
-     * @param data Information passed in by the AddItem activity.
-     * @param context Context for resources
-     *
-     * @return Indices whose recycler positions need to be updated.
-     */
-    public List<Integer> addItem(@Nullable Intent data, Context context) {
-        return editItem(data, -1, context);
     }
 
     /**
@@ -1384,6 +1371,17 @@ public class LogicSubsystem {
         return mTaskSchedule.get(mDay).get(mPosition).getID();
     }
 
+
+    /**
+     * Get ID of a Task in a specific position in the tasks list
+     *
+     * @param index Index into the tasks list
+     * @return the ID of the given task
+     */
+    public Long getTaskID(int index) {
+        return mTasks.get(index).getID();
+    }
+
     /**
      * Get the name of a specific Event by ID
      *
@@ -1449,217 +1447,180 @@ public class LogicSubsystem {
         return mEventSchedule.get(mDay).get(mPosition).getID();
     }
 
-    public List<Integer> editItem(Intent data, long id, Context context) {
-        // TODO: Edit the Item in the Fragments instead of in LogicSubsystem.
-        // Get the data to build the item
-        Bundle result = Objects.requireNonNull(data).getBundleExtra(AddItem.EXTRA_ITEM);
-        String type = result.getString(AddItem.EXTRA_TYPE);
+    /**
+     * Get a list of indices the recycler must update since it last checked.
+     *
+     * @return a list of indices for the recycler to update.
+     */
+    public List<Integer> getUpdatedIndices() {
+        List<Integer> toReturn = mUpdatedIndices;
+        mUpdatedIndices = new ArrayList<>();
+        return toReturn;
+    }
 
-        List<Integer> updatedIndices = new ArrayList<>();
+    /**
+     * Create an event based on the given parameters, and update an existing event if necessary.
+     *
+     * @param name Name of the new event
+     * @param start Start time of the new event
+     * @param end End time of the new event
+     * @param recur Recurrence information of the new event
+     * @param id ID of the event if it needs to be updated, -1 otherwise.
+     * @param context Context for resources.
+     */
+    public void editEvent(String name, Date start, Date end, Bundle recur, long id, Context context) {
+        // Make sure ID is only reused once if it's supposed to edit an item.
+        boolean first = id != -1;
+
+        // Get information on event recurrence
+        RecurrenceParser rp = new RecurrenceParser(context);
+        List<Date> recurrenceDates = rp.parseBundle(recur, start);
+
+        // Calculate Length of Event
+        int ttc = (int) ((end.getTime() - start.getTime()) / TimeUnit.MINUTES.toMillis(1));
+
+        // Add event based on recurrence information
+        for (Date d : recurrenceDates) {
+            int index = getDiff(d, mStartDate);
+
+            // Make sure there is enough mEventSchedules.
+            for (int i = mEventSchedule.size(); i <= index; i++) {
+                mEventSchedule.add(new ArrayList<>());
+                mUpdatedIndices.add(i);
+            }
+
+            Event toAdd = new Event(name, ttc, d);
+
+            // Update the event if necessary
+            if (first) {
+                toAdd.setID(id);
+
+                for (int i = 0; i < mEventSchedule.get(index).size(); i++) {
+                    if (mEventSchedule.get(index).get(i).getID() == id) {
+                        mEventSchedule.get(index).set(i, toAdd);
+                    }
+                }
+
+                mTaskAppViewModel.update(toAdd);
+
+                first = false;
+            }
+            // If not necessary, insert a new event
+            else {
+                mEventSchedule.get(index).add(toAdd);
+                mTaskAppViewModel.insert(toAdd);
+            }
+
+            mUpdatedIndices.add(index);
+        }
+    }
+
+    /**
+     * Create a task based on the given parameters, and update it if necessary
+     *
+     * @param name The name of the Task
+     * @param early The earliest completion date of the task
+     * @param due The due date of the Task
+     * @param recur The Bundle of recurrence information of the task
+     * @param timeToComplete How long the task takes to complete
+     * @param project The index of the selected project (0 if no project was selected)
+     * @param labelIDs An array of Labels that the user has attached to the task
+     * @param parents An array of indices of parents of the added task
+     * @param priority The priority of the task
+     * @param id the ID of the task if it is to be updated, -1 otherwise
+     * @param context Context for resources
+     */
+    public void editTask(String name, Date early, Date due, Bundle recur, int timeToComplete,
+                         int project, long[] labelIDs, List<Long> parents, int priority, long id,
+                         Context context) {
+        // Parse the recurrence information
+        RecurrenceParser rp = new RecurrenceParser(context);
+        List<Date> recurrenceDates = rp.parseBundle(recur, early);
+
+        // Get how long the user is given to complete a task.
+        int diff = getDiff(due, early);
 
         // Make sure ID is only reused once if it's supposed to edit an item.
         boolean first = id != -1;
 
-        // If the item type is Event
-        if (type.equals(AddItem.EXTRA_VAL_EVENT)) {
-            // Get the fields from the bundle
-            String name = result.getString(AddItem.EXTRA_NAME);
-            String startStr = result.getString(AddItem.EXTRA_START);
-            String endStr = result.getString(AddItem.EXTRA_END);
-            Bundle recur = result.getBundle(AddItem.EXTRA_RECUR);
+        for (Date d : recurrenceDates) {
+            int index = getDiff(d, mStartDate);
 
-            // Convert the String start time into a Date
-            Date start;
-            Calendar userStart;
-            try {
-                start = Event.dateFormat.parse(startStr);
-                userStart = Calendar.getInstance();
-                if (start != null) {
-                    userStart.setTime(start);
-                }
-                else {
-                    return null;
-                }
-            }
-            catch (Exception e) {
-                System.out.println(e.getMessage());
-                return null;
+            // Make sure there is enough mEventSchedules.
+            for (int i = mTaskSchedule.size(); i <= index; i++) {
+                mTaskSchedule.add(new ArrayList<>());
+                mUpdatedIndices.add(i);
             }
 
-            // Convert the String end time into a Date
-            Date end;
-            Calendar userEnd;
-            try {
-                end = Event.dateFormat.parse(endStr);
-                userEnd = Calendar.getInstance();
-                if (end != null) {
-                    userEnd.setTime(end);
-                }
-                else {
-                    return null;
-                }
-            }
-            catch (Exception e) {
-                System.out.println(e.getMessage());
-                return null;
+            // Get the day based on the recurrence information
+            Calendar dDue = Calendar.getInstance();
+            dDue.setTime(d);
+            dDue.add(Calendar.DAY_OF_YEAR, diff);
+
+            Task toAdd = new Task(name, d, dDue.getTime(), timeToComplete, priority);
+
+            // Add the given project
+            if (project != 0) {
+                // Add task to selected project
+                toAdd.setProject(mProjects.get(project - 1));
+                mProjects.get(project - 1).addTask(toAdd);
             }
 
-            RecurrenceParser rp = new RecurrenceParser(context);
-            List<Date> recurrenceDates = rp.parseBundle(recur, start);
-
-            int ttc =(int) ((end.getTime() - start.getTime()) / TimeUnit.MINUTES.toMillis(1));
-
-
-            for (Date d : recurrenceDates) {
-                int index = getDiff(d, mStartDate);
-
-                // Make sure there is enough mEventSchedules.
-                for (int i = mEventSchedule.size(); i <= index; i++) {
-                    mEventSchedule.add(new ArrayList<>());
-                    updatedIndices.add(i);
+            // Add all selected labels to task.
+            for (Label label : mLabels) {
+                for (long labelID : labelIDs) {
+                    if (label.getID() == labelID) {
+                        toAdd.addLabel(label);
+                        label.addTask(toAdd);
+                    }
                 }
+            }
 
-                Event toAdd = new Event(name, ttc, d);
-
-                // Update the event if necessary
-                if (first) {
-                    toAdd.setID(id);
-
-                    for (int i = 0; i < mEventSchedule.get(index).size(); i++) {
-                        if (mEventSchedule.get(index).get(i).getID() == id) {
-                            mEventSchedule.get(index).set(i, toAdd);
+            // Add given parents
+            if (parents != null) {
+                for (Long parent : parents) {
+                    for (Task t : mTasks) {
+                        if (t.getID() == parent) {
+                            toAdd.addParent(t);
+                            t.addChild(toAdd);
+                            break;
                         }
                     }
-
-                    mTaskAppViewModel.update(toAdd);
-
-                    first = false;
                 }
-                // If not necessary, insert a new event
-                else {
-                    mEventSchedule.get(index).add(toAdd);
-                    mTaskAppViewModel.insert(toAdd);
-                }
-
-                updatedIndices.add(index);
             }
+
+            // Update the task if necessary
+            if (first) {
+                toAdd.setID(id);
+
+                for (int i = 0; i < mTasks.size(); i++) {
+                    if (mTasks.get(i).getID() == id) {
+                        mTasks.set(i, toAdd);
+                    }
+                }
+
+                mTaskAppViewModel.update(toAdd);
+
+                first = false;
+            }
+            // Add the task to the DB if not editing
+            else {
+                mTasks.add(toAdd);
+                mTaskAppViewModel.insert(toAdd);
+            }
+
+            mUpdatedIndices.add(index);
         }
-        // If the item type is Task
-        else if (type.equals(AddItem.EXTRA_VAL_TASK)) {
-            // Get the fields from the Bundle
-            String name = result.getString(AddItem.EXTRA_NAME);
-            int timeToComplete = Integer.parseInt(result.getString(AddItem.EXTRA_END));
-            String ecd = result.getString(AddItem.EXTRA_ECD);
-            String dd = result.getString(AddItem.EXTRA_DUE);
-            String parents = result.getString(AddItem.EXTRA_PARENTS);
-            Bundle recur = result.getBundle(AddItem.EXTRA_RECUR);
-            int priority = result.getInt(AddItem.EXTRA_PRIORITY);
-            int project = result.getInt(AddItem.EXTRA_PROJECT);
-            Bundle newProject = result.getBundle(AddItem.EXTRA_NEW_PROJECT);
-            long[] labelIDs = result.getLongArray(AddItem.EXTRA_LABELS);
-
-            // Convert the earliest completion date String to a MyTime
-            Date early;
-            try {
-                early = Task.dateFormat.parse(ecd);
-            }
-            catch (Exception e) {
-                return null;
-            }
-
-            // Convert the due date String to a MyTime
-            Date due;
-            try {
-                due = Task.dateFormat.parse(dd);
-            }
-            catch (Exception e) {
-                return null;
-            }
-
-            RecurrenceParser rp = new RecurrenceParser(context);
-            List<Date> recurrenceDates = rp.parseBundle(recur, early);
-
-            int diff = getDiff(due, early);
-
-            for (Date d : recurrenceDates) {
-                int index = getDiff(d, mStartDate);
-
-                // Make sure there is enough mEventSchedules.
-                for (int i = mTaskSchedule.size(); i <= index; i++) {
-                    mTaskSchedule.add(new ArrayList<>());
-                    updatedIndices.add(i);
-                }
-
-                Calendar dDue = Calendar.getInstance();
-                dDue.setTime(d);
-                dDue.add(Calendar.DAY_OF_YEAR, diff);
-
-                Task toAdd = new Task(name, d, dDue.getTime(), timeToComplete, priority);
-
-                if (project != 0) {
-                    // Add new project if one was added
-                    if (project == mProjects.size() + 1) {
-                        String projectName = newProject.getString(ProjectEntry.EXTRA_NAME);
-                        int projectColor = newProject.getInt(ProjectEntry.EXTRA_COLOR);
-                        String projectGoal = newProject.getString(ProjectEntry.EXTRA_GOAL);
-
-                        Project proj = new Project(projectName, projectColor, projectGoal);
-                        mProjects.add(proj);
-                        mTaskAppViewModel.insert(proj);
-                    }
-
-                    // Add task to selected project
-                    toAdd.setProject(mProjects.get(project - 1));
-                    mProjects.get(project - 1).addTask(toAdd);
-                }
-
-                // Add all selected labels to task.
-                for (Label label : mLabels) {
-                    for (long labelID : labelIDs) {
-                        if (label.getID() == labelID) {
-                            toAdd.addLabel(label);
-                            label.addTask(toAdd);
-                        }
-                    }
-                }
-
-                // The parents string in the Bundle is a String of the format "n1,n2,n3,...nN,"
-                // where each nx is an index to a Task in tasks that should be used as a parent
-                // for the task to be added.
-                String[] parentIndices = parents.split(",");
-                for (String parentIndex : parentIndices) {
-                    if (!parentIndex.equals("-1")) {
-                        Task parent = mTasks.get(Integer.parseInt(parentIndex));
-                        toAdd.addParent(parent);
-                        parent.addChild(toAdd);
-                    }
-                }
-
-                // Update the task if necessary
-                if (first) {
-                    toAdd.setID(id);
-
-                    for (int i = 0; i < mTasks.size(); i++) {
-                        if (mTasks.get(i).getID() == id) {
-                            mTasks.set(i, toAdd);
-                        }
-                    }
-
-                    mTaskAppViewModel.update(toAdd);
-
-                    first = false;
-                }
-                // Add the task to the DB if not editing
-                else {
-                    mTasks.add(toAdd);
-                    mTaskAppViewModel.insert(toAdd);
-                }
-
-                updatedIndices.add(index);
-            }
-        }
-
-        return updatedIndices;
     }
 
+    /**
+     * Add a project to the LogicSubsystem
+     *
+     * @param name Name of the project
+     * @param color Color of the project
+     * @param goal Goal of the project
+     */
+    public void addProject(String name, int color, String goal) {
+        mProjects.add(new Project(name, color, goal));
+    }
 }

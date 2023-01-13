@@ -1,7 +1,5 @@
 package com.evanv.taskapp.ui.additem;
 
-import android.os.Bundle;
-
 /**
  * An interface describing a Fragment that has a method that returns a Bundle with all of it's
  * fields, allowing MainActivity to retrieve all the fields for Event/Task entry easily
@@ -14,8 +12,8 @@ public interface ItemEntry {
      * (e.g. Task or Event). It's AddItem.EXTRA_TYPE String Extra describes the type of Item it is,
      * so MainActivity can get the Item-type-specific extras
      *
-     * @return A bundle containing all the fields needed to make a specific item.
+     * @return
      */
     @SuppressWarnings("unused")
-    Bundle getItem();
+    boolean addItem();
 }

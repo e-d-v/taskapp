@@ -2,8 +2,6 @@ package com.evanv.taskapp.ui.additem;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.ContextMenu;
-import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
@@ -176,12 +174,11 @@ public class AddItem extends AppCompatActivity {
                 .getChildFragmentManager().getFragments().get(0);
 
         // Call getItem so we can get a bundle of the data the user has entered
-        Bundle toReturn = current.getItem();
+        boolean ranSuccessfully = current.addItem();
 
         // If the user correctly entered all fields, send the bundle to MainActivity and return
-        if (toReturn != null) {
+        if (ranSuccessfully) {
             Intent replyIntent = new Intent();
-            replyIntent.putExtra(EXTRA_ITEM, toReturn);
             setResult(RESULT_OK, replyIntent);
             finish();
         }

@@ -5,29 +5,19 @@ import androidx.core.content.ContextCompat;
 
 import android.app.Dialog;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.SpannableString;
-import android.text.SpannedString;
 import android.text.style.ForegroundColorSpan;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.evanv.taskapp.R;
+import com.evanv.taskapp.logic.LogicSubsystem;
 
 public class ProjectEntry extends AppCompatActivity {
-    // Key for the String representing the Project name.
-    public static final String EXTRA_NAME = "com.evanv.taskapp.ui.additem.Project.EXTRA_NAME";
-    // Key for the String representing the Project goal.
-    public static final String EXTRA_GOAL = "com.evanv.taskapp.ui.additem.Project.EXTRA_GOAL";
-    // Key for the int representing the color.
-    public static final String EXTRA_COLOR = "com.evanv.taskapp.ui.additem.Project.EXTRA_COLOR";
-    // Key for the bundle that contains information on the Project.
-    public static final String EXTRA_ITEM = "com.evanv.taskapp.ui.additem.Project.EXTRA_ITEM";
     public int color; // User-selected project color
 
     /**
@@ -143,14 +133,11 @@ public class ProjectEntry extends AppCompatActivity {
             return;
         }
 
-        Bundle bundle = new Bundle();
+        // Add Project to LogicSubsystem
+        LogicSubsystem.getInstance().addProject(name, color, goal);
 
-        bundle.putString(EXTRA_NAME, name);
-        bundle.putString(EXTRA_GOAL, goal);
-        bundle.putInt(EXTRA_COLOR, color);
-
+        // Return control
         Intent replyIntent = new Intent();
-        replyIntent.putExtra(EXTRA_ITEM, bundle);
         setResult(RESULT_OK, replyIntent);
         finish();
     }

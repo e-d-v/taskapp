@@ -117,15 +117,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             }
         }
 
-        List<Integer> updatedIndices;
-
-        if (mEditedID != -1) {
-            updatedIndices = mLogicSubsystem.editItem(data, mEditedID, this);
-            mEditedID = -1;
-        }
-        else {
-            updatedIndices = mLogicSubsystem.addItem(data, this);
-        }
+        List<Integer> updatedIndices = mLogicSubsystem.getUpdatedIndices();
 
         if (updatedIndices == null) {
             Toast.makeText(this, "Error occurred when adding new item, try again.",

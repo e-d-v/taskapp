@@ -33,11 +33,9 @@ public class Event implements Comparable {
     private String mName;        // The name of the event to display in the schedule
     @ColumnInfo(name = "length")
     private int mLength;         // How long the event lasts
-
-
     @NonNull
     @ColumnInfo(name = "do_date")
-    private Date mDoDate;   // The start time for the event. Named to be consistent with Task
+    private Date mDoDate;        // The start time for the event. Named to be consistent with Task
 
     // Static Fields
     // SimpleDateFormat that formats date in the style "08/20/22 08:12 PM"
@@ -163,6 +161,14 @@ public class Event implements Comparable {
         return cal.getTime();
     }
 
+    /**
+     * Returns a positive value if this event is after the other event, negative if it's before and
+     * 0 if they occur at the same time.
+     *
+     * @param o The other event
+     * @return a positive value if this event is after the other event, negative if it's before and
+     *           0 if they occur at the same time
+     */
     @Override
     public int compareTo(Object o) {
         Event other = (Event) o;

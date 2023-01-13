@@ -17,6 +17,11 @@ import android.widget.Toast;
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.LogicSubsystem;
 
+/**
+ * Form for project creation
+ *
+ * @author Evan Voogd
+ */
 public class ProjectEntry extends AppCompatActivity {
     public int color; // User-selected project color
 

@@ -16,15 +16,33 @@ import com.google.android.material.chip.Chip;
 
 import java.util.List;
 
+/**
+ * Adapter for the project list recycler.
+ *
+ * @author Evan Voogd
+ */
 public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.ProjectViewHolder> {
-    public List<ProjectItem> mProjectsList;
-    private ClickListener mListener;
+    public List<ProjectItem> mProjectsList; // List of project information
+    private final ClickListener mListener;  // The listener to handle button presses.
 
+    /**
+     * Construct a new ProjectItemAdapter
+     *
+     * @param list The list of projects to display
+     * @param clickListener The listener to handle button presses
+     */
     public ProjectItemAdapter(List<ProjectItem> list, ClickListener clickListener) {
         mProjectsList = list;
         mListener = clickListener;
     }
 
+    /**
+     * Create a new ViewHolder
+     *
+     * @param parent The view group that holds the ViewHolders
+     * @param viewType Not used
+     * @return a new ProjectViewHolder
+     */
     @NonNull
     @Override
     public ProjectViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -35,6 +53,12 @@ public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.
         return new ProjectViewHolder(view);
     }
 
+    /**
+     * Update the content in the holder
+     *
+     * @param holder The holder to update
+     * @param position The position in the recycler of the item
+     */
     @Override
     public void onBindViewHolder(@NonNull ProjectViewHolder holder, int position) {
         ProjectItem curr = mProjectsList.get(position);
@@ -77,19 +101,32 @@ public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.
         // Set project goal
         holder.mGoalLabel.setText(curr.getGoal());
 
-        holder.mExpandButton.setOnClickListener(v -> { mListener.onButtonClick(position, -1, 0);});
+        holder.mExpandButton.setOnClickListener(v -> mListener.onButtonClick(position, -1, 0));
     }
 
+    /**
+     * Get the number of items in the recycler.
+     *
+     * @return the count of items in the recycler
+     */
     @Override
     public int getItemCount() {
         return mProjectsList.size();
     }
 
+    /**
+     * A ViewHolder that displays information of the project.
+     */
     public static class ProjectViewHolder extends RecyclerView.ViewHolder {
-        public final Chip mProjectChip;
-        public final TextView mGoalLabel;
-        public final ImageButton mExpandButton;
+        public final Chip mProjectChip;         // The chip that displays the project name
+        public final TextView mGoalLabel;       // The label that displays the goal of the project
+        public final ImageButton mExpandButton; // The button to show the list of tasks in project
 
+        /**
+         * Construct a new ViewHolder
+         *
+         * @param view The view of the ViewHolder
+         */
         public ProjectViewHolder(View view) {
             super(view);
             mProjectChip = view.findViewById(R.id.projectChip);

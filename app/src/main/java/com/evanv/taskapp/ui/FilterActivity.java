@@ -33,6 +33,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Objects;
 
+/**
+ * Search field for user to lookup tasks.
+ */
 public class FilterActivity extends AppCompatActivity {
     private long mStartDate;  // Holds the user selected start date
     private long mEndDate;    // Holds the user selected end date
@@ -40,6 +43,11 @@ public class FilterActivity extends AppCompatActivity {
     private long[] mLabels;   // Holds the IDs of user selected labels
     private Context mContext; // Context
 
+    /**
+     * Creates a FilterActivity
+     *
+     * @param savedInstanceState Not used
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -183,6 +191,11 @@ public class FilterActivity extends AppCompatActivity {
         mLabels = null;
     }
 
+    /**
+     * Search for a given task and pull up the TaskListActivity displaying the results
+     *
+     * @param view Not used
+     */
     public void search(View view) {
         Intent intent = new Intent(this, TaskListActivity.class);
 

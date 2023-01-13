@@ -1621,7 +1621,10 @@ public class LogicSubsystem {
      * @param goal Goal of the project
      */
     public void addProject(String name, int color, String goal) {
-        mProjects.add(new Project(name, color, goal));
+        Project toAdd = new Project(name, color, goal);
+
+        mProjects.add(toAdd);
+        mTaskAppViewModel.insert(toAdd);
     }
 
     /**

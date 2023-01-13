@@ -639,17 +639,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         List<Integer> updatedIndices = LogicSubsystem.getInstance().getUpdatedIndices();
 
         for (int index : updatedIndices) {
-            if (index < 0) {
-                continue;
-            }
-            else if (index >= mDayItemAdapter.getItemCount()) {
+            if (index >= mDayItemAdapter.getItemCount()) {
                 int oldCount = mDayItemAdapter.getItemCount();
                 for (int i = oldCount; i <= index; i++) {
                     mDayItemAdapter.mDayItemList.add(mLogicSubsystem.DayItemHelper(i, this));
                 }
                 mDayItemAdapter.notifyItemRangeInserted(oldCount, index - oldCount + 1);
             }
-            else {
+            else if (index >= 0) {
                 mDayItemAdapter.mDayItemList.set(index,
                         LogicSubsystem.getInstance().DayItemHelper(index, this));
                 mDayItemAdapter.notifyItemChanged(index);

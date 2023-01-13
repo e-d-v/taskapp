@@ -295,8 +295,6 @@ public class LogicSubsystem {
 
         Date doDate = task.getDoDate();
 
-        List<Integer> toReturn = new ArrayList<>();
-
         // Get the number of days past the start date this task is scheduled for, so we can get the
         // index of the taskSchedule member for it's do date.
         int diff = getDiff(doDate, mStartDate);
@@ -304,7 +302,7 @@ public class LogicSubsystem {
         // If the task is in the internal data structure, remove it.
         if (diff >= 0) {
             mTaskSchedule.get(diff).remove(task);
-            toReturn.add(diff);
+            mUpdatedIndices.add(diff);
         }
 
         // Remove the task from the task dependency graph
@@ -312,17 +310,16 @@ public class LogicSubsystem {
             task.getChildren().get(i).removeParent(task);
             mTaskAppViewModel.update(task.getChildren().get(i));
 
-            toReturn.add(getDiff(task.getChildren().get(i).getDoDate(), mStartDate));
+            mUpdatedIndices.add(getDiff(task.getChildren().get(i).getDoDate(), mStartDate));
         }
         for (int i = 0; i < task.getParents().size(); i++) {
             task.getParents().get(i).removeChild(task);
         }
 
-
         if (diff >= 0) {
             DayItemHelper(diff, context);
         }
-        return toReturn;
+        return mUpdatedIndices;
     }
 
     /**
@@ -347,17 +344,15 @@ public class LogicSubsystem {
      * Optimize the user's schedules. Returns a list of pairs representing tasks that were changed -
      * specifically their formerly scheduled index and their newly scheduled index, so all these
      * indices must be updated.
-     *
-     * @return Pair of data informing what recycler entries need to update.
      */
-    public List<Pair<Integer, Integer>> Optimize() {
+    public void Optimize() {
         Optimizer opt = new Optimizer();
         ArrayList<Task> changedTasks = opt.Optimize
                 (mTasks, mTaskSchedule, mEventSchedule, mStartDate, mTodayTime);
 
         pareDownSchedules();
 
-        return updateTasks(changedTasks);
+        updateTasks(changedTasks);
     }
 
     /**
@@ -366,24 +361,16 @@ public class LogicSubsystem {
      * and their newly scheduled index, so all these indices must be updated.
      *
      * @param changedTasks List of tasks that have been changed.
-     *
-     * @return A list of pairs representing the tasks that have been changed.
      */
-    private List<Pair<Integer, Integer>> updateTasks(List<Task> changedTasks) {
-        List<Pair<Integer, Integer>> changedIndices = new ArrayList<>();
-
+    private void updateTasks(List<Task> changedTasks) {
         // Update the task with the new do date, and reflect this change in the database.
         for (Task t : changedTasks) {
-            int oldIndex = getDiff(t.getDoDate(), mStartDate);
-            int newIndex = getDiff(t.getWorkingDoDate(), mStartDate);
+            mUpdatedIndices.add(getDiff(t.getDoDate(), mStartDate));
+            mUpdatedIndices.add(getDiff(t.getWorkingDoDate(), mStartDate));
 
             t.setDoDate(t.getWorkingDoDate());
             mTaskAppViewModel.update(t);
-
-            changedIndices.add(new Pair<>(oldIndex, newIndex));
         }
-
-        return changedIndices;
     }
 
     /**
@@ -836,6 +823,8 @@ public class LogicSubsystem {
 
         mTimer = new Date();
         mTimerTask = toTime;
+
+        mUpdatedIndices.add(getDiff(mTimerTask.getDoDate(), mStartDate));
     }
 
     /**

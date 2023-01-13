@@ -15,7 +15,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -103,17 +102,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             }
         }
 
-        List<Integer> updatedIndices = mLogicSubsystem.getUpdatedIndices();
-
-        if (updatedIndices == null) {
-            Toast.makeText(this, "Error occurred when adding new item, try again.",
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        for (int index : updatedIndices) {
-            mDayItemAdapter.notifyItemChanged(index);
-        }
+        updateRecycler();
 
         // As the task dependency graph has been updated, we must reoptimize it
         Optimize();
@@ -126,34 +115,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * scheduled events.
      */
     private void Optimize() {
-        List<Pair<Integer, Integer>> changedIndices = mLogicSubsystem.Optimize();
+        mLogicSubsystem.Optimize();
 
-        int oldSize = mDayItemAdapter.mDayItemList.size();
-        mDayItemAdapter.mDayItemList = mLogicSubsystem.DayItemList(this);
-        int newSize = mDayItemAdapter.mDayItemList.size();
-
-        if (oldSize > newSize) {
-            mDayItemAdapter.notifyItemRangeRemoved(newSize, oldSize - newSize);
-        }
-
-        // Tell the recycler about moved tasks.
-        for (Pair<Integer, Integer> indices : changedIndices) {
-            int oldIndex = indices.getFirst();
-            int newIndex = indices.getSecond();
-
-            // We must use changed instead of moved, as an item in the dayItem entry is moved
-            // not the dayItem itself.
-            if (oldIndex >= 0) {
-                mDayItemAdapter.notifyItemChanged(oldIndex);
-            }
-            if (newIndex >= mDayItemAdapter.getItemCount()) {
-                mDayItemAdapter.notifyItemInserted(newIndex);
-            }
-            else {
-                mDayItemAdapter.notifyItemChanged(newIndex);
-            }
-        }
+        updateRecycler();
     }
+
 
     /**
      * Runs on the start of the app. Most importantly it loads the user data from the file.
@@ -201,10 +167,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // Will eventually return info from projects
         mUpdateUILauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    mDayItemAdapter.mDayItemList = mLogicSubsystem.DayItemList(this);
-                    mDayItemAdapter.notifyDataSetChanged();
-                });
+                result -> updateRecycler());
 
         String[] overdueNames = mLogicSubsystem.getOverdueTasks(this);
 
@@ -680,5 +643,18 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
 
         mPosition = mDay = -1;
+    }
+
+    /**
+     * Update recycler based on changes in other screens.
+     */
+    private void updateRecycler() {
+        List<Integer> updatedIndices = LogicSubsystem.getInstance().getUpdatedIndices();
+
+        for (int index : updatedIndices) {
+            mDayItemAdapter.mDayItemList.set(index,
+                    LogicSubsystem.getInstance().DayItemHelper(index, this));
+            mDayItemAdapter.notifyItemChanged(index);
+        }
     }
 }

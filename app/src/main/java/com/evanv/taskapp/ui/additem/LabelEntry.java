@@ -17,6 +17,11 @@ import android.widget.Toast;
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.LogicSubsystem;
 
+/**
+ * Form for creating new labels.
+ *
+ * @author Evan Voogd
+ */
 public class LabelEntry extends AppCompatActivity {
     public int color; // User-selected label color
 

@@ -31,12 +31,12 @@ import java.util.List;
  * @author Evan Voogd
  */
 public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskViewHolder> {
-    public final List<TaskItem> mTaskItemList; // List of tasks for this day
     // Listener that allows easy completion of tasks (see ClickListener)
     private final ClickListener mListener;
-    private final int mDay; // Index into taskSchedule representing this day
-    private final Context mContext; // Context for resources.
-    private final Activity mActivity; // Activity for Context Menu
+    public final List<TaskItem> mTaskItemList; // List of tasks for this day
+    private final int mDay;                    // Index into taskSchedule representing this day
+    private final Context mContext;            // Context for resources.
+    private final Activity mActivity;          // Activity for Context Menu
 
     /**
      * Constructs an adapter for a given DayItem's task recyclerview

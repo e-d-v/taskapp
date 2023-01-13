@@ -47,6 +47,10 @@ public class Converters {
 
         ArrayList<Long> toReturn = new ArrayList<>();
 
+        if (stringLongs.length == 0) {
+            return toReturn;
+        }
+
         if (stringLongs[0].equals("")) {
             return toReturn;
         }

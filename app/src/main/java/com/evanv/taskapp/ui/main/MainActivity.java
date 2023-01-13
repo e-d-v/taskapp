@@ -434,7 +434,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             case 0:
                 // Show optimizing... screen
                 mVF.setDisplayedChild(0);
-                completeTask(position, day);
+                mPosition = position;
+                mDay = day;
+                completeTask();
                 break;
             // Options button pressed, set mPosition/mDay
             case 1:
@@ -600,15 +602,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
     /**
      * Handles a user choosing to complete a task
-     *
-     * @param position Position on the day'th task recycler of the chosen task
-     * @param day Position in the DayItem recycler of the user's click
      */
-    private void completeTask(int position, int day) {
+    private void completeTask() {
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
 
-        boolean isTimed = mLogicSubsystem.isTimed(position, day);
+        boolean isTimed = mLogicSubsystem.isTimed(mPosition, mDay);
         int timerVal = -1;
 
         if (isTimed) {

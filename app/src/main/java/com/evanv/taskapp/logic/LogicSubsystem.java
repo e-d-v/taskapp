@@ -161,7 +161,7 @@ public class LogicSubsystem {
      *
      * @return The singleton instance of the LogicSubsystem
      */
-    public static LogicSubsystem getInstance() {
+    public static synchronized LogicSubsystem getInstance() {
         return INSTANCE;
     }
 
@@ -310,6 +310,7 @@ public class LogicSubsystem {
         // Remove the task from the task dependency graph
         for (int i = 0; i < task.getChildren().size(); i++) {
             task.getChildren().get(i).removeParent(task);
+            mTaskAppViewModel.update(task.getChildren().get(i));
 
             toReturn.add(getDiff(task.getChildren().get(i).getDoDate(), mStartDate));
         }
@@ -1637,5 +1638,24 @@ public class LogicSubsystem {
      */
     public void addProject(String name, int color, String goal) {
         mProjects.add(new Project(name, color, goal));
+    }
+
+    /**
+     * Get position/day based off of a task's ID
+     *
+     * @param ID the ID of the task
+     * @return a pair where the first item is the position of the task and second is the day.
+     */
+    public Pair<Integer, Integer> convertDay(long ID) {
+        for (Task t : mTasks) {
+            if (t.getID() == ID) {
+                int day = Task.getDiff(t.getDoDate(), mStartDate);
+                int position = mTaskSchedule.get(day).indexOf(t);
+
+                return new Pair<>(position, day);
+            }
+        }
+
+        return null;
     }
 }

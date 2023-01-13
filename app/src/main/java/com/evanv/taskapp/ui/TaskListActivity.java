@@ -1,26 +1,35 @@
 package com.evanv.taskapp.ui;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
+import android.view.ContextMenu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.LogicSubsystem;
+import com.evanv.taskapp.ui.additem.AddItem;
 import com.evanv.taskapp.ui.main.ClickListener;
+import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.main.recycler.TaskItem;
 import com.evanv.taskapp.ui.main.recycler.TaskItemAdapter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+
+import kotlin.Pair;
 
 /**
  * Activity that displays a list of Tasks. Can be created by various screens that need to show
@@ -50,7 +59,12 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
 
     private TaskItemAdapter mAdapter;           // The adapter for the recycler
 
-    private List<Long> IDs;
+    private List<Long> mIDs;
+    private int mPosition; // Position in the recycler of the selected task.
+    private int mDay;      // Day of the selected task.
+    private long mID;      // ID of the currently selected task.
+
+    private ActivityResultLauncher<Intent> mStartForResult; // Launches an activity
 
     /**
      * Creates a TaskListActivity. Bundle requires information including a list of taskNames,
@@ -81,9 +95,9 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         List<TaskItem> taskItemList = LogicSubsystem.getInstance().filter(startDate, endDate,
                 project, name, minTime, maxTime, completable, labels, priority, this);
 
-        IDs = new ArrayList<>();
+        mIDs = new ArrayList<>();
         for (TaskItem item : taskItemList) {
-            IDs.add(item.getID());
+            mIDs.add(item.getID());
         }
 
         RecyclerView recycler = findViewById(R.id.projects_recyclerview);
@@ -92,6 +106,28 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
                 (taskItemList, this, -1, null, false, this);
         recycler.setAdapter(mAdapter);
         recycler.setLayoutManager(layoutManager);
+
+        mPosition = -1;
+        mID = -1;
+
+        // Create activity result handler for AddItem
+        mStartForResult = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> onActivityResult(result.getResultCode()
+                ));
+    }
+
+    /**
+     * On activity result update recycler
+     *
+     * @param resultCode Activity.RESULT_OK if everything went well
+     */
+    private void onActivityResult(int resultCode) {
+        if (resultCode == Activity.RESULT_OK) {
+            mAdapter.mTaskItemList.set(mPosition,
+                    LogicSubsystem.getInstance().TaskItemHelper(mID, mPosition, this));
+            mAdapter.notifyItemChanged(mPosition);
+        }
     }
 
     /**
@@ -120,69 +156,59 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
      *
      * @param position Position in the recycler of the task chosen
      * @param day Not used
-     * @param action 0: complete task, 1: delete task, 2: delete event, 3 set timer
+     * @param action 0 == complete, 1 == options button
      */
     @Override
     public void onButtonClick(int position, int day, int action) {
-        long id = IDs.get(position);
+        mPosition = position;
+        mID = mIDs.get(position);
 
-        // If starting a timer, tell mLogicSubsystem.
-        if (action == 3) {
-            LogicSubsystem.getInstance().timer(id);
-
-            mAdapter.mTaskItemList.set(position,
-                    LogicSubsystem.getInstance().TaskItemHelper(id, position, this));
-            mAdapter.notifyItemChanged(position);
-
-            return;
+        if (action == 0) {
+            completeTask();
         }
+    }
 
-        boolean isTimed = (action == 0) && LogicSubsystem.getInstance().isTimed(id);
+    /**
+     * Handles a user choosing to complete a task
+     */
+    private void completeTask() {
+        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
+        convertDay();
+
+        boolean isTimed = LogicSubsystem.getInstance().isTimed(mPosition, mDay);
         int timerVal = -1;
 
         if (isTimed) {
             timerVal = LogicSubsystem.getInstance().getTimer();
         }
 
-        List<Integer> changedDates = LogicSubsystem.getInstance().onButtonClick(id, action, this);
+        LogicSubsystem.getInstance().onButtonClick(mID, 0, this);
+        LogicSubsystem.getInstance().getNumDays();
 
-        mAdapter.mTaskItemList.remove(position);
-        mAdapter.notifyItemRemoved(position);
+        if (isTimed) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        // Make sure to always update the first day so "Work Ahead" can be redisplayed.
-        changedDates = changedDates == null ? new ArrayList<>() : changedDates;
-        changedDates.add(0);
+            builder.setMessage(String.format(getString(R.string.timer_prompt), timerVal));
 
-        if (action == 0) {
-            if (isTimed) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            // If user chooses to accept the given time, then add it to the today time and
+            // continue.
+            int finalTimerVal = timerVal;
+            builder.setPositiveButton("OK", (dialogInterface, i) -> {
+                LogicSubsystem.getInstance().addTodayTime(finalTimerVal);
 
-                builder.setMessage(String.format(getString(R.string.timer_prompt), timerVal));
+                removeItem();
+            });
 
-                // If user chooses to accept the given time, then add it to the today time and
-                // continue.
-                int finalTimerVal = timerVal;
-                builder.setPositiveButton("OK", (dialogInterface, i) -> {
-                    LogicSubsystem.getInstance().addTodayTime(finalTimerVal);
+            // If user chooses to use a different time, show the normal time to complete
+            // dialog.
+            builder.setNegativeButton("Manual Time", (dialogInterface, i) -> ttcPrompt());
 
-                    // As the task dependency graph has been updated, we must reoptimize it
-                    LogicSubsystem.getInstance().Optimize();
-                });
-
-                // If user chooses to use a different time, show the normal time to complete
-                // dialog.
-                builder.setNegativeButton("Manual Time", (dialogInterface, i) -> ttcPrompt());
-
-                builder.show();
-                return;
-            }
-
-            // User did not have a timer set, so use the normal time to complete dialog.
-            ttcPrompt();
+            builder.show();
+            return;
         }
-        else if (action == 1) {
-            LogicSubsystem.getInstance().Optimize();
-        }
+
+        // User did not have a timer set, so use the normal time to complete dialog.
+        ttcPrompt();
     }
 
     /**
@@ -200,6 +226,134 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
             return  true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Show the context menu when a button/event's option is pressed.
+     *
+     * @param menu The menu to load info into
+     * @param v The button that was pressed
+     * @param menuInfo Not used
+     */
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+
+        if (v.getId() == R.id.buttonTaskOptions) {
+            getMenuInflater().inflate(R.menu.task_options, menu);
+        }
+    }
+
+    /**
+     * Dispatches menu button clicks to helper functions.
+     *
+     * @param item The menu item chosen.
+     * @return true always
+     */
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case (R.id.action_delete_task):
+                // Show optimizing... screen
+                deleteTask();
+                break;
+            case (R.id.action_edit_task):
+                // Show optimizing... screen
+                editTask();
+                break;
+            case (R.id.action_time_task):
+                timeTask();
+                break;
+        }
+
+        return true;
+    }
+
+    /**
+     * Launches the AddItem activity. Must be separate function so FAB handler can call it.
+     *
+     * @param id ID of the task/event if editing, unused if not
+     */
+    private void intentAddItem(long id) {
+        Intent intent = new Intent(this, AddItem.class);
+
+        // Get a list of task names for prerequisite list
+        ArrayList<String> taskNames = LogicSubsystem.getInstance().getTaskNames(this);
+        ArrayList<String> projectNames = LogicSubsystem.getInstance().getProjectNames();
+        ArrayList<Integer> projectColors = LogicSubsystem.getInstance().getProjectColors();
+
+        intent.putStringArrayListExtra(MainActivity.EXTRA_TASKS, taskNames);
+        intent.putStringArrayListExtra(MainActivity.EXTRA_PROJECTS, projectNames);
+        intent.putIntegerArrayListExtra(MainActivity.EXTRA_PROJECT_COLORS, projectColors);
+
+        // Handles Editing case
+        intent.putExtra(MainActivity.EXTRA_TYPE, AddItem.EXTRA_VAL_TASK);
+        intent.putExtra(MainActivity.EXTRA_ID, id);
+
+        mStartForResult.launch(intent);
+    }
+
+    /**
+     * Handles the user choosing to start a timer on a task.
+     */
+    private void timeTask() {
+        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
+        convertDay();
+
+        long oldTimer = LogicSubsystem.getInstance().getTimedID();
+
+        int index = mIDs.indexOf(mID);
+
+        LogicSubsystem.getInstance().timer(mPosition, mDay);
+
+        // Update the recycler at the mPosition
+        mAdapter.mTaskItemList.set(index,
+                LogicSubsystem.getInstance().TaskItemHelper(mID, index, this));
+        mAdapter.notifyItemChanged(index);
+
+        // Update the recycler at the oldTimer location
+        if (oldTimer != -1) {
+            int oldPosition = mIDs.indexOf(oldTimer);
+            mAdapter.mTaskItemList.set(oldPosition,
+                    LogicSubsystem.getInstance().TaskItemHelper(oldTimer, oldPosition, this));
+            mAdapter.notifyItemChanged(oldPosition);
+        }
+    }
+
+    /**
+     * Handles the user choosing to edit a task.
+     */
+    private void editTask() {
+        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
+        convertDay();
+
+        // Launch an edit intent
+        intentAddItem(mID);
+    }
+
+    /**
+     * Handles the user choosing to delete a task.
+     */
+    private void deleteTask() {
+        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
+        convertDay();
+
+        LogicSubsystem.getInstance().onButtonClick(mID, 1, this);
+
+        removeItem();
+    }
+
+    /**
+     * Ensures that if the user selected a task that was on the work ahead screen that the activity
+     * uses the right indices.
+     */
+    private void convertDay() {
+        Pair<Integer, Integer> convertedDates = LogicSubsystem.getInstance().convertDay(mID);
+
+        if (convertedDates != null) {
+            mPosition = convertedDates.getFirst();
+            mDay = convertedDates.getSecond();
+        }
     }
 
     /**
@@ -221,10 +375,24 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         builder.setPositiveButton(R.string.complete_task, (dialogInterface, i) -> {
             LogicSubsystem.getInstance().addTodayTime(Integer.parseInt(input.getText().toString()));
 
-            // As the task dependency graph has been updated, we must reoptimize it
-            LogicSubsystem.getInstance().Optimize();
+            removeItem();
         });
 
         builder.show();
+    }
+
+    private void removeItem() {
+        // Remove item from list
+        int index = mIDs.indexOf(mID);
+        mAdapter.mTaskItemList.remove(index);
+        mAdapter.notifyItemRemoved(index);
+        mIDs.remove(index);
+
+        for (int i = index; i < mAdapter.mTaskItemList.size(); i++) {
+            mAdapter.mTaskItemList.set(index,
+                    LogicSubsystem.getInstance().TaskItemHelper(mIDs.get(i), i, this));
+        }
+
+        mAdapter.notifyItemRangeChanged(index, mAdapter.getItemCount() - index + 1);
     }
 }

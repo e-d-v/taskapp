@@ -334,7 +334,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         int id = item.getItemId();
 
         // Handles the settings menu item being chosen
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_projects) {
             Intent intent = new Intent(this, ProjectActivity.class);
 
@@ -382,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * Show a prompt asking the user how much time a task took to complete, and then add that time
      * to todayTime.
      */
-    private void ttcPrompt(List<Integer> changedDates, int newDays, int oldDays) {
+    private void ttcPrompt(int newDays, int oldDays) {
         int completionTime = -1;
 
         // Prompt the user to ask how long it took to complete the task, and add this time to
@@ -399,7 +398,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         builder.setPositiveButton(R.string.complete_task, (dialogInterface, i) -> {
             mLogicSubsystem.addTodayTime(Integer.parseInt(input.getText().toString()));
 
-            finishButtonPress(changedDates, newDays, oldDays);
+            finishButtonPress(newDays, oldDays);
         });
 
         builder.show();
@@ -476,10 +475,10 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     private void deleteEvent() {
         int oldDays = mLogicSubsystem.getNumDays();
-        List<Integer> changedDates = mLogicSubsystem.onButtonClick(mPosition, mDay, 2, this);
+        mLogicSubsystem.onButtonClick(mPosition, mDay, 2, this);
         int newDays = mLogicSubsystem.getNumDays();
 
-        finishButtonPress(changedDates, newDays, oldDays);
+        finishButtonPress(newDays, oldDays);
     }
 
     /**
@@ -525,10 +524,10 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         convertDay();
 
         int oldDays = mLogicSubsystem.getNumDays();
-        List<Integer> changedDates = mLogicSubsystem.onButtonClick(mPosition, mDay, 1, this);
+        mLogicSubsystem.onButtonClick(mPosition, mDay, 1, this);
         int newDays = mLogicSubsystem.getNumDays();
 
-        finishButtonPress(changedDates, newDays, oldDays);
+        finishButtonPress(newDays, oldDays);
     }
 
     /**
@@ -546,7 +545,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
 
         int oldDays = mLogicSubsystem.getNumDays();
-        List<Integer> changedDates = mLogicSubsystem.onButtonClick(mPosition, mDay, 0, this);
+        mLogicSubsystem.onButtonClick(mPosition, mDay, 0, this);
         int newDays = mLogicSubsystem.getNumDays();
 
         if (isTimed) {
@@ -560,20 +559,20 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             builder.setPositiveButton("OK", (dialogInterface, i) -> {
                 mLogicSubsystem.addTodayTime(finalTimerVal);
 
-                finishButtonPress(changedDates, newDays, oldDays);
+                finishButtonPress(newDays, oldDays);
             });
 
             // If user chooses to use a different time, show the normal time to complete
             // dialog.
             builder.setNegativeButton("Manual Time", (dialogInterface, i) ->
-                    ttcPrompt(changedDates, newDays, oldDays));
+                    ttcPrompt(newDays, oldDays));
 
             builder.show();
             return;
         }
 
         // User did not have a timer set, so use the normal time to complete dialog.
-        ttcPrompt(changedDates, newDays, oldDays);
+        ttcPrompt(newDays, oldDays);
     }
 
     /**
@@ -594,23 +593,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     /**
      * Updates the recycler after a button press has been handled.
      *
-     * @param changedDates Dates that were changed after a button click.
      * @param newDays How many days are in the recycler now
      * @param oldDays How many days used to be in the recycler.
      */
-    private void finishButtonPress(List<Integer> changedDates, int newDays, int oldDays) {
-        // Make sure to always update the first day so "Work Ahead" can be redisplayed.
-        changedDates = changedDates == null ? new ArrayList<>() : changedDates;
-        changedDates.add(0);
-
-        for (int d : changedDates) {
-            if (d >= newDays) {
-                continue;
-            }
-
-            mDayItemAdapter.mDayItemList.set(d, mLogicSubsystem.DayItemHelper(d, this));
-            mDayItemAdapter.notifyItemChanged(d);
-        }
+    private void finishButtonPress(int newDays, int oldDays) {
+        updateRecycler();
 
         while (mDayItemAdapter.mDayItemList.size() != newDays) {
             mDayItemAdapter.mDayItemList.remove(newDays);
@@ -652,9 +639,21 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         List<Integer> updatedIndices = LogicSubsystem.getInstance().getUpdatedIndices();
 
         for (int index : updatedIndices) {
-            mDayItemAdapter.mDayItemList.set(index,
-                    LogicSubsystem.getInstance().DayItemHelper(index, this));
-            mDayItemAdapter.notifyItemChanged(index);
+            if (index < 0) {
+                continue;
+            }
+            else if (index >= mDayItemAdapter.getItemCount()) {
+                int oldCount = mDayItemAdapter.getItemCount();
+                for (int i = oldCount; i <= index; i++) {
+                    mDayItemAdapter.mDayItemList.add(mLogicSubsystem.DayItemHelper(i, this));
+                }
+                mDayItemAdapter.notifyItemRangeInserted(oldCount, index - oldCount + 1);
+            }
+            else {
+                mDayItemAdapter.mDayItemList.set(index,
+                        LogicSubsystem.getInstance().DayItemHelper(index, this));
+                mDayItemAdapter.notifyItemChanged(index);
+            }
         }
     }
 }

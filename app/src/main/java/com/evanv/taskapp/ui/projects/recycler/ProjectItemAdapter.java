@@ -22,7 +22,7 @@ import java.util.List;
  * @author Evan Voogd
  */
 public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.ProjectViewHolder> {
-    public List<ProjectItem> mProjectsList; // List of project information
+    public final List<ProjectItem> mProjectsList; // List of project information
     private final ClickListener mListener;  // The listener to handle button presses.
 
     /**

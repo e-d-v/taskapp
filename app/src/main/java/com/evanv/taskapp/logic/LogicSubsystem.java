@@ -704,16 +704,15 @@ public class LogicSubsystem {
      * @param action 0 to complete task, 1 to delete task, 2 to delete event
      * @param context Context for resources
      *
-     * @return list of updated dates if ran successfully, false if error occurred.
      */
-    public List<Integer> onButtonClick(int position, int day, int action, Context context) {
+    public void onButtonClick(int position, int day, int action, Context context) {
         List<Integer> toReturn = new ArrayList<>();
 
         if (action == 0 || action == 1) {
             Task toRemove = mTaskSchedule.get(day).get(position);
 
             if (day == -1 || mTaskSchedule.get(day).size() <= position) {
-                return null;
+                return;
             }
 
             // If task to remove is currently being timed, cancel the timer.
@@ -728,7 +727,7 @@ public class LogicSubsystem {
         // Remove the given event from the schedule and re-optimize.
         if (action == 2) {
             if (day == -1 || mEventSchedule.get(day).size() <= position) {
-                return null;
+                return;
             }
             mTaskAppViewModel.delete(mEventSchedule.get(day).get(position));
             mEventSchedule.get(day).remove(position);
@@ -738,7 +737,6 @@ public class LogicSubsystem {
             pareDownSchedules();
         }
 
-        return toReturn;
     }
 
     /**
@@ -748,9 +746,8 @@ public class LogicSubsystem {
      * @param action 0 to complete task, 1 to delete task
      * @param context Context for resources
      *
-     * @return list of updated dates if ran successfully, false if error occurred.
      */
-    public List<Integer> onButtonClick(long ID, int action, Context context) {
+    public void onButtonClick(long ID, int action, Context context) {
         Task toRemove = null;
 
         for (Task t : mTasks) {
@@ -761,19 +758,19 @@ public class LogicSubsystem {
         }
 
         if (toRemove == null) {
-            return null;
+            return;
         }
 
         int day = getDiff(toRemove.getDoDate(), mStartDate);
         int position = mTaskSchedule.get(day).indexOf(toRemove);
 
-        return onButtonClick(position, day, action, context);
+        onButtonClick(position, day, action, context);
     }
 
     /**
      * Get the number of days currently scheduled in the app's internal data structures
      *
-     * @return The number of days currently scheduled in the app's internal data structures
+     * @return
      */
     public int getNumDays() {
         return Integer.max(mEventSchedule.size(), mTaskSchedule.size());
@@ -1613,8 +1610,6 @@ public class LogicSubsystem {
                 mTasks.add(toAdd);
                 mTaskAppViewModel.insert(toAdd);
             }
-
-            mUpdatedIndices.add(index);
         }
     }
 

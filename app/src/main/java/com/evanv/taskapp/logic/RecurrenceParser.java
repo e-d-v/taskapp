@@ -313,7 +313,6 @@ public class RecurrenceParser {
         private final Calendar mRecurCal; // Calendar used to calculate recurrences
         private final boolean[] mDays;    // Days of week to recur on
         private final int mInterval;      // Weeks between recurrences
-        private final int mStartDate;     // Starting day of week
         private int mCurrDate;            // Current day of week
 
         /**
@@ -327,7 +326,6 @@ public class RecurrenceParser {
             mRecurCal.setTime(itemStart);
 
             mCurrDate = mRecurCal.get(Calendar.DAY_OF_WEEK) - 1;
-            mStartDate = mRecurCal.get(Calendar.DAY_OF_WEEK) - 1;
 
             mDays = days;
             mInterval = interval;

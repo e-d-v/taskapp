@@ -87,7 +87,6 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
         EventItem eventItem = mEventItemList.get(position);
         holder.mEventItemName.setText(eventItem.getName());
         holder.mEventItemTimespan.setText(eventItem.getTimespan());
-        holder.mIndex = eventItem.getIndex();
 
         holder.options.setOnClickListener(v -> {
             // Tell MainActivity what item to perform actions on
@@ -117,11 +116,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
     public class EventViewHolder extends RecyclerView.ViewHolder {
         final TextView mEventItemName;     // The TextView representing the name in event_item
         final TextView mEventItemTimespan; // The TextView representing the timespan in event_item
-        // Listener that allows easy completion of tasks (see ClickListener)
-        final WeakReference<ClickListener> mListenerRef;
-        private final int OPTIONS_ID; // The ID of the delete button;
         final ImageButton options;
-        int mIndex; // Index into eventSchedule.get(day) for this event
 
         /**
          * Constructs a new EventViewHolder, setting its values to the views in the event_item
@@ -133,8 +128,6 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
             super(itemView);
             mEventItemName = itemView.findViewById(R.id.eventName);
             mEventItemTimespan = itemView.findViewById(R.id.timespan);
-            mListenerRef = new WeakReference<>(listener);
-            OPTIONS_ID = R.id.buttonEventOptions;
 
             // Sets this as the OnClickListener for the button, so when the button is clicked, we
             // can move up the ClickListener chain to mark the event as deleted in MainActivity's

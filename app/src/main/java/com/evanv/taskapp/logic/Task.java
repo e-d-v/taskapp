@@ -53,12 +53,12 @@ public class Task implements Comparable<Task> {
     @Ignore
     private Project mProject;          // Project for the task.
     @Ignore
-    private List<Label> mLabels;       // Label for the task.
+    private final List<Label> mLabels;       // Label for the task.
 
     @ColumnInfo(name = "project")
     private long mProjectID;           // Project ID for the task.
     @ColumnInfo(name = "labels")
-    private ArrayList<Long> mLabelIDs; // Label ID for the task.
+    private final ArrayList<Long> mLabelIDs; // Label ID for the task.
 
     @NonNull
     @ColumnInfo(name = "parents_list")

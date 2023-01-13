@@ -599,7 +599,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     private void finishButtonPress(int newDays, int oldDays) {
         updateRecycler();
 
-        while (mDayItemAdapter.mDayItemList.size() != newDays) {
+        while (mDayItemAdapter.mDayItemList.size() > newDays) {
             mDayItemAdapter.mDayItemList.remove(newDays);
         }
 

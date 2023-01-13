@@ -472,6 +472,13 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         builder.show();
     }
 
+    /**
+     * Show the context menu when a button/event's option is pressed.
+     *
+     * @param menu The menu to load info into
+     * @param v The button that was pressed
+     * @param menuInfo Not used
+     */
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
@@ -484,6 +491,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
     }
 
+    /**
+     * Dispatches menu button clicks to helper functions.
+     *
+     * @param item The menu item chosen.
+     * @return true always
+     */
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -515,6 +528,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         return true;
     }
 
+    /**
+     * Handles the user choosing to edit an event.
+     */
     private void editEvent() {
         mEditedID = mLogicSubsystem.getEventID(mPosition, mDay);
 
@@ -522,6 +538,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         intentAddItem(AddItem.EXTRA_VAL_EVENT, mEditedID);
     }
 
+    /**
+     * Handles the user choosing to delete an event.
+     */
     private void deleteEvent() {
         int oldDays = mLogicSubsystem.getNumDays();
         List<Integer> changedDates = mLogicSubsystem.onButtonClick(mPosition, mDay, 2, this);
@@ -530,6 +549,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         finishButtonPress(changedDates, newDays, oldDays);
     }
 
+    /**
+     * Handles the user choosing to start a timer on a task.
+     */
     private void timeTask() {
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
@@ -549,6 +571,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
     }
 
+    /**
+     * Handles the user choosing to edit a task.
+     */
     private void editTask() {
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
@@ -559,6 +584,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         intentAddItem(AddItem.EXTRA_VAL_TASK, mEditedID);
     }
 
+    /**
+     * Handles the user choosing to delete a task.
+     */
     private void deleteTask() {
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
@@ -570,6 +598,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         finishButtonPress(changedDates, newDays, oldDays);
     }
 
+    /**
+     * Handles a user choosing to complete a task
+     *
+     * @param position Position on the day'th task recycler of the chosen task
+     * @param day Position in the DayItem recycler of the user's click
+     */
     private void completeTask(int position, int day) {
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
@@ -612,6 +646,10 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         ttcPrompt(changedDates, newDays, oldDays);
     }
 
+    /**
+     * Ensures that if the user selected a task that was on the work ahead screen that the activity
+     * uses the right indices.
+     */
     private void convertDay() {
         if (mDay == 0) {
             Pair<Integer, Integer> convertedDates = mLogicSubsystem.convertDay(mPosition);
@@ -623,6 +661,13 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
     }
 
+    /**
+     * Updates the recycler after a button press has been handled.
+     *
+     * @param changedDates Dates that were changed after a button click.
+     * @param newDays How many days are in the recycler now
+     * @param oldDays How many days used to be in the recycler.
+     */
     private void finishButtonPress(List<Integer> changedDates, int newDays, int oldDays) {
         // Make sure to always update the first day so "Work Ahead" can be redisplayed.
         changedDates = changedDates == null ? new ArrayList<>() : changedDates;

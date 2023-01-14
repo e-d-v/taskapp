@@ -2,8 +2,12 @@ package com.evanv.taskapp.db;
 
 import androidx.room.TypeConverter;
 
+import org.threeten.bp.LocalDate;
+
+import org.threeten.bp.LocalDateTime;
+import org.threeten.bp.ZoneOffset;
+
 import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Class to convert various types for easier storage in Room DB.
@@ -13,25 +17,47 @@ import java.util.Date;
 public class Converters {
 
     /**
-     * Convert Long to Date for easy storing of Date fields in Room DB.
+     * Convert Long to LocalDate for easy storing of LocalDate fields in Room DB.
      *
-     * @param dateLong The long returned from Date.getTime() stored in the Room DB.
-     * @return the Date associated with the long stored in the RoomDB.
+     * @param dateLong The long returned from LocalDate.toEpochDay() stored in the Room DB.
+     * @return the LocalDate associated with the long stored in the RoomDB.
      */
     @TypeConverter
-    public static Date toDate(Long dateLong) {
-        return dateLong == null ? null : new Date(dateLong);
+    public static LocalDate toLocalDate(Long dateLong) {
+        return LocalDate.ofEpochDay(dateLong);
     }
 
     /**
-     * Convert Date to Long for easy storing of Date fields in Room DB.
+     * Convert LocalDate to Long for easy storing of LocalDate fields in Room DB.
      *
      * @param date The day to be converted to a long
      * @return A long based on the day
      */
     @TypeConverter
-    public static Long fromDate(Date date) {
-        return date == null ? null : date.getTime();
+    public static Long fromLocalDate(LocalDate date) {
+        return date.toEpochDay();
+    }
+
+    /**
+     * Convert Long to LocalDateTime for easy storing of LocalDateTime fields in Room DB.
+     *
+     * @param dateLong The long returned from ofEpochSecond stored in the Room DB.
+     * @return the LocalDate associated with the long stored in the RoomDB.
+     */
+    @TypeConverter
+    public static LocalDateTime toLocalDateTime(Long dateLong) {
+        return LocalDateTime.ofEpochSecond(dateLong, 0, ZoneOffset.UTC);
+    }
+
+    /**
+     * Convert LocalDateTime to Long for easy storing of LocalDateTime fields in Room DB.
+     *
+     * @param date The day to be converted to a long
+     * @return A long based on the day
+     */
+    @TypeConverter
+    public static Long fromLocalDateTime(LocalDateTime date) {
+        return date.toEpochSecond(ZoneOffset.UTC);
     }
 
     /**

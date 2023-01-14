@@ -27,11 +27,12 @@ import com.evanv.taskapp.ui.additem.recur.RecurInput;
 import com.evanv.taskapp.ui.main.MainActivity;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
-import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalDateTime;
+import org.threeten.bp.temporal.ChronoField;
+import org.threeten.bp.temporal.ChronoUnit;
+
 import java.util.Locale;
-import java.util.Objects;
 
 /**
  * The fragment that handles data entry for new events
@@ -110,7 +111,7 @@ public class EventEntry extends Fragment implements ItemEntry {
             return false;
         }
 
-        Date startTime = null;
+        LocalDateTime startTime;
 
         // Check if ECD is valid
         if (ecd.length() == 0) {
@@ -120,16 +121,11 @@ public class EventEntry extends Fragment implements ItemEntry {
             return false;
         }
         else {
-            try {
-                startTime = Event.dateFormat.parse(ecd);
-            } catch (ParseException e) {
-                Toast.makeText(getActivity(), R.string.ecd_empty_event, Toast.LENGTH_LONG).show();
-                return false;
-            }
+            startTime = LocalDateTime.from(Event.dateFormat.parse(ecd));
         }
 
         // Check if End Time is valid
-        Date endTimeDate;
+        LocalDateTime endTimeDate;
         if (endTime.length() == 0) {
             Toast.makeText(getActivity(),
                     R.string.enter_end_time,
@@ -138,9 +134,9 @@ public class EventEntry extends Fragment implements ItemEntry {
         }
         else {
             try {
-                endTimeDate = Event.dateFormat.parse(endTime);
+                endTimeDate = LocalDateTime.from(Event.dateFormat.parse(endTime));
                 assert endTimeDate != null;
-                assert !endTimeDate.before(startTime);
+                assert !endTimeDate.isBefore(startTime);
             } catch (Throwable e) {
                 Toast.makeText(getActivity(), R.string.enter_end_time, Toast.LENGTH_LONG).show();
                 return false;
@@ -182,10 +178,10 @@ public class EventEntry extends Fragment implements ItemEntry {
         button.setOnClickListener(v -> intentRecur());
 
         mEditTextECD.setOnClickListener(v -> new DatePickerFragment(mEditTextECD,
-                getString(R.string.start_time), new Date(), null, true)
+                getString(R.string.start_time), LocalDate.now(), null, true)
                 .show(getParentFragmentManager(), getTag()));
         mEditTextEndTime.setOnClickListener(v -> new DatePickerFragment(mEditTextEndTime,
-                getString(R.string.end_time), new Date(), null, true)
+                getString(R.string.end_time), LocalDate.now(), null, true)
                 .show(getParentFragmentManager(), getTag()));
 
         // Initialize the information buttons to help the user understand the fields.
@@ -216,11 +212,10 @@ public class EventEntry extends Fragment implements ItemEntry {
             mEditTextECD.setText(Event.dateFormat.format(LogicSubsystem.getInstance().getEventECD(mID)));
 
             // Set the end time
-            Calendar calculateEndTime = Calendar.getInstance();
-            calculateEndTime.setTime(LogicSubsystem.getInstance().getEventECD(mID));
-            calculateEndTime.add(Calendar.MINUTE, LogicSubsystem.getInstance().getEventTTC(mID));
-
-            mEditTextEndTime.setText(Event.dateFormat.format(calculateEndTime.getTime()));
+            int ttc = LogicSubsystem.getInstance().getEventTTC(mID);
+            LocalDateTime endTime =
+                    LogicSubsystem.getInstance().getEventECD(mID).plus(ttc, ChronoUnit.MINUTES);
+            mEditTextEventName.setText(Event.dateFormat.format(endTime));
         }
 
         // Inflate the layout for this fragment
@@ -235,32 +230,24 @@ public class EventEntry extends Fragment implements ItemEntry {
         Intent intent = new Intent(getActivity(), RecurActivity.class);
 
         // Get the date information the user has entered
-        Calendar ecdCal = Calendar.getInstance();
         long time;
-        try {
-            String ecdText = mEditTextECD.getText().toString();
-            Date ecd = Event.dateFormat.parse(ecdText);
-            time = Objects.requireNonNull(ecd).getTime();
-            ecdCal.setTime(Objects.requireNonNull(ecd));
-        } catch (ParseException e) {
-            Toast.makeText(getActivity(),
-                    R.string.ecd_help_text_format,
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
+        LocalDate ecd;
+        String ecdText = mEditTextECD.getText().toString();
+        ecd = LocalDate.from(Event.dateFormat.parse(ecdText));
+        time = ecd.toEpochDay();
 
         // Get the day in month e.g. "31st"
-        intent.putExtra(EXTRA_DAY, getOrdinalDayInMonth(ecdCal.getTime()));
+        intent.putExtra(EventEntry.EXTRA_DAY, EventEntry.getOrdinalDayInMonth(ecd));
 
         // Get the ordinal day of week e.g. "3rd Monday"
-        intent.putExtra(EXTRA_DESC, getOrdinalDayInWeek(requireContext(), ecdCal.getTime()));
+        intent.putExtra(EventEntry.EXTRA_DESC, EventEntry.getOrdinalDayInWeek(requireContext(), ecd));
 
         // Get the month e.g. "August"
-        intent.putExtra(EXTRA_MONTH,
-                getResources().getStringArray(R.array.months)[ecdCal.get(Calendar.MONTH)]);
+        intent.putExtra(EventEntry.EXTRA_MONTH,
+                getResources().getStringArray(R.array.months)[ecd.get(ChronoField.MONTH_OF_YEAR) - 1]);
 
         // Get the time
-        intent.putExtra(EXTRA_TIME, time);
+        intent.putExtra(EventEntry.EXTRA_TIME, time);
 
         // Launch RecurActivity
         mStartForResult.launch(intent);
@@ -273,33 +260,27 @@ public class EventEntry extends Fragment implements ItemEntry {
      *
      * @return The ordinal day in month (e.g. "31st") of the given Date
      */
-    public static String getOrdinalDayInMonth(Date date) {
-        Calendar ecdCal = Calendar.getInstance();
-        ecdCal.setTime(date);
-
+    public static String getOrdinalDayInMonth(LocalDate date) {
         // Format the number to ordinal (the "st" in "31st")
         RuleBasedNumberFormat formatter = new RuleBasedNumberFormat(Locale.US,
                 RuleBasedNumberFormat.ORDINAL);
 
         // Return the day
-        return formatter.format(ecdCal.get(Calendar.DAY_OF_MONTH));
+        return formatter.format(date.get(ChronoField.DAY_OF_MONTH));
     }
 
     /**
      * Get the ordinal day in week for a specific Date (e.g. "3rd Monday")
      *
-     * @param date The Date to build the ordinal date out of
      * @param context The context of the call for resources
      *
+     * @param date The Date to build the ordinal date out of
      * @return The ordinal day in week (e.g. "3rd Monday") of the given Date
      */
-    public static String getOrdinalDayInWeek(Context context, Date date) {
-        Calendar ecdCal = Calendar.getInstance();
-        ecdCal.setTime(date);
-
+    public static String getOrdinalDayInWeek(Context context, LocalDate date) {
         // Get the day of week in month and day of week (e.g. the "3" and "Monday" in "3rd Monday")
-        int dayOfWeekInMonth = ecdCal.get(Calendar.DAY_OF_WEEK_IN_MONTH);
-        int weekday = ecdCal.get(Calendar.DAY_OF_WEEK);
+        int dayOfWeekInMonth = date.get(ChronoField.ALIGNED_DAY_OF_WEEK_IN_MONTH);
+        int weekday = date.get(ChronoField.DAY_OF_WEEK);
 
         // Format the number to ordinal (the "st" in "31st")
         RuleBasedNumberFormat formatter = new RuleBasedNumberFormat(Locale.US,

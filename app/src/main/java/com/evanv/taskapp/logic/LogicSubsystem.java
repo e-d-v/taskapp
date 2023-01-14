@@ -1,7 +1,5 @@
 package com.evanv.taskapp.logic;
 
-import static com.evanv.taskapp.logic.Event.clearTime;
-import static com.evanv.taskapp.logic.Task.clearDate;
 import static com.evanv.taskapp.logic.Task.getDiff;
 
 import android.content.Context;
@@ -18,12 +16,14 @@ import com.evanv.taskapp.ui.main.recycler.DayItem;
 import com.evanv.taskapp.ui.main.recycler.EventItem;
 import com.evanv.taskapp.ui.main.recycler.TaskItem;
 
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalDateTime;
+import org.threeten.bp.ZoneOffset;
+import org.threeten.bp.temporal.ChronoUnit;
+
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import kotlin.Pair;
 
@@ -39,13 +39,13 @@ public class LogicSubsystem {
     private final List<List<Task>> mTaskSchedule = new ArrayList<>();
     // eventSchedule[i] represents the list of events for the day i days past startDate
     private final List<List<Event>> mEventSchedule = new ArrayList<>();
-    private final Date mStartDate;                // The current date
+    private final LocalDate mStartDate;           // The current date
     private int mTodayTime;                       // The time spent completing tasks today
     private List<Task> mTasks;                    // List of all tasks for user
     private TaskAppViewModel mTaskAppViewModel;   // ViewModel to interact with Database
     private List<Task> overdueTasks;              // Overdue tasks
     private Task mTimerTask;                      // Task currently being timed.
-    private Date mTimer;                          // Start time of current timer
+    private LocalDateTime mTimer;                 // Start time of current timer
     @Nullable private List<Task> mWorkAheadTasks; // List of tasks currently work ahead.
     private final List<Project> mProjects;        // List of current projects.
     private final List<Label> mLabels;            // List of current labels.
@@ -71,7 +71,7 @@ public class LogicSubsystem {
         this.mTodayTime = todayTime;
 
         // startDate is our representation for the current date upon the launch of TaskApp.
-        mStartDate = clearDate(new Date());
+        mStartDate = LocalDate.now();
 
         // Populate from database;
         Thread thread = new Thread() {
@@ -88,7 +88,7 @@ public class LogicSubsystem {
 
         // Set the timer
         if (timerStart != -1) {
-            mTimer = new Date(timerStart);
+            mTimer = LocalDateTime.now();
         }
 
         // Get tasks from database
@@ -111,10 +111,10 @@ public class LogicSubsystem {
 
             // Calculate how many days past today's date this task is scheduled for. Used to
             // index into taskSchedule
-            Date doDate = t.getDoDate();
+            LocalDate doDate = t.getDoDate();
             int index = getDiff(doDate, mStartDate);
 
-            if (t.getEarlyDate().before(mStartDate)) {
+            if (t.getEarlyDate().isBefore(mStartDate)) {
                 t.setEarlyDate(mStartDate);
                 mTaskAppViewModel.update(t);
             }
@@ -185,13 +185,13 @@ public class LogicSubsystem {
         for (int i = 0; i < overdueNames.length; i++) {
             Task t = overdueTasks.get(i);
 
-            if (t.getDoDate().getTime() == 0) {
+            if (t.getDoDate().isEqual(LocalDate.MIN)) {
                 mTasks.remove(t);
                 mTaskAppViewModel.delete(t);
                 continue;
             }
 
-            Date tDate = t.getDueDate();
+            LocalDate tDate = t.getDueDate();
             overdueNames[i] = String.format(context.getString(R.string.due_when), t.getName(),
                     Task.dateFormat.format(tDate));
         }
@@ -223,7 +223,7 @@ public class LogicSubsystem {
 
                 Task t = overdueTasks.get(i);
 
-                if (t.getDueDate().before(mStartDate)) {
+                if (t.getDueDate().isBefore(mStartDate)) {
                     t.setDueDate(mStartDate);
                 }
             }
@@ -251,11 +251,11 @@ public class LogicSubsystem {
         for (Event e : events) {
             // Calculate how many days past today's date this event is scheduled for. Used to
             // index into eventSchedule
-            Date doDate = e.getDoDate();
+            LocalDateTime doDate = e.getDoDate();
             int doDateIndex = getDiff(doDate, mStartDate);
 
             // Add the events to the list if they aren't for an earlier date
-            if (!doDate.before(mStartDate)) {
+            if (!doDate.toLocalDate().isBefore(mStartDate)) {
                 for (int j = mEventSchedule.size(); j <= doDateIndex; j++) {
                     mEventSchedule.add(new ArrayList<>());
                 }
@@ -293,7 +293,7 @@ public class LogicSubsystem {
             l.removeTask(task);
         }
 
-        Date doDate = task.getDoDate();
+        LocalDate doDate = task.getDoDate();
 
         // Get the number of days past the start date this task is scheduled for, so we can get the
         // index of the taskSchedule member for it's do date.
@@ -443,7 +443,7 @@ public class LogicSubsystem {
         List<TaskItem> tasks;
 
         // Date representing the date i days past today's date
-        Date curr = xDaysPast(i);
+        LocalDate curr = mStartDate.plus(i, ChronoUnit.DAYS);
 
         // Number representing totalTime this date has scheduled.
         int totalTime = getTotalTime(i);
@@ -521,11 +521,8 @@ public class LogicSubsystem {
         String timespan;
 
         // Get the start/end time in MyTime objects
-        Date eventTime = event.getDoDate();
-        Calendar endCal = Calendar.getInstance();
-        endCal.setTime(eventTime);
-        endCal.add(Calendar.MINUTE, event.getLength());
-        Date endTime = clearTime(endCal.getTime());
+        LocalDateTime eventTime = event.getDoDate();
+        LocalDateTime endTime = eventTime.plus(event.getLength(), ChronoUnit.MINUTES);
 
         // Format the event name as Name: StartTime-EndTime
         name = event.getName();
@@ -587,7 +584,7 @@ public class LogicSubsystem {
 
         boolean hasTimer = mTimerTask != null && mTimerTask == task;
 
-        int priority = !mStartDate.before(task.getDueDate()) ? 4 : task.getPriority();
+        int priority = !mStartDate.isBefore(task.getDueDate()) ? 4 : task.getPriority();
 
         String project = task.getProject() == null ? null : task.getProject().getName();
         int projectColor = task.getProject() == null ? -1 : task.getProject().getColor();
@@ -623,21 +620,6 @@ public class LogicSubsystem {
         }
 
         return null;
-    }
-
-    /**
-     * Returns a Date x days past today's date.
-     *
-     * @param x Number of days past today's date
-     *
-     * @return A Date x days past today's date.
-     */
-    private Date xDaysPast(int x) {
-        // Date representing the date i days past today's date
-        Calendar currCal = Calendar.getInstance();
-        currCal.add(Calendar.DAY_OF_YEAR, x);
-
-        return clearDate(currCal.getTime());
     }
 
     /**
@@ -688,7 +670,7 @@ public class LogicSubsystem {
     public ArrayList<String> getTaskNames(Context context) {
         ArrayList<String> taskNames = new ArrayList<>();
         for (Task t : mTasks) {
-            Date tDate = t.getDueDate();
+            LocalDate tDate = t.getDueDate();
             taskNames.add(String.format(context.getString(R.string.due_when), t.getName(),
                     Task.dateFormat.format(tDate)));
         }
@@ -770,7 +752,7 @@ public class LogicSubsystem {
     /**
      * Get the number of days currently scheduled in the app's internal data structures
      *
-     * @return
+     * @return The number of days tracked in the system
      */
     public int getNumDays() {
         return Integer.max(mEventSchedule.size(), mTaskSchedule.size());
@@ -792,36 +774,8 @@ public class LogicSubsystem {
             return;
         }
 
-        mTimer = new Date();
+        mTimer = LocalDateTime.now();
         mTimerTask = toTime;
-    }
-
-    /**
-     * Start or cancel a timer.
-     *
-     * @param ID the ID of the task to start timing
-     */
-    public void timer(long ID) {
-        Task toTime = null;
-
-        for (Task t : mTasks) {
-            if (t.getID() == ID) {
-                toTime = t;
-                break;
-            }
-        }
-
-        if (mTimerTask == toTime) {
-            mTimerTask = null;
-            mTimer = null;
-
-            return;
-        }
-
-        mTimer = new Date();
-        mTimerTask = toTime;
-
-        mUpdatedIndices.add(getDiff(mTimerTask.getDoDate(), mStartDate));
     }
 
     /**
@@ -837,23 +791,6 @@ public class LogicSubsystem {
     }
 
     /**
-     * Returns if the selected task is currently being timed.
-     *
-     * @param ID the ID of the given task
-     *
-     * @return true if given task is timed, false otherwise.
-     */
-    public boolean isTimed(long ID) {
-        for (Task task : mTasks) {
-            if (task.getID() == ID) {
-                return task == mTimerTask;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Get the amount of time elapsed in the current timer.
      *
      * @return Amount of time elapsed in the current timer, or -1 if no timer is set.
@@ -863,12 +800,12 @@ public class LogicSubsystem {
             return -1;
         }
 
-        Date currTime = new Date();
+        LocalDateTime currTime = LocalDateTime.now();
+        int toReturn = (int) ChronoUnit.MINUTES.between(mTimer, currTime);
+        // This ensures we round up to the nearest minute instead of rounding down.
+        toReturn += ChronoUnit.SECONDS.between(mTimer, currTime) % 60 != 0 ? 1 : 0;
 
-        // Weird, but this calculates number of minutes task took while rounding up to the nearest
-        // minute instead of rounding down.
-        return (int) Math.ceil(((double) (currTime.getTime() - mTimer.getTime()))
-                / ((double) TimeUnit.MINUTES.toMillis(1)));
+        return toReturn;
     }
 
     /**
@@ -886,7 +823,7 @@ public class LogicSubsystem {
      * @return long representation of the timer Date, or -1 if no timer is active.
      */
     public long getTimerStart() {
-        return (mTimer == null) ? -1 : mTimer.getTime();
+        return (mTimer == null) ? -1 : mTimer.toEpochSecond(ZoneOffset.UTC);
     }
 
     /**
@@ -1013,7 +950,7 @@ public class LogicSubsystem {
      *
      * @return A TaskItem list with these parameters.
      */
-    public List<TaskItem> filter(Date startDate, Date endDate, long project, String name,
+    public List<TaskItem> filter(LocalDate startDate, LocalDate endDate, long project, String name,
                                  int minTime, int maxTime, boolean completable, List<Long> labels,
                                  int priority, Context context) {
         List<Task> toReturn = new ArrayList<>(mTasks);
@@ -1021,7 +958,7 @@ public class LogicSubsystem {
         // Remove all tasks that are due before the given start date.
         if (startDate != null) {
             for (int i = 0; i < toReturn.size(); i++) {
-                if (toReturn.get(i).getDueDate().before(startDate)) {
+                if (toReturn.get(i).getDueDate().isBefore(startDate)) {
                     toReturn.remove(i);
                     i--;
                 }
@@ -1031,7 +968,7 @@ public class LogicSubsystem {
         // Remove all tasks that are due after the given end date.
         if (endDate != null) {
             for (int i = 0; i < toReturn.size(); i++) {
-                if (toReturn.get(i).getDueDate().after(endDate)) {
+                if (toReturn.get(i).getDueDate().isAfter(endDate)) {
                     Log.d("date1", Event.dateFormat.format(endDate));
                     Log.d("date2", Event.dateFormat.format(toReturn.get(i).getDueDate()));
                     toReturn.remove(i);
@@ -1086,7 +1023,7 @@ public class LogicSubsystem {
                 Task task = toReturn.get(i);
 
                 // Check if each task can be currently completed.
-                if (!(task.getEarlyDate().equals(clearDate(new Date())))
+                if (!task.getEarlyDate().isEqual(mStartDate)
                         || !(task.getParents().size() == 0)) {
                     toReturn.remove(i);
                     i--;
@@ -1222,7 +1159,7 @@ public class LogicSubsystem {
      * @param id ID of the task
      * @return the earliest completion date of the Task with the given ID
      */
-    public Date getTaskECD(long id) {
+    public LocalDate getTaskECD(long id) {
         for (Task t : mTasks) {
             if (t.getID() == id) {
                 return t.getEarlyDate();
@@ -1238,7 +1175,7 @@ public class LogicSubsystem {
      * @param id ID of the task
      * @return the due date of the Task with the given ID
      */
-    public Date getTaskDD(long id) {
+    public LocalDate getTaskDD(long id) {
         for (Task t : mTasks) {
             if (t.getID() == id) {
                 return t.getDueDate();
@@ -1393,7 +1330,7 @@ public class LogicSubsystem {
      * @param id ID of the Event
      * @return the earliest completion date of the Event with the given ID
      */
-    public Date getEventECD(long id) {
+    public LocalDateTime getEventECD(long id) {
         for (List<Event> day : mEventSchedule) {
             for (Event e : day) {
                 if (e.getID() == id) {
@@ -1455,19 +1392,20 @@ public class LogicSubsystem {
      * @param id ID of the event if it needs to be updated, -1 otherwise.
      * @param context Context for resources.
      */
-    public void editEvent(String name, Date start, Date end, Bundle recur, long id, Context context) {
+    public void editEvent(String name, LocalDateTime start, LocalDateTime end, Bundle recur,
+                          long id, Context context) {
         // Make sure ID is only reused once if it's supposed to edit an item.
         boolean first = id != -1;
 
         // Get information on event recurrence
         RecurrenceParser rp = new RecurrenceParser(context);
-        List<Date> recurrenceDates = rp.parseBundle(recur, start);
+        List<LocalDateTime> recurrenceDates = rp.parseBundle(recur, start);
 
         // Calculate Length of Event
-        int ttc = (int) ((end.getTime() - start.getTime()) / TimeUnit.MINUTES.toMillis(1));
+        int ttc = (int) ChronoUnit.MINUTES.between(start, end);
 
         // Add event based on recurrence information
-        for (Date d : recurrenceDates) {
+        for (LocalDateTime d : recurrenceDates) {
             int index = getDiff(d, mStartDate);
 
             // Make sure there is enough mEventSchedules.
@@ -1517,12 +1455,12 @@ public class LogicSubsystem {
      * @param id the ID of the task if it is to be updated, -1 otherwise
      * @param context Context for resources
      */
-    public void editTask(String name, Date early, Date due, Bundle recur, int timeToComplete,
-                         int project, long[] labelIDs, List<Long> parents, int priority, long id,
-                         Context context) {
+    public void editTask(String name, LocalDate early, LocalDate due, Bundle recur,
+                         int timeToComplete, int project, long[] labelIDs, List<Long> parents,
+                         int priority, long id, Context context) {
         // Parse the recurrence information
         RecurrenceParser rp = new RecurrenceParser(context);
-        List<Date> recurrenceDates = rp.parseBundle(recur, early);
+        List<LocalDate> recurrenceDates = rp.parseBundle(recur, early);
 
         // Get how long the user is given to complete a task.
         int diff = getDiff(due, early);
@@ -1530,7 +1468,7 @@ public class LogicSubsystem {
         // Make sure ID is only reused once if it's supposed to edit an item.
         boolean first = id != -1;
 
-        for (Date d : recurrenceDates) {
+        for (LocalDate d : recurrenceDates) {
             int index = getDiff(d, mStartDate);
 
             // Make sure there is enough mEventSchedules.
@@ -1540,11 +1478,9 @@ public class LogicSubsystem {
             }
 
             // Get the day based on the recurrence information
-            Calendar dDue = Calendar.getInstance();
-            dDue.setTime(d);
-            dDue.add(Calendar.DAY_OF_YEAR, diff);
+            LocalDate dueDate = d.plus(diff, ChronoUnit.DAYS);
 
-            Task toAdd = new Task(name, d, dDue.getTime(), timeToComplete, priority);
+            Task toAdd = new Task(name, d, dueDate, timeToComplete, priority);
 
             // Add the given project
             if (project != 0) {

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,12 +28,11 @@ import com.evanv.taskapp.ui.additem.recur.RecurInput;
 import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
 
-import java.text.ParseException;
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.temporal.ChronoField;
+
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * The fragment that handles data entry for new tasks
@@ -170,29 +168,21 @@ public class TaskEntry extends Fragment implements ItemEntry {
         // a keyboard
         mEditTextECD.setOnClickListener(view1 -> {
             // Set the max date so the early date can't be set as later than the due date
-            Date maxDate = null;
+            LocalDate maxDate = null;
             if (!editTextDueDate.getText().toString().equals("")) {
-                try {
-                    maxDate = Task.dateFormat.parse(editTextDueDate.getText().toString());
-                } catch (ParseException e) {
-                    Log.e(this.getTag(), e.getMessage());
-                }
+                maxDate = LocalDate.from(Task.dateFormat.parse(editTextDueDate.getText().toString()));
             }
 
             // Generate and show the DatePicker
             DialogFragment newFragment = new DatePickerFragment(mEditTextECD, getString(R.string.ecd),
-                    new Date(), maxDate, false);
+                    LocalDate.now(), maxDate, false);
             newFragment.show(getParentFragmentManager(), "datePicker");
         });
         editTextDueDate.setOnClickListener(view1 -> {
             // Set the min date so the due date can't be before the early date.
-            Date minDate = new Date();
+            LocalDate minDate = LocalDate.now();
             if (!mEditTextECD.getText().toString().equals("")) {
-                try {
-                    minDate = Task.dateFormat.parse(mEditTextECD.getText().toString());
-                } catch (ParseException e) {
-                    Log.e(this.getTag(), e.getMessage());
-                }
+                minDate = LocalDate.from(Task.dateFormat.parse(mEditTextECD.getText().toString()));
             }
 
             // Generate and show the DatePicker
@@ -287,30 +277,21 @@ public class TaskEntry extends Fragment implements ItemEntry {
         Intent intent = new Intent(getActivity(), RecurActivity.class);
 
         // Get the date information the user has entered
-        Calendar ecdCal = Calendar.getInstance();
         long time;
-        try {
-            String ecdText = mEditTextECD.getText().toString();
-            Date ecd = Task.dateFormat.parse(ecdText);
-            time = Objects.requireNonNull(ecd).getTime();
-            ecdCal.setTime(Objects.requireNonNull(ecd));
-        } catch (ParseException e) {
-            Toast.makeText(getActivity(),
-                    R.string.ecd_reminder,
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
+        LocalDate ecd;
+        String ecdText = mEditTextECD.getText().toString();
+        ecd = LocalDate.from(Task.dateFormat.parse(ecdText));
+        time = ecd.toEpochDay();
 
         // Get the day in month e.g. "31st"
-        intent.putExtra(EventEntry.EXTRA_DAY, EventEntry.getOrdinalDayInMonth(ecdCal.getTime()));
+        intent.putExtra(EventEntry.EXTRA_DAY, EventEntry.getOrdinalDayInMonth(ecd));
 
         // Get the ordinal day of week e.g. "3rd Monday"
-        intent.putExtra(EventEntry.EXTRA_DESC, EventEntry.getOrdinalDayInWeek(requireContext(),
-                ecdCal.getTime()));
+        intent.putExtra(EventEntry.EXTRA_DESC, EventEntry.getOrdinalDayInWeek(requireContext(), ecd));
 
         // Get the month e.g. "August"
         intent.putExtra(EventEntry.EXTRA_MONTH,
-                getResources().getStringArray(R.array.months)[ecdCal.get(Calendar.MONTH)]);
+                getResources().getStringArray(R.array.months)[ecd.get(ChronoField.MONTH_OF_YEAR) - 1]);
 
         // Get the time
         intent.putExtra(EventEntry.EXTRA_TIME, time);
@@ -344,7 +325,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         }
 
         // Check if ECD is valid
-        Date early;
+        LocalDate early;
         if (ecd.length() == 0) {
             Toast.makeText(getActivity(),
                     R.string.ecd_empty_task,
@@ -352,16 +333,11 @@ public class TaskEntry extends Fragment implements ItemEntry {
             return false;
         }
         else {
-            try {
-                early = Task.dateFormat.parse(ecd);
-            } catch (ParseException e) {
-                Toast.makeText(getActivity(), R.string.ecd_empty_task, Toast.LENGTH_LONG).show();
-                return false;
-            }
+            early = LocalDate.from(Task.dateFormat.parse(ecd));
         }
 
         // Ensure the user entered a dueDate
-        Date due;
+        LocalDate due;
         if (dueDate.length() == 0) {
             Toast.makeText(getActivity(),
                     R.string.due_empty_task,
@@ -371,12 +347,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         // Ensure the user entered a valid due date. (Probably) not necessary as the DatePicker
         // should handle this, but kept just in case.
         else {
-            try {
-                due = Task.dateFormat.parse(dueDate);
-            } catch (ParseException e) {
-                Toast.makeText(getActivity(), R.string.due_empty_task, Toast.LENGTH_LONG).show();
-                return false;
-            }
+            due = LocalDate.from(Task.dateFormat.parse(dueDate));
         }
 
         // Check if length is valid

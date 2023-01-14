@@ -1,7 +1,5 @@
 package com.evanv.taskapp.ui.main;
 
-import static com.evanv.taskapp.logic.Task.clearDate;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -38,8 +36,9 @@ import com.evanv.taskapp.ui.projects.ProjectActivity;
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.threeten.bp.LocalDate;
+
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import kotlin.Pair;
@@ -63,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     private ActivityResultLauncher<Intent> mUpdateUILauncher;
     // Allows us to manually show FAB when task/event completed/deleted.
     LogicSubsystem mLogicSubsystem;                // Subsystem that handles logic for taskapp
-    private Date mStartDate;                       // The current date
+    private LocalDate mStartDate;                  // The current date
     private long mEditedID;                        // ID of the currently edited task
     private int mPosition;                         // Position of button press
     private int mDay;                              // Day of button press
@@ -136,13 +135,13 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         setContentView(mBinding.getRoot());
 
         // startDate is our representation for the current date upon the launch of TaskApp.
-        mStartDate = clearDate(new Date());
+        mStartDate = LocalDate.now();
 
         // Get todayTime from shared preferences
         SharedPreferences sp = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
-        Date todayTimeDate = new Date(sp.getLong(PREF_DAY, -1L));
+        LocalDate todayTimeDate = LocalDate.ofEpochDay(sp.getLong(PREF_DAY, -1L));
         int todayTime = 0;
-        if (!todayTimeDate.before(mStartDate)) {
+        if (!todayTimeDate.isBefore(mStartDate)) {
             todayTime = sp.getInt(PREF_TIME, 0);
         }
 
@@ -279,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // Update todayTime in SharedPreferences
         SharedPreferences sp = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
         SharedPreferences.Editor edit = sp.edit();
-        edit.putLong(PREF_DAY, mStartDate.getTime());
+        edit.putLong(PREF_DAY, mStartDate.toEpochDay());
         edit.putInt(PREF_TIME, mLogicSubsystem.getTodayTime());
         edit.putLong(PREF_TIMED_TASK, mLogicSubsystem.getTimedID());
         edit.putLong(PREF_TIMER, mLogicSubsystem.getTimerStart());

@@ -5,33 +5,26 @@ import androidx.fragment.app.DialogFragment;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.TextWatcher;
 import android.text.style.StyleSpan;
-import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.evanv.taskapp.R;
-import com.evanv.taskapp.logic.Event;
 import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.logic.Task;
-import com.evanv.taskapp.ui.additem.TaskEntry;
 import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
 
-import java.text.ParseException;
+import org.threeten.bp.LocalDate;
+
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Objects;
 
 /**
  * Search field for user to lookup tasks.
@@ -56,11 +49,11 @@ public class FilterActivity extends AppCompatActivity {
         mContext = this;
 
         // Add the AddLabelsListener
-        ((ImageButton) findViewById(R.id.imageButtonLabels)).setOnClickListener
+        findViewById(R.id.imageButtonLabels).setOnClickListener
                 (new AddLabelsListener());
 
         // Add the PickProjectListener
-        ((ImageButton) findViewById(R.id.imageButtonProject)).setOnClickListener
+        findViewById(R.id.imageButtonProject).setOnClickListener
                 (new PickProjectListener());
 
         // Make starting text bold
@@ -102,27 +95,23 @@ public class FilterActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                try {
-                    Date toConvert = Task.dateFormat.parse(charSequence.toString());
-                    mStartDate = Objects.requireNonNull(toConvert).getTime();
+                LocalDate toConvert = LocalDate.from(Task.dateFormat.parse(charSequence.toString()));
+                mStartDate = toConvert.toEpochDay();
 
-                    // Update the UI
-                    TextView startDateLabel = findViewById(R.id.startDateLabel);
+                // Update the UI
+                TextView startDateLabel = findViewById(R.id.startDateLabel);
 
-                    // Get number of selected labels
-                    String dateString = Task.dateFormat.format(toConvert);
-                    String formatString = getString(R.string.start_date_replace);
+                // Get number of selected labels
+                String dateString = Task.dateFormat.format(toConvert);
+                String formatString = getString(R.string.start_date_replace);
 
-                    // Make starting text bold
-                    SpannableString startDateText = new SpannableString(String.format
-                            (formatString, dateString));
-                    startDateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                            0, formatString.indexOf('\n'), 0);
+                // Make starting text bold
+                SpannableString startDateText = new SpannableString(String.format
+                        (formatString, dateString));
+                startDateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
+                        0, formatString.indexOf('\n'), 0);
 
-                    startDateLabel.setText(startDateText);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+                startDateLabel.setText(startDateText);
             }
 
             @Override
@@ -132,11 +121,11 @@ public class FilterActivity extends AppCompatActivity {
         });
         findViewById(R.id.startDateButton).setOnClickListener(view1 -> {
             // Set the max date so the early date can't be set as later than the due date
-            Date maxDate = (mEndDate == 0) ? null : new Date(mEndDate);
+            LocalDate maxDate = (mEndDate == 0) ? null : LocalDate.ofEpochDay(mEndDate);
 
             // Generate and show the DatePicker
             DialogFragment newFragment = new DatePickerFragment(fakeStartET, getString(R.string.start_date),
-                    new Date(), maxDate, false);
+                    LocalDate.now(), maxDate, false);
             newFragment.show(getSupportFragmentManager(), "datePicker");
         });
 
@@ -150,27 +139,23 @@ public class FilterActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                try {
-                    Date toConvert = Task.dateFormat.parse(charSequence.toString());
-                    mEndDate = Objects.requireNonNull(toConvert).getTime();
+                LocalDate toConvert = LocalDate.from(Task.dateFormat.parse(charSequence.toString()));
+                mEndDate = toConvert.toEpochDay();
 
-                    // Update the UI
-                    TextView endDateLabel = findViewById(R.id.endDateLabel);
+                // Update the UI
+                TextView endDateLabel = findViewById(R.id.endDateLabel);
 
-                    // Get number of selected labels
-                    String dateString = Task.dateFormat.format(toConvert);
-                    String formatString = getString(R.string.end_date_replace);
+                // Get number of selected labels
+                String dateString = Task.dateFormat.format(toConvert);
+                String formatString = getString(R.string.end_date_replace);
 
-                    // Make starting text bold
-                    SpannableString endDateText = new SpannableString(String.format
-                            (formatString, dateString));
-                    endDateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                            0, formatString.indexOf('\n'), 0);
+                // Make starting text bold
+                SpannableString endDateText = new SpannableString(String.format
+                        (formatString, dateString));
+                endDateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
+                        0, formatString.indexOf('\n'), 0);
 
-                    endDateLabel.setText(endDateText);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+                endDateLabel.setText(endDateText);
             }
 
             @Override
@@ -180,7 +165,8 @@ public class FilterActivity extends AppCompatActivity {
         });
         findViewById(R.id.endDateButton).setOnClickListener(view1 -> {
             // Set the max date so the early date can't be set as later than the due date
-            Date minDate = (mStartDate == 0) ? Task.clearDate(new Date()) : new Date(mStartDate);
+            LocalDate minDate = (mStartDate == 0) ? LocalDate.now() :
+                    LocalDate.ofEpochDay(mStartDate);
 
             // Generate and show the DatePicker
             DialogFragment newFragment = new DatePickerFragment(fakeEndET, getString(R.string.start_date),
@@ -230,7 +216,7 @@ public class FilterActivity extends AppCompatActivity {
         }
 
         // Get Priority
-        SeekBar seekBar = ((SeekBar) findViewById(R.id.seekBar));
+        SeekBar seekBar = findViewById(R.id.seekBar);
         intent.putExtra(TaskListActivity.EXTRA_PRIORITY, seekBar.getProgress());
 
         // Get Completable
@@ -306,7 +292,7 @@ public class FilterActivity extends AppCompatActivity {
                                             .getLabelID(selectedItems.get(i));
                                 }
 
-                                TextView labelsLabel = (TextView)findViewById(R.id.labelsLabel);
+                                TextView labelsLabel = findViewById(R.id.labelsLabel);
 
                                 // Get number of selected labels
                                 int numLabels = mLabels.length;
@@ -357,7 +343,7 @@ public class FilterActivity extends AppCompatActivity {
                             mProject = LogicSubsystem.getInstance().getProjectID(i))
                     .setPositiveButton(R.string.ok,
                             ((dialogInterface, unused) -> {
-                                TextView projectLabel = (TextView)findViewById(R.id.projectsLabel);
+                                TextView projectLabel = findViewById(R.id.projectsLabel);
 
                                 // Get name of selected project
                                 String projectName = LogicSubsystem.getInstance()

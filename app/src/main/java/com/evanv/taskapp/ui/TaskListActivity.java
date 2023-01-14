@@ -24,8 +24,9 @@ import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.main.recycler.TaskItem;
 import com.evanv.taskapp.ui.main.recycler.TaskItemAdapter;
 
+import org.threeten.bp.LocalDate;
+
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -80,10 +81,12 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
-        Date startDate = new Date(getIntent().getLongExtra(EXTRA_START_DATE, 0));
-        startDate = startDate.getTime() == 0 ? null : startDate;
-        Date endDate = new Date(getIntent().getLongExtra(EXTRA_END_DATE, 0));
-        endDate = endDate.getTime() == 0 ? null : endDate;
+        LocalDate startDate = LocalDate.ofEpochDay
+                (getIntent().getLongExtra(EXTRA_START_DATE, 0));
+        startDate = startDate.toEpochDay() == 0 ? null : startDate;
+        LocalDate endDate = LocalDate.ofEpochDay
+                (getIntent().getLongExtra(EXTRA_END_DATE, 0));
+        endDate = endDate.toEpochDay() == 0 ? null : endDate;
         long project = getIntent().getLongExtra(EXTRA_PROJECT, 0);
         String name = getIntent().getStringExtra(EXTRA_NAME);
         int minTime = getIntent().getIntExtra(EXTRA_MIN_TIME, -1);
@@ -373,7 +376,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
     }
 
     /**
-     * Remove the currently selected item and update the reycler
+     * Remove the currently selected item and update the recycler
      */
     private void removeItem() {
         // Remove item from list

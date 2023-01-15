@@ -191,12 +191,21 @@ public class EventEntry extends Fragment implements ItemEntry {
             // Load Start Time into EditText
             String startStr = mEditTextECD.getText().toString();
             if (!startStr.isEmpty()) {
-                LocalDate startDate = LocalDate.from(Event.dateFormat.parse(startStr));
-                mEditTextEndTime.setText(Task.dateFormat.format(startDate));
+                try {
+                    LocalDate startDate = LocalDate.from(Event.dateFormat.parse(startStr));
+                    mEditTextEndTime.setText(Task.dateFormat.format(startDate));
 
-                // Show a time picker fragment.
-                new TimePickerFragment(mEditTextEndTime, "Choose start time")
-                        .show(getParentFragmentManager(), getTag());
+                    // Show a time picker fragment.
+                    new TimePickerFragment(mEditTextEndTime, "Choose start time")
+                            .show(getParentFragmentManager(), getTag());
+                } catch (Exception e) {
+                    Toast.makeText(getContext(), getString(R.string.enter_start_time), Toast.LENGTH_LONG)
+                            .show();
+                }
+            }
+            else {
+                Toast.makeText(getContext(), getString(R.string.enter_start_time), Toast.LENGTH_LONG)
+                        .show();
             }
         });
 

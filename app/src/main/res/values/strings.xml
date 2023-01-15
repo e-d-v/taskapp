@@ -189,4 +189,5 @@
     <string name="start_timer">Start/Stop Timer</string>
     <string name="edit_event">Edit Event</string>
     <string name="edit_task">Edit Task</string>
+    <string name="enter_start_time">Please enter a start time first.</string>
 </resources>

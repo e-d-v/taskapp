@@ -242,7 +242,7 @@ public class Optimizer {
      * @return A pair of ints representing the timespan of the event.
      */
     private static Pair<Integer, Integer> getStartEndMinutes(Event e) {
-        int startMinute = e.getDoDate().get(ChronoField.MINUTE_OF_HOUR);
+        int startMinute = e.getDoDate().get(ChronoField.MINUTE_OF_DAY);
         int endMinute = startMinute + e.getLength();
 
         return new Pair<>(startMinute, endMinute);

@@ -256,7 +256,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
 
             // Set the task Project
             long projectID = LogicSubsystem.getInstance().getTaskProject(mID);
-            mProjectSpinner.setSelection(LogicSubsystem.getInstance().getProjectIndex(projectID));
+            mProjectSpinner.setSelection(LogicSubsystem.getInstance().getProjectIndex(projectID) + 1);
 
             // Set the task Labels
             mLabels = convertLongListToArray(LogicSubsystem.getInstance().getTaskLabels(mID));

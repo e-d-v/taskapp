@@ -162,6 +162,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
                 Color.BLACK,
                 Color.BLACK};
 
+        // Show/hide the bar
         if (taskItem.getProject() == null && taskItem.getLabels().size() == 0) {
             holder.bar.setVisibility(View.INVISIBLE);
         }

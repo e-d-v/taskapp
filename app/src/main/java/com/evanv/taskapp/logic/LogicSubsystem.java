@@ -1533,6 +1533,7 @@ public class LogicSubsystem {
                             child.removeParent(oldTask);
                             child.addParent(toAdd);
                             toAdd.addChild(child);
+                            mTaskAppViewModel.update(child);
                         }
 
                         // Remove old task from each parent task, as new parents were already

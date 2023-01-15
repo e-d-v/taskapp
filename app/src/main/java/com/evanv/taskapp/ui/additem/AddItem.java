@@ -2,6 +2,7 @@ package com.evanv.taskapp.ui.additem;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
@@ -86,12 +87,6 @@ public class AddItem extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController,
                 mAppBarConfiguration);
 
-        // Move to Event screen if editing event
-        String type = getIntent().getStringExtra(MainActivity.EXTRA_TYPE);
-        if (type != null && type.equals(AddItem.EXTRA_VAL_EVENT)) {
-            navController.navigate(R.id.action_taskEntry_to_eventEntry);
-        }
-
         binding.toolbar.setTitle(getString(R.string.add_task));
 
         // When FAB is clicked, run submit() method
@@ -127,6 +122,22 @@ public class AddItem extends AppCompatActivity {
             // Make sure up button still pressed
             Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         });
+
+        // Move to Event screen if editing event
+        String type = getIntent().getStringExtra(MainActivity.EXTRA_TYPE);
+        if (type != null) {
+            if (type.equals(AddItem.EXTRA_VAL_EVENT)) {
+                navController.navigate(R.id.action_taskEntry_to_eventEntry);
+                Objects.requireNonNull(getSupportActionBar()).setTitle(R.string.edit_event);
+            }
+            else if (type.equals(AddItem.EXTRA_VAL_TASK)) {
+                Objects.requireNonNull(getSupportActionBar()).setTitle(R.string.edit_task);
+            }
+
+            for (int i = 0; i < mRGroup.getChildCount(); i++) {
+                mRGroup.getChildAt(i).setEnabled(false);
+            }
+        }
     }
 
     /**

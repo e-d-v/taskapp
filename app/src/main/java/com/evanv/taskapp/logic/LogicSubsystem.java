@@ -248,19 +248,21 @@ public class LogicSubsystem {
         events = (events == null) ? new ArrayList<>() : events;
 
         // Add events from the database into the eventSchedule
-        for (Event e : events) {
-            // Calculate how many days past today's date this event is scheduled for. Used to
-            // index into eventSchedule
-            LocalDateTime doDate = e.getDoDate();
-            int doDateIndex = getDiff(doDate, mStartDate);
+        if (mEventSchedule.isEmpty()) {
+            for (Event e : events) {
+                // Calculate how many days past today's date this event is scheduled for. Used to
+                // index into eventSchedule
+                LocalDateTime doDate = e.getDoDate();
+                int doDateIndex = getDiff(doDate, mStartDate);
 
-            // Add the events to the list if they aren't for an earlier date
-            if (!doDate.toLocalDate().isBefore(mStartDate)) {
-                for (int j = mEventSchedule.size(); j <= doDateIndex; j++) {
-                    mEventSchedule.add(new ArrayList<>());
+                // Add the events to the list if they aren't for an earlier date
+                if (!doDate.toLocalDate().isBefore(mStartDate)) {
+                    for (int j = mEventSchedule.size(); j <= doDateIndex; j++) {
+                        mEventSchedule.add(new ArrayList<>());
+                    }
+
+                    mEventSchedule.get(doDateIndex).add(e);
                 }
-
-                mEventSchedule.get(doDateIndex).add(e);
             }
         }
 

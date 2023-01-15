@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -90,25 +91,25 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     protected void onActivityResult(int resultCode, @Nullable Intent data) {
         // Show loading screen
-        mVF.setDisplayedChild(0);
-
         if (resultCode != RESULT_OK) {
+            mVF.setDisplayedChild(0);
+
             if (!mLogicSubsystem.isEmpty()) {
                 mVF.setDisplayedChild(1);
             }
             else {
                 mVF.setDisplayedChild(2);
             }
+
+            // As the task dependency graph has been updated, we must reoptimize it
+            Optimize();
+
+            // Update the recycler
+            updateRecycler();
+
+            // Show recycler as Optimize is finished
+            mVF.setDisplayedChild(1);
         }
-
-        // As the task dependency graph has been updated, we must reoptimize it
-        Optimize();
-
-        // Update the recycler
-        updateRecycler();
-
-        // Show recycler as Optimize is finished
-        mVF.setDisplayedChild(1);
     }
 
     /**

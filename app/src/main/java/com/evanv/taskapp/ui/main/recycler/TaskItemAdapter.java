@@ -162,6 +162,13 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
                 Color.BLACK,
                 Color.BLACK};
 
+        if (taskItem.getProject() == null && taskItem.getLabels().size() == 0) {
+            holder.bar.setVisibility(View.INVISIBLE);
+        }
+        else {
+            holder.bar.setVisibility(View.VISIBLE);
+        }
+
         // Set project chip
         if (taskItem.getProject() != null) {
             // Show chip
@@ -243,6 +250,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         final ImageButton options;
         final Chip project;
         final ChipGroup labels;
+        final View bar;
         int mIndex; // Index into taskSchedule.get(day) for this event
 
         /**
@@ -264,6 +272,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             options = itemView.findViewById(R.id.buttonTaskOptions);
             project = itemView.findViewById(R.id.projectChip);
             labels = itemView.findViewById(R.id.labelChipGroup);
+            bar = itemView.findViewById(R.id.bar);
         }
     }
 }

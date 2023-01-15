@@ -1502,7 +1502,7 @@ public class LogicSubsystem {
             if (parents != null) {
                 for (Long parent : parents) {
                     for (Task t : mTasks) {
-                        if (t.getID() == parent) {
+                        if (t.getID() == parent && parent != id) {
                             toAdd.addParent(t);
                             t.addChild(toAdd);
                             break;

@@ -215,7 +215,7 @@ public class EventEntry extends Fragment implements ItemEntry {
             int ttc = LogicSubsystem.getInstance().getEventTTC(mID);
             LocalDateTime endTime =
                     LogicSubsystem.getInstance().getEventECD(mID).plus(ttc, ChronoUnit.MINUTES);
-            mEditTextEventName.setText(Event.dateFormat.format(endTime));
+            mEditTextEndTime.setText(Event.dateFormat.format(endTime));
         }
 
         // Inflate the layout for this fragment

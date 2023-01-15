@@ -88,7 +88,7 @@ public class LogicSubsystem {
 
         // Set the timer
         if (timerStart != -1) {
-            mTimer = LocalDateTime.now();
+            mTimer = LocalDateTime.ofEpochSecond(timerStart, 0, ZoneOffset.UTC);
         }
 
         // Get tasks from database
@@ -688,8 +688,6 @@ public class LogicSubsystem {
      *
      */
     public void onButtonClick(int position, int day, int action, Context context) {
-        List<Integer> toReturn = new ArrayList<>();
-
         if (action == 0 || action == 1) {
             Task toRemove = mTaskSchedule.get(day).get(position);
 
@@ -704,7 +702,7 @@ public class LogicSubsystem {
             }
 
             mTaskAppViewModel.delete(toRemove);
-            toReturn = Complete(mTaskSchedule.get(day).get(position), context);
+            mUpdatedIndices.addAll(Complete(mTaskSchedule.get(day).get(position), context));
         }
         // Remove the given event from the schedule and re-optimize.
         if (action == 2) {
@@ -714,7 +712,7 @@ public class LogicSubsystem {
             mTaskAppViewModel.delete(mEventSchedule.get(day).get(position));
             mEventSchedule.get(day).remove(position);
 
-            toReturn.add(day);
+            mUpdatedIndices.add(day);
 
             pareDownSchedules();
         }
@@ -980,7 +978,8 @@ public class LogicSubsystem {
         // Remove all tasks that are not in the given project
         if (project != -1) {
             for (int i = 0; i < toReturn.size(); i++) {
-                if (toReturn.get(i).getProject().getID() != project) {
+                Project taskProject = toReturn.get(i).getProject();
+                if (taskProject == null || taskProject.getID() != project) {
                     toReturn.remove(i);
                     i--;
                 }
@@ -1520,7 +1519,14 @@ public class LogicSubsystem {
                     if (mTasks.get(i).getID() == id) {
                         Task oldTask = mTasks.get(i);
 
+                        // Replace oldTask with toAdd in the data structures
                         mTasks.set(i, toAdd);
+                        int taskScheduleIndex = getDiff(oldTask.getDoDate(), mStartDate);
+                        mTaskSchedule.get(taskScheduleIndex).remove(oldTask);
+                        mTaskSchedule.get(taskScheduleIndex).add(toAdd);
+
+                        // Add old task location to updated recycler locations
+                        mUpdatedIndices.add(taskScheduleIndex);
 
                         // Replace the parent for each of the remaining children.
                         for (Task child : oldTask.getChildren()) {

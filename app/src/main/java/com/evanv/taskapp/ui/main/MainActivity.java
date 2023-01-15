@@ -101,10 +101,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             }
         }
 
-        updateRecycler();
-
         // As the task dependency graph has been updated, we must reoptimize it
         Optimize();
+
+        // Update the recycler
+        updateRecycler();
+
         // Show recycler as Optimize is finished
         mVF.setDisplayedChild(1);
     }
@@ -596,13 +598,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * @param oldDays How many days used to be in the recycler.
      */
     private void finishButtonPress(int newDays, int oldDays) {
-        updateRecycler();
-
         while (mDayItemAdapter.mDayItemList.size() > newDays) {
             mDayItemAdapter.mDayItemList.remove(newDays);
         }
 
         Optimize();
+        updateRecycler();
 
         if (oldDays != newDays) {
             mDayItemAdapter.notifyItemRangeRemoved(newDays, oldDays - newDays);

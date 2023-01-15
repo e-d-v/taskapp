@@ -2,7 +2,6 @@ package com.evanv.taskapp.ui.additem.recur;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
-import android.icu.util.TimeZone;
 import android.os.Bundle;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -15,10 +14,8 @@ import com.evanv.taskapp.ui.additem.TimePickerFragment;
 
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.ZoneId;
-import org.threeten.bp.ZoneOffset;
 
 import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Class that creates a DatePicker to launch when setting a date for easier Date entering
@@ -43,7 +40,8 @@ public class DatePickerFragment extends DialogFragment
      * @param maxDate The latest date to allow user to select, null if not needed
      * @param tp true if timepicker should be shown
      */
-    public DatePickerFragment(EditText et, String title, LocalDate minDate, LocalDate maxDate, boolean tp) {
+    public DatePickerFragment(EditText et, String title, LocalDate minDate, LocalDate maxDate,
+                              boolean tp) {
         mET = et;
         mTitle = title;
         mMinDate = minDate;

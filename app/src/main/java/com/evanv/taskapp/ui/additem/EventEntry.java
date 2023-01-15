@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment;
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.Event;
 import com.evanv.taskapp.logic.LogicSubsystem;
+import com.evanv.taskapp.logic.Task;
 import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
 import com.evanv.taskapp.ui.additem.recur.NoRecurFragment;
 import com.evanv.taskapp.ui.additem.recur.RecurActivity;
@@ -177,12 +178,27 @@ public class EventEntry extends Fragment implements ItemEntry {
         Button button = view.findViewById(R.id.recurButton);
         button.setOnClickListener(v -> intentRecur());
 
-        mEditTextECD.setOnClickListener(v -> new DatePickerFragment(mEditTextECD,
+        mEditTextECD.setOnClickListener(v -> {
+            // Clear End Time picker
+            mEditTextEndTime.setText("");
+
+            // Show a date picker fragment
+            new DatePickerFragment(mEditTextECD,
                 getString(R.string.start_time), LocalDate.now(), null, true)
-                .show(getParentFragmentManager(), getTag()));
-        mEditTextEndTime.setOnClickListener(v -> new DatePickerFragment(mEditTextEndTime,
-                getString(R.string.end_time), LocalDate.now(), null, true)
-                .show(getParentFragmentManager(), getTag()));
+                .show(getParentFragmentManager(), getTag());
+        });
+        mEditTextEndTime.setOnClickListener(v -> {
+            // Load Start Time into EditText
+            String startStr = mEditTextECD.getText().toString();
+            if (!startStr.isEmpty()) {
+                LocalDate startDate = LocalDate.from(Event.dateFormat.parse(startStr));
+                mEditTextEndTime.setText(Task.dateFormat.format(startDate));
+
+                // Show a time picker fragment.
+                new TimePickerFragment(mEditTextEndTime, "Choose start time")
+                        .show(getParentFragmentManager(), getTag());
+            }
+        });
 
         // Initialize the information buttons to help the user understand the fields.
         ImageButton infoECD = view.findViewById(R.id.ecdInfoButton);

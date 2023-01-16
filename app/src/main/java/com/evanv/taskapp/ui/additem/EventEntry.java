@@ -28,11 +28,12 @@ import com.evanv.taskapp.ui.additem.recur.RecurInput;
 import com.evanv.taskapp.ui.main.MainActivity;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
-import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalDateTime;
+import org.threeten.bp.temporal.ChronoField;
+import org.threeten.bp.temporal.ChronoUnit;
+
 import java.util.Locale;
-import java.util.Objects;
 
 /**
  * The fragment that handles data entry for new events
@@ -44,7 +45,8 @@ public class EventEntry extends Fragment implements ItemEntry {
     private Bundle mRecur;               // The value returned by the recur activity.
     private EditText mEditTextEventName; // EditText containing the name of the event
     private EditText mEditTextECD;       // EditText containing the date/time of the event
-    private EditText mEditTextEndTime;    // EditText containing the length of the event
+    private EditText mEditTextEndTime;   // EditText containing the length of the event
+    private long mID;                    // ID of the Event to update, -1 if adding an event
     // Allows data to be pulled from activity
     private ActivityResultLauncher<Intent> mStartForResult;
 
@@ -94,10 +96,10 @@ public class EventEntry extends Fragment implements ItemEntry {
     /**
      * If no required fields are empty, pack user input into a bundle and return it.
      *
-     * @return a Bundle containing user input if all fields are filled, null otherwise
+     * @return true if ran successfully, false otherwise.
      */
     @SuppressWarnings("unused")
-    public Bundle getItem() {
+    public boolean addItem() {
         // Get user input from views
         String eventName = mEditTextEventName.getText().toString();
         String ecd = mEditTextECD.getText().toString();
@@ -107,54 +109,47 @@ public class EventEntry extends Fragment implements ItemEntry {
         if (eventName.length() == 0) {
             Toast.makeText(getActivity(), R.string.name_error_event,
                     Toast.LENGTH_LONG).show();
-            return null;
+            return false;
         }
 
-        Date startTime = null;
+        LocalDateTime startTime;
 
         // Check if ECD is valid
         if (ecd.length() == 0) {
             Toast.makeText(getActivity(),
                     R.string.ecd_empty_event,
                     Toast.LENGTH_LONG).show();
-            return null;
+            return false;
         }
         else {
-            try {
-                startTime = Event.dateFormat.parse(ecd);
-            } catch (ParseException e) {
-                Toast.makeText(getActivity(), R.string.ecd_empty_event, Toast.LENGTH_LONG).show();
-                return null;
-            }
+            startTime = LocalDateTime.from(Event.dateFormat.parse(ecd));
         }
-        // Check if ECD is valid
+
+        // Check if End Time is valid
+        LocalDateTime endTimeDate;
         if (endTime.length() == 0) {
             Toast.makeText(getActivity(),
                     R.string.enter_end_time,
                     Toast.LENGTH_LONG).show();
-            return null;
+            return false;
         }
         else {
             try {
-                Date endTimeDate = Event.dateFormat.parse(endTime);
+                endTimeDate = LocalDateTime.from(Event.dateFormat.parse(endTime));
                 assert endTimeDate != null;
-                assert !endTimeDate.before(startTime);
+                assert !endTimeDate.isBefore(startTime);
             } catch (Throwable e) {
                 Toast.makeText(getActivity(), R.string.enter_end_time, Toast.LENGTH_LONG).show();
-                return null;
+                return false;
             }
         }
 
-        // Put user input into a bundle
-        Bundle bundle = new Bundle();
-        bundle.putString(AddItem.EXTRA_TYPE, AddItem.EXTRA_VAL_EVENT);
-        bundle.putString(AddItem.EXTRA_NAME, eventName);
-        bundle.putString(AddItem.EXTRA_START, ecd);
-        bundle.putString(AddItem.EXTRA_END, endTime);
-        bundle.putBundle(AddItem.EXTRA_RECUR, mRecur);
+        // Add/Edit the event in the LogicSubsystem
+        LogicSubsystem.getInstance().editEvent(eventName, startTime, endTimeDate, mRecur, mID,
+                getContext());
 
-        // Return bundle containing user input
-        return bundle;
+        // Return true as item was added successfully.
+        return true;
     }
 
     /**
@@ -183,12 +178,36 @@ public class EventEntry extends Fragment implements ItemEntry {
         Button button = view.findViewById(R.id.recurButton);
         button.setOnClickListener(v -> intentRecur());
 
-        mEditTextECD.setOnClickListener(v -> new DatePickerFragment(mEditTextECD,
-                getString(R.string.start_time), new Date(), null, true)
-                .show(getParentFragmentManager(), getTag()));
-        mEditTextEndTime.setOnClickListener(v -> new DatePickerFragment(mEditTextEndTime,
-                getString(R.string.end_time), new Date(), null, true)
-                .show(getParentFragmentManager(), getTag()));
+        mEditTextECD.setOnClickListener(v -> {
+            // Clear End Time picker
+            mEditTextEndTime.setText("");
+
+            // Show a date picker fragment
+            new DatePickerFragment(mEditTextECD,
+                getString(R.string.start_time), LocalDate.now(), null, true)
+                .show(getParentFragmentManager(), getTag());
+        });
+        mEditTextEndTime.setOnClickListener(v -> {
+            // Load Start Time into EditText
+            String startStr = mEditTextECD.getText().toString();
+            if (!startStr.isEmpty()) {
+                try {
+                    LocalDate startDate = LocalDate.from(Event.dateFormat.parse(startStr));
+                    mEditTextEndTime.setText(Task.dateFormat.format(startDate));
+
+                    // Show a time picker fragment.
+                    new TimePickerFragment(mEditTextEndTime, "Choose start time")
+                            .show(getParentFragmentManager(), getTag());
+                } catch (Exception e) {
+                    Toast.makeText(getContext(), getString(R.string.enter_start_time), Toast.LENGTH_LONG)
+                            .show();
+                }
+            }
+            else {
+                Toast.makeText(getContext(), getString(R.string.enter_start_time), Toast.LENGTH_LONG)
+                        .show();
+            }
+        });
 
         // Initialize the information buttons to help the user understand the fields.
         ImageButton infoECD = view.findViewById(R.id.ecdInfoButton);
@@ -207,22 +226,21 @@ public class EventEntry extends Fragment implements ItemEntry {
         });
 
         // Load id from intent to see if we're editing a task.
-        long id = requireActivity().getIntent().getLongExtra(MainActivity.EXTRA_ID, -1);
+        mID = requireActivity().getIntent().getLongExtra(MainActivity.EXTRA_ID, -1);
         String type = requireActivity().getIntent().getStringExtra(MainActivity.EXTRA_TYPE);
 
-        if (type != null && type.equals(AddItem.EXTRA_VAL_EVENT) && id != -1) {
+        if (type != null && type.equals(AddItem.EXTRA_VAL_EVENT) && mID != -1) {
             // Set the event name
-            mEditTextEventName.setText(LogicSubsystem.getInstance().getEventName(id));
+            mEditTextEventName.setText(LogicSubsystem.getInstance().getEventName(mID));
 
             // Set the start time
-            mEditTextECD.setText(Event.dateFormat.format(LogicSubsystem.getInstance().getEventECD(id)));
+            mEditTextECD.setText(Event.dateFormat.format(LogicSubsystem.getInstance().getEventECD(mID)));
 
             // Set the end time
-            Calendar calculateEndTime = Calendar.getInstance();
-            calculateEndTime.setTime(LogicSubsystem.getInstance().getEventECD(id));
-            calculateEndTime.add(Calendar.MINUTE, LogicSubsystem.getInstance().getEventTTC(id));
-
-            mEditTextEndTime.setText(Event.dateFormat.format(calculateEndTime.getTime()));
+            int ttc = LogicSubsystem.getInstance().getEventTTC(mID);
+            LocalDateTime endTime =
+                    LogicSubsystem.getInstance().getEventECD(mID).plus(ttc, ChronoUnit.MINUTES);
+            mEditTextEndTime.setText(Event.dateFormat.format(endTime));
         }
 
         // Inflate the layout for this fragment
@@ -237,32 +255,24 @@ public class EventEntry extends Fragment implements ItemEntry {
         Intent intent = new Intent(getActivity(), RecurActivity.class);
 
         // Get the date information the user has entered
-        Calendar ecdCal = Calendar.getInstance();
         long time;
-        try {
-            String ecdText = mEditTextECD.getText().toString();
-            Date ecd = Event.dateFormat.parse(ecdText);
-            time = Objects.requireNonNull(ecd).getTime();
-            ecdCal.setTime(Objects.requireNonNull(ecd));
-        } catch (ParseException e) {
-            Toast.makeText(getActivity(),
-                    R.string.ecd_help_text_format,
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
+        LocalDate ecd;
+        String ecdText = mEditTextECD.getText().toString();
+        ecd = LocalDate.from(Event.dateFormat.parse(ecdText));
+        time = ecd.toEpochDay();
 
         // Get the day in month e.g. "31st"
-        intent.putExtra(EXTRA_DAY, getOrdinalDayInMonth(ecdCal.getTime()));
+        intent.putExtra(EventEntry.EXTRA_DAY, EventEntry.getOrdinalDayInMonth(ecd));
 
         // Get the ordinal day of week e.g. "3rd Monday"
-        intent.putExtra(EXTRA_DESC, getOrdinalDayInWeek(requireContext(), ecdCal.getTime()));
+        intent.putExtra(EventEntry.EXTRA_DESC, EventEntry.getOrdinalDayInWeek(requireContext(), ecd));
 
         // Get the month e.g. "August"
-        intent.putExtra(EXTRA_MONTH,
-                getResources().getStringArray(R.array.months)[ecdCal.get(Calendar.MONTH)]);
+        intent.putExtra(EventEntry.EXTRA_MONTH,
+                getResources().getStringArray(R.array.months)[ecd.get(ChronoField.MONTH_OF_YEAR) - 1]);
 
         // Get the time
-        intent.putExtra(EXTRA_TIME, time);
+        intent.putExtra(EventEntry.EXTRA_TIME, time);
 
         // Launch RecurActivity
         mStartForResult.launch(intent);
@@ -275,33 +285,27 @@ public class EventEntry extends Fragment implements ItemEntry {
      *
      * @return The ordinal day in month (e.g. "31st") of the given Date
      */
-    public static String getOrdinalDayInMonth(Date date) {
-        Calendar ecdCal = Calendar.getInstance();
-        ecdCal.setTime(date);
-
+    public static String getOrdinalDayInMonth(LocalDate date) {
         // Format the number to ordinal (the "st" in "31st")
         RuleBasedNumberFormat formatter = new RuleBasedNumberFormat(Locale.US,
                 RuleBasedNumberFormat.ORDINAL);
 
         // Return the day
-        return formatter.format(ecdCal.get(Calendar.DAY_OF_MONTH));
+        return formatter.format(date.get(ChronoField.DAY_OF_MONTH));
     }
 
     /**
      * Get the ordinal day in week for a specific Date (e.g. "3rd Monday")
      *
-     * @param date The Date to build the ordinal date out of
      * @param context The context of the call for resources
      *
+     * @param date The Date to build the ordinal date out of
      * @return The ordinal day in week (e.g. "3rd Monday") of the given Date
      */
-    public static String getOrdinalDayInWeek(Context context, Date date) {
-        Calendar ecdCal = Calendar.getInstance();
-        ecdCal.setTime(date);
-
+    public static String getOrdinalDayInWeek(Context context, LocalDate date) {
         // Get the day of week in month and day of week (e.g. the "3" and "Monday" in "3rd Monday")
-        int dayOfWeekInMonth = ecdCal.get(Calendar.DAY_OF_WEEK_IN_MONTH);
-        int weekday = ecdCal.get(Calendar.DAY_OF_WEEK);
+        int dayOfWeekInMonth = date.get(ChronoField.ALIGNED_DAY_OF_WEEK_IN_MONTH);
+        int weekday = date.get(ChronoField.DAY_OF_WEEK);
 
         // Format the number to ordinal (the "st" in "31st")
         RuleBasedNumberFormat formatter = new RuleBasedNumberFormat(Locale.US,

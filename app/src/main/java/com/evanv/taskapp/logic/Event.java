@@ -1,7 +1,5 @@
 package com.evanv.taskapp.logic;
 
-import android.annotation.SuppressLint;
-
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
@@ -10,9 +8,10 @@ import androidx.room.TypeConverters;
 
 import com.evanv.taskapp.db.Converters;
 
-import java.text.SimpleDateFormat;
+import org.threeten.bp.LocalDateTime;
+
+import org.threeten.bp.format.DateTimeFormatter;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.Date;
 
 /**
@@ -27,25 +26,21 @@ public class Event implements Comparable {
     // Fields
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    private long mID;            // PrimaryKey for Event. Used as duplicate event names is allowed.
+    private long mID;              // PrimaryKey for Event. Used as duplicate event names is allowed.
     @NonNull
     @ColumnInfo(name = "name")
-    private String mName;        // The name of the event to display in the schedule
+    private String mName;          // The name of the event to display in the schedule
     @ColumnInfo(name = "length")
-    private int mLength;         // How long the event lasts
-
-
+    private int mLength;           // How long the event lasts
     @NonNull
     @ColumnInfo(name = "do_date")
-    private Date mDoDate;   // The start time for the event. Named to be consistent with Task
+    private LocalDateTime mDoDate; // The start time for the event. Named to be consistent with Task
 
     // Static Fields
     // SimpleDateFormat that formats date in the style "08/20/22 08:12 PM"
-    @SuppressLint("SimpleDateFormat")
-    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy hh:mm aa");
+    public static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("M/d/yy hh:mm a");
     // SimpleDateFormat that formats time in the style "08:12 PM"
-    @SuppressLint("SimpleDateFormat")
-    public static final SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm aa");
+    public static final DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("hh:mm a");
 
     /**
      * Initializes an object representing an event
@@ -54,9 +49,9 @@ public class Event implements Comparable {
      * @param length The time to complete for the event
      * @param doDate The start time for the event
      */
-    public Event(@NonNull String name, int length, @NonNull Date doDate) {
+    public Event(@NonNull String name, int length, @NonNull LocalDateTime doDate) {
         this.mName = name;
-        this.mDoDate = clearTime(doDate);
+        this.mDoDate = doDate;
         this.mLength = length;
     }
 
@@ -68,10 +63,10 @@ public class Event implements Comparable {
      * @param start The start time for the event
      * @param length The time to complete for the event
      */
-    public Event(int id, @NonNull String event, Date start, int length) {
+    public Event(int id, @NonNull String event, LocalDateTime start, int length) {
         this.mID = id;
         this.mName = event;
-        this.mDoDate = clearTime(start);
+        this.mDoDate = start;
         this.mLength = length;
     }
 
@@ -116,7 +111,7 @@ public class Event implements Comparable {
      *
      * @return The starting time of the event
      */
-    public Date getDoDate() {
+    public LocalDateTime getDoDate() {
         return mDoDate;
     }
 
@@ -125,7 +120,7 @@ public class Event implements Comparable {
      *
      * @param doDate The new start time of the event
      */
-    public void setDoDate(@NonNull Date doDate) {
+    public void setDoDate(@NonNull LocalDateTime doDate) {
         this.mDoDate = doDate;
     }
 
@@ -163,10 +158,18 @@ public class Event implements Comparable {
         return cal.getTime();
     }
 
+    /**
+     * Returns a positive value if this event is after the other event, negative if it's before and
+     * 0 if they occur at the same time.
+     *
+     * @param o The other event
+     * @return a positive value if this event is after the other event, negative if it's before and
+     *           0 if they occur at the same time
+     */
     @Override
     public int compareTo(Object o) {
         Event other = (Event) o;
 
-        return (int) (mDoDate.getTime() - other.mDoDate.getTime());
+        return mDoDate.compareTo(other.getDoDate());
     }
 }

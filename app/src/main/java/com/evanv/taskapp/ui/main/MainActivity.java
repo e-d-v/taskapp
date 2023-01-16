@@ -1,7 +1,5 @@
 package com.evanv.taskapp.ui.main;
 
-import static com.evanv.taskapp.logic.Task.clearDate;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -10,12 +8,12 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -39,8 +37,9 @@ import com.evanv.taskapp.ui.projects.ProjectActivity;
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.threeten.bp.LocalDate;
+
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import kotlin.Pair;
@@ -64,30 +63,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     private ActivityResultLauncher<Intent> mUpdateUILauncher;
     // Allows us to manually show FAB when task/event completed/deleted.
     LogicSubsystem mLogicSubsystem;                // Subsystem that handles logic for taskapp
-    private Date mStartDate;                       // The current date
+    private LocalDate mStartDate;                  // The current date
     private long mEditedID;                        // ID of the currently edited task
     private int mPosition;                         // Position of button press
     private int mDay;                              // Day of button press
 
-    // Key for the extra that stores the list of Task names for the Parent Task Picker Dialog in
-    public static final String EXTRA_TASKS = "com.evanv.taskapp.ui.main.extras.TASKS";
-    // Key for the extra that stores the list of Project names
-    public static final String EXTRA_PROJECTS = "com.evanv.taskapp.ui.main.extras.PROJECTS";
-    // Key for the extra that stores the list of colors for each Project.
-    public static final String EXTRA_PROJECT_COLORS =
-            "com.evanv.taskapp.ui.main.extras.PROJECT_COLORS";
-    // Key for the extra that stores if each task is completable.
-    public static final String EXTRA_COMPLETABLE = "com.evanv.taskapp.ui.main.extras.COMPLETABLE";
-    // Key for the extra that stores the list of goals for each Project.
-    public static final String EXTRA_GOALS = "com.evanv.taskapp.ui.main.extras.PROJECT_GOALS";
-    // Key for the extra that stores the index of the timed task.
-    public static final String EXTRA_TIMED_TASK = "com.evanv.taskapp.ui.main.extras.PROJECT_GOALS";
-    // Key for the extra that stores the priorities of the timed tasks.
-    public static final String EXTRA_PRIORITIES = "com.evanv.taskapp.ui.main.extras.PRIORITIES";
     // Key for the extra that stores the type of edit
     public static final String EXTRA_TYPE = "com.evanv.taskapp.ui.main.extras.TYPE";
     // Key for the extra that stores the ID of the item to edit
     public static final String EXTRA_ID = "com.evanv.taskapp.ui.main.extras.ID";
+
     // Keys into SharedPrefs to store todayTime
     public static final String PREF_FILE = "taskappPrefs"; // File name for sharedPrefs
     public static final String PREF_DAY = "taskappDay";    // Day for todayTime
@@ -106,41 +91,25 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     protected void onActivityResult(int resultCode, @Nullable Intent data) {
         // Show loading screen
-        mVF.setDisplayedChild(0);
-
         if (resultCode != RESULT_OK) {
+            mVF.setDisplayedChild(0);
+
             if (!mLogicSubsystem.isEmpty()) {
                 mVF.setDisplayedChild(1);
             }
             else {
                 mVF.setDisplayedChild(2);
             }
-        }
 
-        List<Integer> updatedIndices;
+            // As the task dependency graph has been updated, we must reoptimize it
+            Optimize();
 
-        if (mEditedID != -1) {
-            updatedIndices = mLogicSubsystem.editItem(data, mEditedID, this);
-            mEditedID = -1;
-        }
-        else {
-            updatedIndices = mLogicSubsystem.addItem(data, this);
-        }
+            // Update the recycler
+            updateRecycler();
 
-        if (updatedIndices == null) {
-            Toast.makeText(this, "Error occurred when adding new item, try again.",
-                    Toast.LENGTH_LONG).show();
-            return;
+            // Show recycler as Optimize is finished
+            mVF.setDisplayedChild(1);
         }
-
-        for (int index : updatedIndices) {
-            mDayItemAdapter.notifyItemChanged(index);
-        }
-
-        // As the task dependency graph has been updated, we must reoptimize it
-        Optimize();
-        // Show recycler as Optimize is finished
-        mVF.setDisplayedChild(1);
     }
 
     /**
@@ -148,34 +117,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * scheduled events.
      */
     private void Optimize() {
-        List<Pair<Integer, Integer>> changedIndices = mLogicSubsystem.Optimize();
+        mLogicSubsystem.Optimize();
 
-        int oldSize = mDayItemAdapter.mDayItemList.size();
-        mDayItemAdapter.mDayItemList = mLogicSubsystem.DayItemList(this);
-        int newSize = mDayItemAdapter.mDayItemList.size();
-
-        if (oldSize > newSize) {
-            mDayItemAdapter.notifyItemRangeRemoved(newSize, oldSize - newSize);
-        }
-
-        // Tell the recycler about moved tasks.
-        for (Pair<Integer, Integer> indices : changedIndices) {
-            int oldIndex = indices.getFirst();
-            int newIndex = indices.getSecond();
-
-            // We must use changed instead of moved, as an item in the dayItem entry is moved
-            // not the dayItem itself.
-            if (oldIndex >= 0) {
-                mDayItemAdapter.notifyItemChanged(oldIndex);
-            }
-            if (newIndex >= mDayItemAdapter.getItemCount()) {
-                mDayItemAdapter.notifyItemInserted(newIndex);
-            }
-            else {
-                mDayItemAdapter.notifyItemChanged(newIndex);
-            }
-        }
+        updateRecycler();
     }
+
 
     /**
      * Runs on the start of the app. Most importantly it loads the user data from the file.
@@ -192,13 +138,13 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         setContentView(mBinding.getRoot());
 
         // startDate is our representation for the current date upon the launch of TaskApp.
-        mStartDate = clearDate(new Date());
+        mStartDate = LocalDate.now();
 
         // Get todayTime from shared preferences
         SharedPreferences sp = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
-        Date todayTimeDate = new Date(sp.getLong(PREF_DAY, -1L));
+        LocalDate todayTimeDate = LocalDate.ofEpochDay(sp.getLong(PREF_DAY, -1L));
         int todayTime = 0;
-        if (!todayTimeDate.before(mStartDate)) {
+        if (!todayTimeDate.isBefore(mStartDate)) {
             todayTime = sp.getInt(PREF_TIME, 0);
         }
 
@@ -223,10 +169,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // Will eventually return info from projects
         mUpdateUILauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    mDayItemAdapter.mDayItemList = mLogicSubsystem.DayItemList(this);
-                    mDayItemAdapter.notifyDataSetChanged();
-                });
+                result -> updateRecycler());
 
         String[] overdueNames = mLogicSubsystem.getOverdueTasks(this);
 
@@ -338,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // Update todayTime in SharedPreferences
         SharedPreferences sp = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
         SharedPreferences.Editor edit = sp.edit();
-        edit.putLong(PREF_DAY, mStartDate.getTime());
+        edit.putLong(PREF_DAY, mStartDate.toEpochDay());
         edit.putInt(PREF_TIME, mLogicSubsystem.getTodayTime());
         edit.putLong(PREF_TIMED_TASK, mLogicSubsystem.getTimedID());
         edit.putLong(PREF_TIMER, mLogicSubsystem.getTimerStart());
@@ -354,15 +297,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     private void intentAddItem(String type, long id) {
         Intent intent = new Intent(this, AddItem.class);
-
-        // Get a list of task names for prerequisite list
-        ArrayList<String> taskNames = mLogicSubsystem.getTaskNames(this);
-        ArrayList<String> projectNames = mLogicSubsystem.getProjectNames();
-        ArrayList<Integer> projectColors = mLogicSubsystem.getProjectColors();
-
-        intent.putStringArrayListExtra(EXTRA_TASKS, taskNames);
-        intent.putStringArrayListExtra(EXTRA_PROJECTS, projectNames);
-        intent.putIntegerArrayListExtra(EXTRA_PROJECT_COLORS, projectColors);
 
         // Handles Editing case
         if (type != null) {
@@ -402,18 +336,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         int id = item.getItemId();
 
         // Handles the settings menu item being chosen
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_projects) {
             Intent intent = new Intent(this, ProjectActivity.class);
-
-            // Get lists of project information for prerequisite lists.
-            ArrayList<String> projectNames = mLogicSubsystem.getProjectNames();
-            ArrayList<String> projectGoals = mLogicSubsystem.getProjectGoals();
-            ArrayList<Integer> projectColors = mLogicSubsystem.getProjectColors();
-
-            intent.putStringArrayListExtra(EXTRA_PROJECTS, projectNames);
-            intent.putStringArrayListExtra(EXTRA_GOALS, projectGoals);
-            intent.putIntegerArrayListExtra(EXTRA_PROJECT_COLORS, projectColors);
 
             mUpdateUILauncher.launch(intent);
 
@@ -442,7 +366,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             case 0:
                 // Show optimizing... screen
                 mVF.setDisplayedChild(0);
-                completeTask(position, day);
+                mPosition = position;
+                mDay = day;
+                completeTask();
                 break;
             // Options button pressed, set mPosition/mDay
             case 1:
@@ -457,7 +383,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * Show a prompt asking the user how much time a task took to complete, and then add that time
      * to todayTime.
      */
-    private void ttcPrompt(List<Integer> changedDates, int newDays, int oldDays) {
+    private void ttcPrompt(int newDays, int oldDays) {
         int completionTime = -1;
 
         // Prompt the user to ask how long it took to complete the task, and add this time to
@@ -474,12 +400,19 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         builder.setPositiveButton(R.string.complete_task, (dialogInterface, i) -> {
             mLogicSubsystem.addTodayTime(Integer.parseInt(input.getText().toString()));
 
-            finishButtonPress(changedDates, newDays, oldDays);
+            finishButtonPress(newDays, oldDays);
         });
 
         builder.show();
     }
 
+    /**
+     * Show the context menu when a button/event's option is pressed.
+     *
+     * @param menu The menu to load info into
+     * @param v The button that was pressed
+     * @param menuInfo Not used
+     */
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
@@ -492,6 +425,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
     }
 
+    /**
+     * Dispatches menu button clicks to helper functions.
+     *
+     * @param item The menu item chosen.
+     * @return true always
+     */
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -523,6 +462,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         return true;
     }
 
+    /**
+     * Handles the user choosing to edit an event.
+     */
     private void editEvent() {
         mEditedID = mLogicSubsystem.getEventID(mPosition, mDay);
 
@@ -530,14 +472,20 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         intentAddItem(AddItem.EXTRA_VAL_EVENT, mEditedID);
     }
 
+    /**
+     * Handles the user choosing to delete an event.
+     */
     private void deleteEvent() {
         int oldDays = mLogicSubsystem.getNumDays();
-        List<Integer> changedDates = mLogicSubsystem.onButtonClick(mPosition, mDay, 2, this);
+        mLogicSubsystem.onButtonClick(mPosition, mDay, 2, this);
         int newDays = mLogicSubsystem.getNumDays();
 
-        finishButtonPress(changedDates, newDays, oldDays);
+        finishButtonPress(newDays, oldDays);
     }
 
+    /**
+     * Handles the user choosing to start a timer on a task.
+     */
     private void timeTask() {
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
@@ -557,6 +505,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
     }
 
+    /**
+     * Handles the user choosing to edit a task.
+     */
     private void editTask() {
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
@@ -567,22 +518,28 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         intentAddItem(AddItem.EXTRA_VAL_TASK, mEditedID);
     }
 
+    /**
+     * Handles the user choosing to delete a task.
+     */
     private void deleteTask() {
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
 
         int oldDays = mLogicSubsystem.getNumDays();
-        List<Integer> changedDates = mLogicSubsystem.onButtonClick(mPosition, mDay, 1, this);
+        mLogicSubsystem.onButtonClick(mPosition, mDay, 1, this);
         int newDays = mLogicSubsystem.getNumDays();
 
-        finishButtonPress(changedDates, newDays, oldDays);
+        finishButtonPress(newDays, oldDays);
     }
 
-    private void completeTask(int position, int day) {
+    /**
+     * Handles a user choosing to complete a task
+     */
+    private void completeTask() {
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
 
-        boolean isTimed = mLogicSubsystem.isTimed(position, day);
+        boolean isTimed = mLogicSubsystem.isTimed(mPosition, mDay);
         int timerVal = -1;
 
         if (isTimed) {
@@ -590,7 +547,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
 
         int oldDays = mLogicSubsystem.getNumDays();
-        List<Integer> changedDates = mLogicSubsystem.onButtonClick(mPosition, mDay, 0, this);
+        mLogicSubsystem.onButtonClick(mPosition, mDay, 0, this);
         int newDays = mLogicSubsystem.getNumDays();
 
         if (isTimed) {
@@ -604,22 +561,26 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             builder.setPositiveButton("OK", (dialogInterface, i) -> {
                 mLogicSubsystem.addTodayTime(finalTimerVal);
 
-                finishButtonPress(changedDates, newDays, oldDays);
+                finishButtonPress(newDays, oldDays);
             });
 
             // If user chooses to use a different time, show the normal time to complete
             // dialog.
             builder.setNegativeButton("Manual Time", (dialogInterface, i) ->
-                    ttcPrompt(changedDates, newDays, oldDays));
+                    ttcPrompt(newDays, oldDays));
 
             builder.show();
             return;
         }
 
         // User did not have a timer set, so use the normal time to complete dialog.
-        ttcPrompt(changedDates, newDays, oldDays);
+        ttcPrompt(newDays, oldDays);
     }
 
+    /**
+     * Ensures that if the user selected a task that was on the work ahead screen that the activity
+     * uses the right indices.
+     */
     private void convertDay() {
         if (mDay == 0) {
             Pair<Integer, Integer> convertedDates = mLogicSubsystem.convertDay(mPosition);
@@ -631,25 +592,19 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
     }
 
-    private void finishButtonPress(List<Integer> changedDates, int newDays, int oldDays) {
-        // Make sure to always update the first day so "Work Ahead" can be redisplayed.
-        changedDates = changedDates == null ? new ArrayList<>() : changedDates;
-        changedDates.add(0);
-
-        for (int d : changedDates) {
-            if (d >= newDays) {
-                continue;
-            }
-
-            mDayItemAdapter.mDayItemList.set(d, mLogicSubsystem.DayItemHelper(d, this));
-            mDayItemAdapter.notifyItemChanged(d);
-        }
-
-        while (mDayItemAdapter.mDayItemList.size() != newDays) {
+    /**
+     * Updates the recycler after a button press has been handled.
+     *
+     * @param newDays How many days are in the recycler now
+     * @param oldDays How many days used to be in the recycler.
+     */
+    private void finishButtonPress(int newDays, int oldDays) {
+        while (mDayItemAdapter.mDayItemList.size() > newDays) {
             mDayItemAdapter.mDayItemList.remove(newDays);
         }
 
         Optimize();
+        updateRecycler();
 
         if (oldDays != newDays) {
             mDayItemAdapter.notifyItemRangeRemoved(newDays, oldDays - newDays);
@@ -676,5 +631,27 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
 
         mPosition = mDay = -1;
+    }
+
+    /**
+     * Update recycler based on changes in other screens.
+     */
+    private void updateRecycler() {
+        List<Integer> updatedIndices = LogicSubsystem.getInstance().getUpdatedIndices();
+
+        for (int index : updatedIndices) {
+            if (index >= mDayItemAdapter.getItemCount()) {
+                int oldCount = mDayItemAdapter.getItemCount();
+                for (int i = oldCount; i <= index; i++) {
+                    mDayItemAdapter.mDayItemList.add(mLogicSubsystem.DayItemHelper(i, this));
+                }
+                mDayItemAdapter.notifyItemRangeInserted(oldCount, index - oldCount + 1);
+            }
+            else if (index >= 0) {
+                mDayItemAdapter.mDayItemList.set(index,
+                        LogicSubsystem.getInstance().DayItemHelper(index, this));
+                mDayItemAdapter.notifyItemChanged(index);
+            }
+        }
     }
 }

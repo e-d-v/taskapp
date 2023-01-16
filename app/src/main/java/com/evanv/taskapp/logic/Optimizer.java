@@ -2,10 +2,12 @@ package com.evanv.taskapp.logic;
 
 import static com.evanv.taskapp.logic.Task.getDiff;
 
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.temporal.ChronoField;
+import org.threeten.bp.temporal.ChronoUnit;
+
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -27,16 +29,16 @@ public class Optimizer {
      *
      * @return The latest date this task should be rescheduled for
      */
-    private Date findTrueEndDate(Task t) {
+    private LocalDate findTrueEndDate(Task t) {
         // B) the actual due date for the given task
-        Date currLateDate = t.getDueDate();
+        LocalDate currLateDate = t.getDueDate();
 
         // A) the earliest current do date for a child task, if the child task's do date is earlier
         // than B) the actual due date for the given task
         for (int j = 0; j < t.getChildren().size(); j++) {
             Task child = t.getChildren().get(j);
 
-            if (currLateDate.after(child.getWorkingDoDate())) {
+            if (currLateDate.isAfter(child.getWorkingDoDate())) {
                 currLateDate = child.getWorkingDoDate();
             }
         }
@@ -53,16 +55,16 @@ public class Optimizer {
      * @param t The task to find the true early date for
      * @return The earliest date this task should be rescheduled for
      */
-    private Date findTrueEarlyDate(Task t) {
+    private LocalDate findTrueEarlyDate(Task t) {
         // B) the actual earliest completion date for the given task
-        Date currEarlyDate = t.getEarlyDate();
+        LocalDate currEarlyDate = t.getEarlyDate();
 
         // A) the latest current do date for a parent task, if the parent task's do date is later
         // than B) the actual earliest completion date for the given task
         for (int j = 0; j < t.getParents().size(); j++) {
             Task parent = t.getParents().get(j);
 
-            if (currEarlyDate.before(parent.getWorkingDoDate())) {
+            if (currEarlyDate.isBefore(parent.getWorkingDoDate())) {
                 currEarlyDate = parent.getWorkingDoDate();
             }
         }
@@ -72,23 +74,18 @@ public class Optimizer {
 
     /**
      * Schedules task for the date index days past startDate.
-     *
-     * @param t The task to be scheduled
+     *  @param t The task to be scheduled
      * @param index How many days past startDate to be scheduled
      * @param startDate The Date representing taskSchedule[0]
      * @param taskSchedule ArrayList where taskSchedule[i] is a list of tasks scheduled for i days
-     *                     past the start date
+*                     past the start date
      * @param time Array of ints where time[i] is the number of minutes scheduled for i days past
-     *             the start date
      */
-    private void schedule(Task t, int index, Date startDate, List<List<Task>> taskSchedule
+    private void schedule(Task t, int index, LocalDate startDate, List<List<Task>> taskSchedule
             , int[] time) {
         taskSchedule.get(index).add(t);
         time[index] += t.getTimeToComplete();
-        Calendar doCal = Calendar.getInstance();
-        doCal.setTime(startDate);
-        doCal.add(Calendar.DAY_OF_YEAR, index);
-        t.setWorkingDoDate(doCal.getTime());
+        t.setWorkingDoDate(startDate.plus(index, ChronoUnit.DAYS));
     }
 
     /**
@@ -119,18 +116,18 @@ public class Optimizer {
      * @return An ArrayList of tasks whose dates were changed.
      */
     public ArrayList<Task> Optimize(List<Task> tasks, List<List<Task>> taskSchedule,
-                                    List<List<Event>> eventSchedule, Date startDate,
+                                    List<List<Event>> eventSchedule, LocalDate startDate,
                                     int todayTime) {
         taskSchedule.clear();
 
-        Date lateDate = startDate;
+        LocalDate lateDate = startDate;
 
         // Initializes tasks for optimization, see Javadoc for Task for more detail on why this is
         // necessary.
         for (int i = 0; i < tasks.size(); i++) {
             tasks.get(i).initializeForOptimization();
 
-            if (tasks.get(i).getDueDate().after(lateDate)) {
+            if (tasks.get(i).getDueDate().isAfter(lateDate)) {
                 lateDate = tasks.get(i).getDueDate();
             }
         }
@@ -245,11 +242,7 @@ public class Optimizer {
      * @return A pair of ints representing the timespan of the event.
      */
     private static Pair<Integer, Integer> getStartEndMinutes(Event e) {
-        Calendar overlapCal = Calendar.getInstance();
-        overlapCal.setTime(e.getDoDate());
-
-        int startMinute = (60 * overlapCal.get(Calendar.HOUR_OF_DAY)) +
-                overlapCal.get(Calendar.MINUTE);
+        int startMinute = e.getDoDate().get(ChronoField.MINUTE_OF_DAY);
         int endMinute = startMinute + e.getLength();
 
         return new Pair<>(startMinute, endMinute);
@@ -258,13 +251,12 @@ public class Optimizer {
     /**
      * First run of scheduling. Basically assigns a task to the date between it's earliest
      * completion date and it's due date with the lowest current commitment.
-     *
-     * @param pq PriorityQueue of all tasks in the data structure
+     *  @param pq PriorityQueue of all tasks in the data structure
      * @param startDate Today's date
      * @param taskSchedule Schedule to place tasks in
      * @param time Array where ith entry is the time commitment in minutes i days past today
      */
-    private void initialAssignment(PriorityQueue<Task> pq, Date startDate,
+    private void initialAssignment(PriorityQueue<Task> pq, LocalDate startDate,
                                    List<List<Task>> taskSchedule, int[] time) {
         while (pq.size() != 0) {
             Task t = pq.remove();
@@ -294,7 +286,7 @@ public class Optimizer {
                 child.removeWorkingParent(t);
 
                 // Change the workingEarlyDate so tasks aren't scheduled for before their parent(s)
-                if (child.getWorkingEarlyDate().before(t.getWorkingDoDate())) {
+                if (child.getWorkingEarlyDate().isBefore(t.getWorkingDoDate())) {
                     child.setWorkingEarlyDate(t.getWorkingDoDate());
                 }
 
@@ -320,7 +312,7 @@ public class Optimizer {
      *
      * @return true if the update moved a task, false if converged
      */
-    private boolean update(List<Task> tasks, Date startDate, List<List<Task>> taskSchedule
+    private boolean update(List<Task> tasks, LocalDate startDate, List<List<Task>> taskSchedule
             , int[] time) {
         boolean changed = false;
 
@@ -335,7 +327,7 @@ public class Optimizer {
             int earlyDateIndex = getDiff(curr.getWorkingEarlyDate(), startDate);
 
             // Update the end date in case this loop has changed it's children around
-            Date currLateDate = findTrueEndDate(curr);
+            LocalDate currLateDate = findTrueEndDate(curr);
 
             // Get the index into tasks/taskSchedule
             int lateDateIndex = getDiff(currLateDate, startDate);
@@ -374,7 +366,7 @@ public class Optimizer {
      *
      * @return true if task was moved, false if not
      */
-    private boolean moveDate(int[] time, int otherDateIndex, Task t, Date startDate,
+    private boolean moveDate(int[] time, int otherDateIndex, Task t, LocalDate startDate,
                              List<List<Task>> taskSchedule) {
         boolean changed = false;
 
@@ -412,7 +404,7 @@ public class Optimizer {
      *
      * @return true if tasks were swapped, false otherwise
      */
-    private boolean swapTasks(Task t1, Task t2, int[] time, Date startDate,
+    private boolean swapTasks(Task t1, Task t2, int[] time, LocalDate startDate,
                               List<List<Task>> taskSchedule) {
         boolean changed = false;
 
@@ -429,13 +421,13 @@ public class Optimizer {
 
         // Makes sure this reschedule wouldn't reschedule the other task too late
         // or too early for it's parents/children
-        Date otherLateDate = findTrueEndDate(t2);
-        if (otherLateDate.before(t1.getWorkingDoDate())) {
+        LocalDate otherLateDate = findTrueEndDate(t2);
+        if (otherLateDate.isBefore(t1.getWorkingDoDate())) {
             return false;
         }
 
-        Date otherEarlyDate = findTrueEarlyDate(t2);
-        if (otherEarlyDate.after(t1.getWorkingDoDate())) {
+        LocalDate otherEarlyDate = findTrueEarlyDate(t2);
+        if (otherEarlyDate.isAfter(t1.getWorkingDoDate())) {
             return false;
         }
 

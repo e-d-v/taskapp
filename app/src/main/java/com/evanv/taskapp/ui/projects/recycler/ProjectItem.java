@@ -1,7 +1,5 @@
 package com.evanv.taskapp.ui.projects.recycler;
 
-import com.evanv.taskapp.logic.Project;
-
 /**
  * An item that represents a project for the project recycler.
  *

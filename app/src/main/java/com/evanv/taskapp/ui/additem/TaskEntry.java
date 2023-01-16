@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +16,6 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.compose.ui.text.intl.Locale;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
@@ -30,12 +28,11 @@ import com.evanv.taskapp.ui.additem.recur.RecurInput;
 import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
 
-import java.text.ParseException;
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.temporal.ChronoField;
+
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * The fragment that handles data entry for new tasks
@@ -43,18 +40,20 @@ import java.util.Objects;
  * @author Evan Voogd
  */
 public class TaskEntry extends Fragment implements ItemEntry {
-    private ViewGroup mContainer;  // The ViewGroup for the activity, allows easy access to views
-    private String mCurrentParents; // The list of parents for task, returned when fab is clicked
-    private Bundle mRecur;
-    private Bundle mNewProject;
-    private EditText mEditTextECD; // The EditText for the earliest completion date
-    private ActivityResultLauncher<Intent> mLaunchRecur;
-    private ActivityResultLauncher<Intent> mLaunchProject;
-    private SeekBar mSeekBar;      // The SeekBar used for priority.
-    private ArrayAdapter<String> mAdapter;
-    private Spinner mProjectSpinner;
-    private boolean projectAdded;
-    private long[] mLabels; // Array of labels added to this task.
+    private ViewGroup mContainer;   // The ViewGroup for the activity, allows easy access to views
+    private EditText mEditTextECD;  // The EditText for the earliest completion date
+    private SeekBar mSeekBar;       // The Priority SeekBar
+
+    private ArrayAdapter<String> mAdapter; // Adapter for the Project Spinner
+    private Spinner mProjectSpinner;       // The project spinner itself.
+
+    private Bundle mRecur;       // Bundle containing recurrence information
+    private long[] mLabels;      // Array of labels added to this task.
+    private List<Long> mParents; // Array of selected parents
+    private long mID;            // ID of the edited task (or -1 if adding a task)
+
+    private ActivityResultLauncher<Intent> mLaunchRecur;   // Launcher for the recurrence activity
+    private ActivityResultLauncher<Intent> mLaunchProject; // Launcher for the project activity
 
     /**
      * Required empty public constructor, creates new TaskEntry fragment
@@ -78,37 +77,29 @@ public class TaskEntry extends Fragment implements ItemEntry {
                         result.getData()));
         mLaunchProject = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
-                result -> handleProjectInput(result.getResultCode(),
+                result -> updateProjectSpinner(result.getResultCode(),
                         result.getData()));
 
-        // -1 signifies that the new task has no dependent tasks, as none were entered
-        mCurrentParents = "-1";
+        // null signifies that no parents are added.
+        mParents = null;
 
-
-        projectAdded = false;
         mLabels = new long[0];
     }
 
     /**
      * Function that is called when result is received from project input activity.
      *
-     * @param resultCode Is Activity.RESULT_OK if ran successfully
-     * @param data Contains a bundle of data that describes the recurrence chosen.
+     * @param resultCode is Activity.RESULT_OK if a project was successfully added.
+     * @param data Ignored
      */
-    private void handleProjectInput(int resultCode, Intent data) {
+    private void updateProjectSpinner(int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
-            // Ensure only one project is added at a time
-            if (projectAdded) {
-                mProjectSpinner.setSelection(0);
-                mAdapter.remove(mNewProject.getString(ProjectEntry.EXTRA_NAME));
-            }
+            // Update the project spinner
+            mAdapter.clear();
+            mAdapter.add(getString(R.string.project_spinner_default));
+            mAdapter.addAll(LogicSubsystem.getInstance().getProjectNames());
 
-            mNewProject = data.getBundleExtra(ProjectEntry.EXTRA_ITEM);
-
-            projectAdded = true;
-
-            // Add name to list
-            mAdapter.add(mNewProject.getString(ProjectEntry.EXTRA_NAME));
+            // Select the most recently added item.
             mProjectSpinner.setSelection(mAdapter.getCount() - 1);
         }
     }
@@ -163,7 +154,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         // Set options in the project spinner
         ArrayList<String> projects = new ArrayList<>();
         projects.add(getString(R.string.project_spinner_default));
-        projects.addAll(requireActivity().getIntent().getStringArrayListExtra(MainActivity.EXTRA_PROJECTS));
+        projects.addAll(LogicSubsystem.getInstance().getProjectNames());
         mProjectSpinner = view.findViewById(R.id.projectSpinner);
         mAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, projects);
         mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -177,29 +168,21 @@ public class TaskEntry extends Fragment implements ItemEntry {
         // a keyboard
         mEditTextECD.setOnClickListener(view1 -> {
             // Set the max date so the early date can't be set as later than the due date
-            Date maxDate = null;
+            LocalDate maxDate = null;
             if (!editTextDueDate.getText().toString().equals("")) {
-                try {
-                    maxDate = Task.dateFormat.parse(editTextDueDate.getText().toString());
-                } catch (ParseException e) {
-                    Log.e(this.getTag(), e.getMessage());
-                }
+                maxDate = LocalDate.from(Task.dateFormat.parse(editTextDueDate.getText().toString()));
             }
 
             // Generate and show the DatePicker
             DialogFragment newFragment = new DatePickerFragment(mEditTextECD, getString(R.string.ecd),
-                    new Date(), maxDate, false);
+                    LocalDate.now(), maxDate, false);
             newFragment.show(getParentFragmentManager(), "datePicker");
         });
         editTextDueDate.setOnClickListener(view1 -> {
             // Set the min date so the due date can't be before the early date.
-            Date minDate = new Date();
+            LocalDate minDate = LocalDate.now();
             if (!mEditTextECD.getText().toString().equals("")) {
-                try {
-                    minDate = Task.dateFormat.parse(mEditTextECD.getText().toString());
-                } catch (ParseException e) {
-                    Log.e(this.getTag(), e.getMessage());
-                }
+                minDate = LocalDate.from(Task.dateFormat.parse(mEditTextECD.getText().toString()));
             }
 
             // Generate and show the DatePicker
@@ -248,45 +231,38 @@ public class TaskEntry extends Fragment implements ItemEntry {
         });
 
         // Load id from intent to see if we're editing a task.
-        long id = requireActivity().getIntent().getLongExtra(MainActivity.EXTRA_ID, -1);
-        boolean editOn = id != -1;
+        mID = requireActivity().getIntent().getLongExtra(MainActivity.EXTRA_ID, -1);
+        boolean editOn = mID != -1;
         String type = requireActivity().getIntent().getStringExtra(MainActivity.EXTRA_TYPE);
 
         // Load data about task onto screen
         if (type != null && type.equals(AddItem.EXTRA_VAL_TASK) && editOn) {
             // Set the task name
             EditText etName = view.findViewById(R.id.editTextTaskName);
-            etName.setText(LogicSubsystem.getInstance().getTaskName(id));
+            etName.setText(LogicSubsystem.getInstance().getTaskName(mID));
 
             // Set the task ECD
-            mEditTextECD.setText(Task.dateFormat.format(LogicSubsystem.getInstance().getTaskECD(id)));
+            mEditTextECD.setText(Task.dateFormat.format(LogicSubsystem.getInstance().getTaskECD(mID)));
 
             // Set the task Due Date
-            editTextDueDate.setText(Task.dateFormat.format(LogicSubsystem.getInstance().getTaskDD(id)));
+            editTextDueDate.setText(Task.dateFormat.format(LogicSubsystem.getInstance().getTaskDD(mID)));
 
             // Set the task TTC
             EditText etTTC = view.findViewById(R.id.editTextTTC);
-            etTTC.setText(Integer.toString(LogicSubsystem.getInstance().getTaskTTC(id)));
+            etTTC.setText(Integer.toString(LogicSubsystem.getInstance().getTaskTTC(mID)));
 
             // Set the task Priority
-            mSeekBar.setProgress(LogicSubsystem.getInstance().getTaskPriority(id));
+            mSeekBar.setProgress(LogicSubsystem.getInstance().getTaskPriority(mID));
 
             // Set the task Project
-            long projectID = LogicSubsystem.getInstance().getTaskProject(id);
-            mProjectSpinner.setSelection(LogicSubsystem.getInstance().getProjectIndex(projectID));
+            long projectID = LogicSubsystem.getInstance().getTaskProject(mID);
+            mProjectSpinner.setSelection(LogicSubsystem.getInstance().getProjectIndex(projectID) + 1);
 
             // Set the task Labels
-            mLabels = convertLongListToArray(LogicSubsystem.getInstance().getTaskLabels(id));
+            mLabels = convertLongListToArray(LogicSubsystem.getInstance().getTaskLabels(mID));
 
             // Set the task Parents
-            List<Long> taskParents = LogicSubsystem.getInstance().getTaskParents(id);
-            StringBuilder sb = new StringBuilder();
-            for (long parentID : taskParents) {
-                int index = LogicSubsystem.getInstance().getTaskIndex(parentID);
-                sb.append(index);
-                sb.append(",");
-            }
-            mCurrentParents = (taskParents.size() != 0) ? sb.toString() : "-1";
+            mParents = LogicSubsystem.getInstance().getTaskParents(mID);
         }
 
         // Inflate the layout for this fragment
@@ -301,30 +277,21 @@ public class TaskEntry extends Fragment implements ItemEntry {
         Intent intent = new Intent(getActivity(), RecurActivity.class);
 
         // Get the date information the user has entered
-        Calendar ecdCal = Calendar.getInstance();
         long time;
-        try {
-            String ecdText = mEditTextECD.getText().toString();
-            Date ecd = Task.dateFormat.parse(ecdText);
-            time = Objects.requireNonNull(ecd).getTime();
-            ecdCal.setTime(Objects.requireNonNull(ecd));
-        } catch (ParseException e) {
-            Toast.makeText(getActivity(),
-                    R.string.ecd_reminder,
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
+        LocalDate ecd;
+        String ecdText = mEditTextECD.getText().toString();
+        ecd = LocalDate.from(Task.dateFormat.parse(ecdText));
+        time = ecd.toEpochDay();
 
         // Get the day in month e.g. "31st"
-        intent.putExtra(EventEntry.EXTRA_DAY, EventEntry.getOrdinalDayInMonth(ecdCal.getTime()));
+        intent.putExtra(EventEntry.EXTRA_DAY, EventEntry.getOrdinalDayInMonth(ecd));
 
         // Get the ordinal day of week e.g. "3rd Monday"
-        intent.putExtra(EventEntry.EXTRA_DESC, EventEntry.getOrdinalDayInWeek(requireContext(),
-                ecdCal.getTime()));
+        intent.putExtra(EventEntry.EXTRA_DESC, EventEntry.getOrdinalDayInWeek(requireContext(), ecd));
 
         // Get the month e.g. "August"
         intent.putExtra(EventEntry.EXTRA_MONTH,
-                getResources().getStringArray(R.array.months)[ecdCal.get(Calendar.MONTH)]);
+                getResources().getStringArray(R.array.months)[ecd.get(ChronoField.MONTH_OF_YEAR) - 1]);
 
         // Get the time
         intent.putExtra(EventEntry.EXTRA_TIME, time);
@@ -334,16 +301,13 @@ public class TaskEntry extends Fragment implements ItemEntry {
     }
 
     /**
-     * Bundles up the information entered into the fields and, if it's valid, sends it to AddItem,
-     * which will in turn send it to MainActivity. If one or more fields are incorrect, it sends
-     * null instead.
+     * Builds a task based on the inputted information.
      *
-     * @return If all fields are correct, a Bundle containing the information needed to create an
-     *         event, if not, null.
+     * @return true if item is successfully added, false otherwise
      */
     @SuppressWarnings("unused")
     @Override
-    public Bundle getItem() {
+    public boolean addItem() {
         // Get the user's input
         String taskName = ((EditText) mContainer.findViewById(R.id.editTextTaskName)).getText()
                 .toString();
@@ -357,76 +321,62 @@ public class TaskEntry extends Fragment implements ItemEntry {
         if (taskName.length() == 0) {
             Toast.makeText(getActivity(), R.string.name_empty_task,
                     Toast.LENGTH_LONG).show();
-            return null;
+            return false;
         }
 
         // Check if ECD is valid
+        LocalDate early;
         if (ecd.length() == 0) {
             Toast.makeText(getActivity(),
                     R.string.ecd_empty_task,
                     Toast.LENGTH_LONG).show();
-            return null;
+            return false;
         }
         else {
-            try {
-                Task.dateFormat.parse(ecd);
-            } catch (ParseException e) {
-                Toast.makeText(getActivity(), R.string.ecd_empty_task, Toast.LENGTH_LONG).show();
-                return null;
-            }
+            early = LocalDate.from(Task.dateFormat.parse(ecd));
         }
 
         // Ensure the user entered a dueDate
+        LocalDate due;
         if (dueDate.length() == 0) {
             Toast.makeText(getActivity(),
                     R.string.due_empty_task,
                     Toast.LENGTH_LONG).show();
-            return null;
+            return false;
         }
         // Ensure the user entered a valid due date. (Probably) not necessary as the DatePicker
         // should handle this, but kept just in case.
         else {
-            try {
-                Task.dateFormat.parse(dueDate);
-            } catch (ParseException e) {
-                Toast.makeText(getActivity(), R.string.due_empty_task, Toast.LENGTH_LONG).show();
-                return null;
-            }
+            due = LocalDate.from(Task.dateFormat.parse(dueDate));
         }
 
         // Check if length is valid
+        int timeToComplete;
         if (ttc.length() == 0) {
             Toast.makeText(getActivity(), R.string.ttc_error_empty_task, Toast.LENGTH_LONG).show();
-            return null;
+            return false;
         }
         // Check if user entered length is a number.
         else {
             try {
-                Integer.parseInt(ttc);
+                timeToComplete = Integer.parseInt(ttc);
             }
             catch (Exception e) {
                 Toast.makeText(getActivity(),
                         R.string.ttc_format_event,
                         Toast.LENGTH_LONG).show();
-                return null;
+                return false;
             }
         }
 
-        // Build a Bundle with all the required fields
-        Bundle toReturn = new Bundle();
-        toReturn.putString(AddItem.EXTRA_TYPE, AddItem.EXTRA_VAL_TASK);
-        toReturn.putString(AddItem.EXTRA_NAME, taskName);
-        toReturn.putString(AddItem.EXTRA_ECD, ecd);
-        toReturn.putString(AddItem.EXTRA_DUE, dueDate);
-        toReturn.putString(AddItem.EXTRA_END, ttc);
-        toReturn.putString(AddItem.EXTRA_PARENTS, mCurrentParents);
-        toReturn.putBundle(AddItem.EXTRA_RECUR, mRecur);
-        toReturn.putBundle(AddItem.EXTRA_NEW_PROJECT, mNewProject);
-        toReturn.putInt(AddItem.EXTRA_PROJECT, mProjectSpinner.getSelectedItemPosition());
-        toReturn.putInt(AddItem.EXTRA_PRIORITY, priority);
-        toReturn.putLongArray(AddItem.EXTRA_LABELS, mLabels);
+        // Get selected project
+        int project = mProjectSpinner.getSelectedItemPosition();
 
-        return toReturn;
+        // Add the specified task into the LogicSubsystem
+        LogicSubsystem.getInstance().editTask(taskName, early, due, mRecur, timeToComplete, project,
+                mLabels, mParents, priority, mID, getContext());
+
+        return true;
     }
 
     /**
@@ -442,8 +392,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
         public void onClick(View view) {
             // Converts the bundled arraylist of task names to a String[] that can be used by
             // the alert dialog
-            ArrayList<String> taskNames = requireActivity().getIntent()
-                    .getStringArrayListExtra(MainActivity.EXTRA_TASKS);
+            ArrayList<String> taskNames = LogicSubsystem.getInstance().getTaskNames(getContext());
 
             showPickerDialog(convertListToArray(taskNames));
         }
@@ -467,21 +416,15 @@ public class TaskEntry extends Fragment implements ItemEntry {
                                 // If unchecked, remove form list of Tasks to be added as
                                 // parents
                                 else if (selectedItems.contains(index)) {
-                                    selectedItems.remove(index);
+                                    selectedItems.remove(Integer.valueOf(index));
                                 }
                             })).setPositiveButton(R.string.ok,
                             ((dialogInterface, i) -> {
-                                // Build a string that has the format n_1, n_2, ..., n_N,
-                                // where n_x is an index into the task array of a Task to
-                                // be added as a parent for the new Task
-                                StringBuilder sb = new StringBuilder();
+                                // Edit the parents list
+                                mParents = new ArrayList<>();
                                 for (int index : selectedItems) {
-                                    sb.append(index);
-                                    sb.append(",");
+                                    mParents.add(LogicSubsystem.getInstance().getTaskID(index));
                                 }
-                                mCurrentParents = (selectedItems.size() != 0) ? sb.toString()
-                                        : "-1";
-
                             }));
 
             builder.create();

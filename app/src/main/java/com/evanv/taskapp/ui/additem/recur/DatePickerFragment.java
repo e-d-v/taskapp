@@ -12,8 +12,10 @@ import androidx.fragment.app.DialogFragment;
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.ui.additem.TimePickerFragment;
 
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.ZoneId;
+
 import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Class that creates a DatePicker to launch when setting a date for easier Date entering
@@ -23,23 +25,23 @@ import java.util.Date;
  */
 public class DatePickerFragment extends DialogFragment
         implements DatePickerDialog.OnDateSetListener {
-    private final EditText mET;  // The EditText this date will be placed in.
-    private final String mTitle; // The text for the title of the dialog
-    private final Date mMinDate; // The earliest date user can choose
-    private final Date mMaxDate; // The latest date user can choose
-    private final boolean mTP;   // True if time is needed, false if not.
+    private final EditText mET;       // The EditText this date will be placed in.
+    private final String mTitle;      // The text for the title of the dialog
+    private final LocalDate mMinDate; // The earliest date user can choose
+    private final LocalDate mMaxDate; // The latest date user can choose
+    private final boolean mTP;        // True if time is needed, false if not.
 
     /**
      * Creates a DatePickerFragment for a dialog that puts its output in the given EditText,
      * with the given title.
-     *
      * @param et The EditText this date will be placed in.
      * @param title The text for the title of the dialog.
      * @param minDate The minimum date to allow user to select
      * @param maxDate The latest date to allow user to select, null if not needed
      * @param tp true if timepicker should be shown
      */
-    public DatePickerFragment(EditText et, String title, Date minDate, Date maxDate, boolean tp) {
+    public DatePickerFragment(EditText et, String title, LocalDate minDate, LocalDate maxDate,
+                              boolean tp) {
         mET = et;
         mTitle = title;
         mMinDate = minDate;
@@ -66,11 +68,15 @@ public class DatePickerFragment extends DialogFragment
         DatePickerDialog dp =
                 new DatePickerDialog(requireContext(), this, year, month, day);
         dp.setMessage(mTitle);
-        dp.getDatePicker().setMinDate(mMinDate.getTime());
+
+        dp.getDatePicker().setMinDate
+                (mMinDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
         // If no max date is necessary skip this step
         if (mMaxDate != null) {
-            dp.getDatePicker().setMaxDate(mMaxDate.getTime());
+            dp.getDatePicker().setMaxDate(mMaxDate.atStartOfDay()
+                    .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
         }
+
         return dp;
     }
 

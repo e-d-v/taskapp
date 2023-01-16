@@ -21,7 +21,8 @@ import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.Task;
 import com.evanv.taskapp.ui.additem.EventEntry;
 
-import java.text.ParseException;
+import org.threeten.bp.LocalDate;
+
 import java.util.Date;
 import java.util.Objects;
 
@@ -112,14 +113,8 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
             if (!timespanStr.equals("")) {
                 // The user chose to recur until a specific date
                 if (!inputShown) {
-                    try {
-                        Task.dateFormat.parse(timespanStr);
-                        toReturn.putString(EXTRA_UNTIL_TYPE, EXTRA_VAL_UNTIL);
-                    } catch (ParseException e) {
-                        Toast.makeText(this, R.string.date_format_task, Toast.LENGTH_LONG)
-                                .show();
-                        flag = false;
-                    }
+                    Task.dateFormat.parse(timespanStr);
+                    toReturn.putString(EXTRA_UNTIL_TYPE, EXTRA_VAL_UNTIL);
                 }
                 // The user chose to recur a specific number of times
                 else {
@@ -244,7 +239,7 @@ public class RecurActivity extends AppCompatActivity implements AdapterView.OnIt
             et.setInputType(InputType.TYPE_NULL);
             et.getText().clear();
             et.setOnClickListener(v -> {
-                Date minDate = new Date(time);
+                LocalDate minDate = LocalDate.ofEpochDay(time);
 
                 DialogFragment newFragment = new DatePickerFragment(et,
                         getString(R.string.recur_until), minDate, null, false);

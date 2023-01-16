@@ -29,6 +29,7 @@ public class Project {
     private int mColor;            // Color of the Project, index into ColorList
     @ColumnInfo(name = "goal")
     private String mGoal;            // Goal for completing the Project
+
     @Ignore
     private final List<Task> mTasks;       // List of Tasks with this Project
 

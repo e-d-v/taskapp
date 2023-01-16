@@ -2,8 +2,6 @@ package com.evanv.taskapp.ui.additem;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.ContextMenu;
-import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
@@ -27,43 +25,10 @@ import java.util.Objects;
  */
 @SuppressWarnings("unused")
 public class AddItem extends AppCompatActivity {
-
-    // Extras used in the Bundle:
-    // Used by both
-    // Key for the bundle containing item fields
-    public static final String EXTRA_ITEM = "com.evanv.taskapp.extra.ITEM";
-    // Key for the type of item being added (EXTRA_VAL_TASK) or (EXTRA_VAL_EVENT)
-    public static final String EXTRA_TYPE = "com.evanv.taskapp.extra.TYPE";
-    // Key for the name of the item being added
-    public static final String EXTRA_NAME = "com.evanv.taskapp.extra.NAME";
-    // Key for the time to complete/length of the item (in minutes)
-    public static final String EXTRA_END = "com.evanv.taskapp.extra.TTC";
-
-    // Used by Task
     // Type value representing Task
     public static final String EXTRA_VAL_TASK = "com.evanv.taskapp.extra.val.TASK";
-    // Key for the Earliest Completion Date for the task being added
-    public static final String EXTRA_ECD = "com.evanv.taskapp.extra.ECD";
-    // Key for the due date for the task being added
-    public static final String EXTRA_DUE = "com.evanv.taskapp.extra.DUE";
-    // Key for the list of parent tasks indices for the task being added
-    public static final String EXTRA_PARENTS = "com.evanv.taskapp.extra.PARENTS";
-    // Key for the priority of the task.
-    public static final String EXTRA_PRIORITY = "com.evanv.taskapp.extra.PRIORITY";
-    // Key for the project of the task.
-    public static final String EXTRA_PROJECT = "com.evanv.taskapp.extra.PROJECT";
-    // Information for new project.
-    public static final String EXTRA_NEW_PROJECT = "com.evanv.taskapp.extra.NEW_PROJECT";
-    // Labels that the task is associated with.
-    public static final String EXTRA_LABELS = "com.evanv.taskapp.extra.LABELS";
-
-    // Used by Event
     // Type value representing Event
     public static final String EXTRA_VAL_EVENT = "com.evanv.taskapp.extra.val.EVENT";
-    // Key for the Start Date for the event being added
-    public static final String EXTRA_START = "com.evanv.taskapp.extra.START";
-    // Key for the number of reoccurrences for the task being added
-    public static final String EXTRA_RECUR = "com.evanv.taskapp.extra.RECUR";
 
     // Fields
     private boolean mTaskDisplayed;       // true if TaskEntry fragment is displayed
@@ -121,12 +86,6 @@ public class AddItem extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController,
                 mAppBarConfiguration);
 
-        // Move to Event screen if editing event
-        String type = getIntent().getStringExtra(MainActivity.EXTRA_TYPE);
-        if (type != null && type.equals(AddItem.EXTRA_VAL_EVENT)) {
-            navController.navigate(R.id.action_taskEntry_to_eventEntry);
-        }
-
         binding.toolbar.setTitle(getString(R.string.add_task));
 
         // When FAB is clicked, run submit() method
@@ -162,6 +121,22 @@ public class AddItem extends AppCompatActivity {
             // Make sure up button still pressed
             Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         });
+
+        // Move to Event screen if editing event
+        String type = getIntent().getStringExtra(MainActivity.EXTRA_TYPE);
+        if (type != null) {
+            if (type.equals(AddItem.EXTRA_VAL_EVENT)) {
+                navController.navigate(R.id.action_taskEntry_to_eventEntry);
+                Objects.requireNonNull(getSupportActionBar()).setTitle(R.string.edit_event);
+            }
+            else if (type.equals(AddItem.EXTRA_VAL_TASK)) {
+                Objects.requireNonNull(getSupportActionBar()).setTitle(R.string.edit_task);
+            }
+
+            for (int i = 0; i < mRGroup.getChildCount(); i++) {
+                mRGroup.getChildAt(i).setEnabled(false);
+            }
+        }
     }
 
     /**
@@ -176,12 +151,11 @@ public class AddItem extends AppCompatActivity {
                 .getChildFragmentManager().getFragments().get(0);
 
         // Call getItem so we can get a bundle of the data the user has entered
-        Bundle toReturn = current.getItem();
+        boolean ranSuccessfully = current.addItem();
 
         // If the user correctly entered all fields, send the bundle to MainActivity and return
-        if (toReturn != null) {
+        if (ranSuccessfully) {
             Intent replyIntent = new Intent();
-            replyIntent.putExtra(EXTRA_ITEM, toReturn);
             setResult(RESULT_OK, replyIntent);
             finish();
         }

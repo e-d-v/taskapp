@@ -12,7 +12,7 @@ import androidx.fragment.app.DialogFragment;
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.Event;
 
-import java.util.Calendar;
+import org.threeten.bp.LocalTime;
 
 /**
  * Class that creates a DatePicker to launch when setting a date for easier Date entering
@@ -66,12 +66,9 @@ public class TimePickerFragment extends DialogFragment
     public void onTimeSet(TimePicker timePicker, int hour, int minute) {
         String curr = mET.getText().toString();
 
-        Calendar c = Calendar.getInstance();
-        c.set(Calendar.HOUR_OF_DAY, hour);
-        c.set(Calendar.MINUTE, minute);
+        LocalTime time = LocalTime.of(hour, minute);
+        String timeStr = Event.timeFormat.format(time);
 
-        String time = Event.timeFormat.format(c.getTime());
-
-        mET.setText(String.format(getString(R.string.two_words), curr, time));
+        mET.setText(String.format(getString(R.string.two_words), curr, timeStr));
     }
 }

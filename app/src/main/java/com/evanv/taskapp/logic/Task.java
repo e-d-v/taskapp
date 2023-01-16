@@ -1,6 +1,4 @@
 package com.evanv.taskapp.logic;
-import android.annotation.SuppressLint;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
@@ -11,12 +9,15 @@ import androidx.room.TypeConverters;
 
 import com.evanv.taskapp.db.Converters;
 
-import java.text.SimpleDateFormat;
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalDateTime;
+import org.threeten.bp.format.DateTimeFormatter;
+import org.threeten.bp.temporal.ChronoUnit;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Represents a single task. Conceptually a Task is a node on a large task dependency graph that
@@ -37,15 +38,15 @@ public class Task implements Comparable<Task> {
     private long mID;                  // PrimaryKey for Task. Used as duplicate task names is allowed
     @NonNull
     @ColumnInfo(name = "name")
-    private String mName;        // Name of the task
+    private String mName;              // Name of the task
     @NonNull
     @ColumnInfo(name = "earlyDate")
-    private Date mEarlyDate;           // Earliest date to complete
+    private LocalDate mEarlyDate;      // Earliest date to complete
     @ColumnInfo(name = "doDate")
-    private Date mDoDate;              // Date to do the task
+    private LocalDate mDoDate;         // Date to do the task
     @NonNull
     @ColumnInfo(name = "dueDate")
-    private Date mDueDate;             // Date the task is due
+    private LocalDate mDueDate;        // Date the task is due
     @ColumnInfo(name = "ttc")
     private int mTimeToComplete;       // Time (in minutes) to complete the tasks
     @ColumnInfo(name = "priority")
@@ -53,12 +54,12 @@ public class Task implements Comparable<Task> {
     @Ignore
     private Project mProject;          // Project for the task.
     @Ignore
-    private List<Label> mLabels;       // Label for the task.
+    private final List<Label> mLabels;       // Label for the task.
 
     @ColumnInfo(name = "project")
     private long mProjectID;           // Project ID for the task.
     @ColumnInfo(name = "labels")
-    private ArrayList<Long> mLabelIDs; // Label ID for the task.
+    private final ArrayList<Long> mLabelIDs; // Label ID for the task.
 
     @NonNull
     @ColumnInfo(name = "parents_list")
@@ -75,14 +76,12 @@ public class Task implements Comparable<Task> {
     @Ignore
     private ArrayList<Task> mWorkingChildren; // Working copy of children for optimizer
     @Ignore
-    private Date mWorkingEarlyDate;           // Working copy of earlyDate for optimizer.
+    private LocalDate mWorkingEarlyDate;      // Working copy of earlyDate for optimizer.
     @Ignore
-    private Date mWorkingDoDate;              // Working copy of doDate for optimizer.
+    private LocalDate mWorkingDoDate;         // Working copy of doDate for optimizer.
 
     // Static field
-    // SimpleDateFormat that formats date in the style "08/20/22"
-    @SuppressLint("SimpleDateFormat")
-    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy");
+    public static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("M/d/yy");
 
     /**
      * Initializes an object representing a task
@@ -91,18 +90,18 @@ public class Task implements Comparable<Task> {
      * @param early The earliest possible day to complete the task (e.g. when it's assigned)
      * @param due When the task is due
      */
-    public Task(@NonNull String name, Date early, Date due, int time, int priority) {
+    public Task(@NonNull String name, @NonNull LocalDate early, @NonNull LocalDate due, int time,
+                int priority) {
         this.mName = name;
-        this.mEarlyDate = clearDate(early);
-        this.mDoDate = new Date(0); // To stop null pointer exceptions
-        this.mDueDate = clearDate(due);
+        this.mEarlyDate = early;
+        this.mDoDate = LocalDate.MIN;
+        this.mDueDate = due;
         this.mTimeToComplete = time;
         mParents = new ArrayList<>();
         mChildren = new ArrayList<>();
         mParentArr = new ArrayList<>();
         mLabelIDs = new ArrayList<>();
         mLabels = new ArrayList<>();
-        mParentArr.add(-1L);
         mPriority = priority;
         mProjectID = -1;
         mProject = null;
@@ -121,9 +120,9 @@ public class Task implements Comparable<Task> {
      * @param projectID ID for the project.
      * @param labelIDs List of IDs for the labels.
      */
-    public Task(@NonNull String name, @NonNull Date earlyDate, @NonNull Date dueDate,
-                Date doDate, int timeToComplete, @NonNull ArrayList<Long> parentArr, int priority,
-                long projectID, @NonNull ArrayList<Long> labelIDs) {
+    public Task(@NonNull String name, @NonNull LocalDate earlyDate, @NonNull LocalDate dueDate,
+                LocalDate doDate, int timeToComplete, @NonNull ArrayList<Long> parentArr,
+                int priority, long projectID, @NonNull ArrayList<Long> labelIDs) {
         mName = name;
         mEarlyDate = earlyDate;
         mDueDate = dueDate;
@@ -179,7 +178,7 @@ public class Task implements Comparable<Task> {
      *
      * @return The earliest completion date for the task
      */
-    public Date getEarlyDate() {
+    public LocalDate getEarlyDate() {
         return mEarlyDate;
     }
 
@@ -188,8 +187,8 @@ public class Task implements Comparable<Task> {
      *
      * @param earlyDate The new earliest completion date for the task.
      */
-    public void setEarlyDate(Date earlyDate) {
-        this.mEarlyDate = clearDate(earlyDate);
+    public void setEarlyDate(LocalDate earlyDate) {
+        this.mEarlyDate = earlyDate;
     }
 
     /**
@@ -197,7 +196,7 @@ public class Task implements Comparable<Task> {
      *
      * @return The currently scheduled completion date (by the optimizer) for the task
      */
-    public Date getDoDate() {
+    public LocalDate getDoDate() {
         return mDoDate;
     }
 
@@ -206,8 +205,8 @@ public class Task implements Comparable<Task> {
      *
      * @param doDate The new completion date for the task.
      */
-    public void setDoDate(Date doDate) {
-        this.mDoDate = clearDate(doDate);
+    public void setDoDate(LocalDate doDate) {
+        this.mDoDate = doDate;
     }
 
     /**
@@ -215,7 +214,7 @@ public class Task implements Comparable<Task> {
      *
      * @return The due date for the task
      */
-    public Date getDueDate() {
+    public LocalDate getDueDate() {
         return mDueDate;
     }
 
@@ -224,8 +223,8 @@ public class Task implements Comparable<Task> {
      *
      * @param dueDate The new due date for the task.
      */
-    public void setDueDate(Date dueDate) {
-        this.mDueDate = clearDate(dueDate);
+    public void setDueDate(LocalDate dueDate) {
+        this.mDueDate = dueDate;
     }
 
     /**
@@ -317,17 +316,17 @@ public class Task implements Comparable<Task> {
      *
      * @return The working copy of the do date for the task
      */
-    public Date getWorkingDoDate() {
+    public LocalDate getWorkingDoDate() {
         return mWorkingDoDate;
     }
 
     /**
      * Change the working copy of the earliest completion date for the task
      *
-     * @param mWorkingDoDate The new working copy of the earliest completion date for the task
+     * @param workingDoDate The new working copy of the earliest completion date for the task
      */
-    public void setWorkingDoDate(Date mWorkingDoDate) {
-        this.mWorkingDoDate = mWorkingDoDate;
+    public void setWorkingDoDate(LocalDate workingDoDate) {
+        this.mWorkingDoDate = workingDoDate;
     }
 
     /**
@@ -335,7 +334,7 @@ public class Task implements Comparable<Task> {
      *
      * @return The working copy of the earliest completion date for the task
      */
-    public Date getWorkingEarlyDate() {
+    public LocalDate getWorkingEarlyDate() {
         return mWorkingEarlyDate;
     }
 
@@ -344,8 +343,8 @@ public class Task implements Comparable<Task> {
      *
      * @param earlyDate The new working copy of the earliest completion date for the task.
      */
-    public void setWorkingEarlyDate(Date earlyDate) {
-        this.mWorkingEarlyDate = clearDate(earlyDate);
+    public void setWorkingEarlyDate(LocalDate earlyDate) {
+        this.mWorkingEarlyDate = earlyDate;
     }
 
     /**
@@ -397,8 +396,8 @@ public class Task implements Comparable<Task> {
     @Override
     public int compareTo(Task other) {
         // Check if task can only be completed for one day to get these tasks scheduled first.
-        boolean task1OneDay = mDueDate.getTime() == mEarlyDate.getTime();
-        boolean task2OneDay = other.getDueDate().getTime() == other.getEarlyDate().getTime();
+        boolean task1OneDay = mDueDate.isEqual(mEarlyDate);
+        boolean task2OneDay = other.getDueDate().isEqual(other.getEarlyDate());
         if (task1OneDay && !task2OneDay) {
             return -1;
         }
@@ -411,10 +410,10 @@ public class Task implements Comparable<Task> {
         int priority2 = other.getPriority();
 
         // Set priority to 5 if task is due today
-        if (mDueDate.getTime() == clearDate(new Date()).getTime()) {
+        if (mDueDate.isEqual(LocalDate.now())) {
             priority1 = 5;
         }
-        if (mDueDate.getTime() == clearDate(new Date()).getTime()) {
+        if (other.getDueDate().isEqual(LocalDate.now())) {
             priority2 = 5;
         }
 
@@ -426,7 +425,7 @@ public class Task implements Comparable<Task> {
         }
 
         // See if task is due before the other task
-        Date otherDueDate = other.getDueDate();
+        LocalDate otherDueDate = other.getDueDate();
         diff = mDueDate.compareTo(otherDueDate);
 
         if (diff == 0) {
@@ -436,7 +435,7 @@ public class Task implements Comparable<Task> {
 
             if (diff == 0) {
                 // See if task can be completed earlier than the other task
-                Date otherEarlyDate = other.getEarlyDate();
+                LocalDate otherEarlyDate = other.getEarlyDate();
 
                 diff = mEarlyDate.compareTo(otherEarlyDate);
             }
@@ -603,9 +602,19 @@ public class Task implements Comparable<Task> {
      * @param startDate The earlier date in the calculation
      * @return How many days between start and end dates. E.g. 8/21, 8/20 will return 1.
      */
-    public static int getDiff(Date endDate, Date startDate) {
-        endDate = clearDate(endDate);
-        startDate = clearDate(startDate);
-        return (int) ((endDate.getTime() - startDate.getTime()) / TimeUnit.DAYS.toMillis(1));
+    public static int getDiff(LocalDate endDate, LocalDate startDate) {
+        return (int) ChronoUnit.DAYS.between(startDate, endDate);
+    }
+
+    /**
+     * Get the difference (in days) between two dates. Often used to find index into taskSchedule
+     * List, so is included as a static field here.
+     *
+     * @param endDate The later date in the calculation
+     * @param startDate The earlier date in the calculation
+     * @return How many days between start and end dates. E.g. 8/21, 8/20 will return 1.
+     */
+    public static int getDiff(LocalDateTime endDate, LocalDate startDate) {
+        return (int) ChronoUnit.DAYS.between(startDate, endDate.toLocalDate());
     }
 }

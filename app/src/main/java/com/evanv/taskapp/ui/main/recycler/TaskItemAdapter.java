@@ -31,12 +31,12 @@ import java.util.List;
  * @author Evan Voogd
  */
 public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskViewHolder> {
-    public final List<TaskItem> mTaskItemList; // List of tasks for this day
     // Listener that allows easy completion of tasks (see ClickListener)
     private final ClickListener mListener;
-    private final int mDay; // Index into taskSchedule representing this day
-    private final Context mContext; // Context for resources.
-    private final Activity mActivity; // Activity for Context Menu
+    public final List<TaskItem> mTaskItemList; // List of tasks for this day
+    private final int mDay;                    // Index into taskSchedule representing this day
+    private final Context mContext;            // Context for resources.
+    private final Activity mActivity;          // Activity for Context Menu
 
     /**
      * Constructs an adapter for a given DayItem's task recyclerview
@@ -162,6 +162,14 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
                 Color.BLACK,
                 Color.BLACK};
 
+        // Show/hide the bar
+        if (taskItem.getProject() == null && taskItem.getLabels().size() == 0) {
+            holder.bar.setVisibility(View.INVISIBLE);
+        }
+        else {
+            holder.bar.setVisibility(View.VISIBLE);
+        }
+
         // Set project chip
         if (taskItem.getProject() != null) {
             // Show chip
@@ -243,6 +251,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         final ImageButton options;
         final Chip project;
         final ChipGroup labels;
+        final View bar;
         int mIndex; // Index into taskSchedule.get(day) for this event
 
         /**
@@ -264,6 +273,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             options = itemView.findViewById(R.id.buttonTaskOptions);
             project = itemView.findViewById(R.id.projectChip);
             labels = itemView.findViewById(R.id.labelChipGroup);
+            bar = itemView.findViewById(R.id.bar);
         }
     }
 }

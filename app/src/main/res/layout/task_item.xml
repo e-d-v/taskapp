@@ -57,13 +57,20 @@
                 android:layout_marginEnd="8dp"
                 android:layout_height="match_parent"
                 android:background="@color/light_gray" />
-            <com.google.android.material.chip.ChipGroup
+            <HorizontalScrollView
+                android:id="@+id/hsvChips"
                 android:layout_width="match_parent"
-                app:chipSpacingVertical="6dp"
+                android:layout_height="wrap_content">
+            <com.google.android.material.chip.ChipGroup
+                android:layout_width="wrap_content"
+                android:layout_height="26dp"
+                app:singleLine="true"
                 app:chipCornerRadius="12dp"
-                android:layout_height="wrap_content"
+                app:chipMinHeight="28dp"
+                android:textSize="12sp"
                 android:id="@+id/labelChipGroup">
             </com.google.android.material.chip.ChipGroup>
+            </HorizontalScrollView>
         </LinearLayout>
     </LinearLayout>
 

@@ -9,6 +9,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -165,16 +166,19 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         // Show/hide the bar
         if (taskItem.getProject() == null && taskItem.getLabels().size() == 0) {
             holder.bar.setVisibility(View.INVISIBLE);
+            holder.labels.setMinimumHeight(0);
+            holder.hsv.setLayoutParams(new LinearLayout.LayoutParams(0, 0));
         }
         else {
             holder.bar.setVisibility(View.VISIBLE);
+            holder.hsv.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 80));
         }
 
         // Set project chip
         if (taskItem.getProject() != null) {
             // Show chip
             holder.project.setChipMinHeightResource(R.dimen.chip_height);
-            holder.project.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+            holder.project.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
             holder.project.setVisibility(View.VISIBLE);
 
             // Set project name
@@ -216,14 +220,13 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         for (int i = 0; i < taskItem.getLabels().size(); i++) {
             Chip toAdd = new Chip(mContext);
             toAdd.setText(taskItem.getLabels().get(i).trim());
-            toAdd.setChipStartPadding(10);
-            toAdd.setChipEndPadding(20);
+            toAdd.setChipMinHeightResource(R.dimen.text_height);
             toAdd.setClickable(false);
             toAdd.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
             toAdd.setChipBackgroundColorResource(colors[taskItem.getLabelColors().get(i)]);
             toAdd.setTextColor(textColors[taskItem.getLabelColors().get(i)]);
             toAdd.setEnsureMinTouchTargetSize(false);
-            toAdd.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+            toAdd.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
             holder.labels.addView(toAdd);
         }
     }
@@ -252,6 +255,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         final Chip project;
         final ChipGroup labels;
         final View bar;
+        final HorizontalScrollView hsv;
         int mIndex; // Index into taskSchedule.get(day) for this event
 
         /**
@@ -274,6 +278,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             project = itemView.findViewById(R.id.projectChip);
             labels = itemView.findViewById(R.id.labelChipGroup);
             bar = itemView.findViewById(R.id.bar);
+            hsv = itemView.findViewById(R.id.hsvChips);
         }
     }
 }

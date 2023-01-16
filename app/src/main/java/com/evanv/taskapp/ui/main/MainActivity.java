@@ -91,15 +91,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     protected void onActivityResult(int resultCode, @Nullable Intent data) {
         // Show loading screen
-        if (resultCode != RESULT_OK) {
+        if (resultCode == RESULT_OK) {
             mVF.setDisplayedChild(0);
-
-            if (!mLogicSubsystem.isEmpty()) {
-                mVF.setDisplayedChild(1);
-            }
-            else {
-                mVF.setDisplayedChild(2);
-            }
 
             // As the task dependency graph has been updated, we must reoptimize it
             Optimize();

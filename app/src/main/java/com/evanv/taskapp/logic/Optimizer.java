@@ -441,8 +441,13 @@ public class Optimizer {
         thisTime = thisTime + t1.getTimeToComplete() - t2.getTimeToComplete();
         int newDiff = Math.abs(currTime - thisTime);
 
+        // True if the swap "preserves order", essentially makes sure that if task swapping doesn't
+        // change time in minutes, it will instead make sure to prioritize tasks by compareTo.
+        boolean preservesOrder = (t1.compareTo(t2) < 0) ? doDateIndex > otherDateIndex :
+                doDateIndex < otherDateIndex;
+
         // Swaps the tasks if it creates a more optimal schedule
-        if (newDiff < currDiff) {
+        if (newDiff < currDiff || newDiff == currDiff && preservesOrder) {
             changed = true;
             schedule(t1, otherDateIndex, startDate, taskSchedule, time);
             schedule(t2, doDateIndex, startDate, taskSchedule, time);

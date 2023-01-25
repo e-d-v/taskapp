@@ -446,6 +446,13 @@ public class Optimizer {
         boolean preservesOrder = (t1.compareTo(t2) < 0) ? doDateIndex > otherDateIndex :
                 doDateIndex < otherDateIndex;
 
+        // True if the swap makes less changes to the current schedule than the current scheduling
+        int currSame = (doDateIndex == getDiff(t1.getDoDate(), startDate) ? 1 : 0) +
+                (otherDateIndex == getDiff(t2.getDoDate(), startDate) ? 1 : 0);
+        int newSame = (otherDateIndex == getDiff(t1.getDoDate(), startDate) ? 1 : 0) +
+                (doDateIndex == getDiff(t2.getDoDate(), startDate) ? 1 : 0);
+        preservesOrder |= newSame > currSame;
+
         // Swaps the tasks if it creates a more optimal schedule
         if (newDiff < currDiff || newDiff == currDiff && preservesOrder) {
             changed = true;

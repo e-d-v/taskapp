@@ -969,8 +969,6 @@ public class LogicSubsystem {
         if (endDate != null) {
             for (int i = 0; i < toReturn.size(); i++) {
                 if (toReturn.get(i).getDueDate().isAfter(endDate)) {
-                    Log.d("date1", Event.dateFormat.format(endDate));
-                    Log.d("date2", Event.dateFormat.format(toReturn.get(i).getDueDate()));
                     toReturn.remove(i);
                     i--;
                 }

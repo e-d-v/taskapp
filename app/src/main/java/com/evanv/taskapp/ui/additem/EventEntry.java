@@ -258,6 +258,10 @@ public class EventEntry extends Fragment implements ItemEntry {
         long time;
         LocalDate ecd;
         String ecdText = mEditTextECD.getText().toString();
+        if (ecdText.isEmpty()) {
+            Toast.makeText(getContext(), "Please enter a start date first.", Toast.LENGTH_LONG).show();
+            return;
+        }
         ecd = LocalDate.from(Event.dateFormat.parse(ecdText));
         time = ecd.toEpochDay();
 

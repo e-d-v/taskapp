@@ -280,6 +280,12 @@ public class TaskEntry extends Fragment implements ItemEntry {
         long time;
         LocalDate ecd;
         String ecdText = mEditTextECD.getText().toString();
+
+        if (ecdText.isEmpty()) {
+            Toast.makeText(getContext(), "Please enter a start date first.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         ecd = LocalDate.from(Task.dateFormat.parse(ecdText));
         time = ecd.toEpochDay();
 
@@ -502,7 +508,7 @@ public class TaskEntry extends Fragment implements ItemEntry {
                                 // If unchecked, remove form list of Tasks to be added as
                                 // parents
                                 else if (selectedItems.contains(index)) {
-                                    selectedItems.remove(index);
+                                    selectedItems.remove(Integer.valueOf(index));
                                 }
                             })).setPositiveButton(R.string.ok,
                             ((dialogInterface, unused) -> {

@@ -2,6 +2,8 @@ package com.evanv.taskapp.logic;
 
 import static com.evanv.taskapp.logic.Task.getDiff;
 
+import android.util.Log;
+
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.temporal.ChronoField;
 import org.threeten.bp.temporal.ChronoUnit;
@@ -454,7 +456,7 @@ public class Optimizer {
         preservesOrder |= newSame > currSame;
 
         // Swaps the tasks if it creates a more optimal schedule
-        if (newDiff < currDiff || newDiff == currDiff && preservesOrder) {
+        if (newDiff < currDiff || (newDiff == currDiff && preservesOrder)) {
             changed = true;
             schedule(t1, otherDateIndex, startDate, taskSchedule, time);
             schedule(t2, doDateIndex, startDate, taskSchedule, time);

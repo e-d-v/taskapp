@@ -596,6 +596,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             mDayItemAdapter.mDayItemList.remove(newDays);
         }
 
+        mVF.setDisplayedChild(0);
         Optimize();
         updateRecycler();
 

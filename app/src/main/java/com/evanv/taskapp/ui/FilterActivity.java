@@ -279,7 +279,7 @@ public class FilterActivity extends AppCompatActivity {
                                 // If unchecked, remove form list of Tasks to be added as
                                 // parents
                                 else if (selectedItems.contains(index)) {
-                                    selectedItems.remove(index);
+                                    selectedItems.remove(Integer.valueOf(index));
                                 }
                             })).setPositiveButton(R.string.ok,
                             ((dialogInterface, unused) -> {

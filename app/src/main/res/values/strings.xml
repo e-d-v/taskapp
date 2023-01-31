@@ -30,7 +30,7 @@
     <string name="recur_format_event">Make sure to enter a whole number for the number of %s between recurrences.</string>
     <string name="complete_task">Complete Task</string>
     <string name="schedule_for">Schedule for %s (%d minutes):</string>
-    <string name="minutes_to_complete">(%d minutes to complete)</string>
+    <string name="minutes_to_complete">%d Minutes</string>
     <string name="ok">OK</string>
     <string name="name_empty_task">Make sure to enter a name for the task.</string>
     <string name="ecd_empty_task">Make sure to enter an earliest completion date for the task.</string>

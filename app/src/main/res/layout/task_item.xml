@@ -30,6 +30,7 @@
             android:id="@+id/taskName"
             android:layout_width="match_parent"
             android:text="Read Chapter 3"
+            android:lineSpacingExtra="2dp"
             android:layout_height="wrap_content"
             style="@style/item_name"
             tools:ignore="HardcodedText" />

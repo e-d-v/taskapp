@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -92,16 +91,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     protected void onActivityResult(int resultCode, @Nullable Intent data) {
         // Show loading screen
         if (resultCode == RESULT_OK) {
-            mVF.setDisplayedChild(0);
-
             // As the task dependency graph has been updated, we must reoptimize it
-            Optimize();
+            Runnable toRun = new OptimizeRunnable();
 
-            // Update the recycler
-            updateRecycler();
-
-            // Show recycler as Optimize is finished
-            mVF.setDisplayedChild(1);
+            Thread thread = new Thread(toRun);
+            thread.start();
         }
     }
 
@@ -111,10 +105,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     private void Optimize() {
         mLogicSubsystem.Optimize();
-
-        updateRecycler();
     }
-
 
     /**
      * Runs on the start of the app. Most importantly it loads the user data from the file.
@@ -597,34 +588,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
 
         mVF.setDisplayedChild(0);
-        Optimize();
-        updateRecycler();
-
-        if (oldDays != newDays) {
-            mDayItemAdapter.notifyItemRangeRemoved(newDays, oldDays - newDays);
-        }
-
-        // If there are any tasks/events scheduled, show the recycler
-        if (!mLogicSubsystem.isEmpty()) {
-            mVF.setDisplayedChild(1);
-        }
-        // If there aren't any, show the "add a task" fragment
-        else {
-            mVF.setDisplayedChild(2);
-        }
-
-        // If the FAB is currently hidden, show the FAB again, to prevent it from being lost as the
-        // FAB hides if you scroll down currently, and if we don't do this and the recycler doesn't
-        // have enough content to scroll, the FAB will be lost until a restart.
-        HideBottomViewOnScrollBehavior<FloatingActionButton> fabBehavior =
-                (HideBottomViewOnScrollBehavior<FloatingActionButton>)
-                        ((CoordinatorLayout.LayoutParams) mBinding.fab.getLayoutParams())
-                                .getBehavior();
-        if (fabBehavior != null) {
-            fabBehavior.slideUp(mBinding.fab);
-        }
-
-        mPosition = mDay = -1;
+        Runnable toRun = new OptimizeRunnable();
+        Thread thread = new Thread(toRun);
+        thread.start();
     }
 
     /**
@@ -646,6 +612,57 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                         LogicSubsystem.getInstance().DayItemHelper(index, this));
                 mDayItemAdapter.notifyItemChanged(index);
             }
+        }
+    }
+
+    private class OptimizeRunnable implements Runnable {
+        private final int mNewDays;
+        private final int mOldDays;
+
+        public OptimizeRunnable() {
+            mNewDays = -1;
+            mOldDays = -1;
+        }
+
+        public OptimizeRunnable(int newDays, int oldDays) {
+            mNewDays = newDays;
+            mOldDays = oldDays;
+        }
+
+        @Override
+        public void run() {
+            runOnUiThread(() ->mVF.setDisplayedChild(0));
+            Optimize();
+
+            runOnUiThread(() -> {
+                updateRecycler();
+
+                if (mOldDays != mNewDays) {
+                    mDayItemAdapter.notifyItemRangeRemoved(mNewDays, mOldDays - mNewDays);
+                }
+
+                // If there are any tasks/events scheduled, show the recycler
+                if (!mLogicSubsystem.isEmpty()) {
+                    mVF.setDisplayedChild(1);
+                }
+                // If there aren't any, show the "add a task" fragment
+                else {
+                    mVF.setDisplayedChild(2);
+                }
+
+                // If the FAB is currently hidden, show the FAB again, to prevent it from being lost as the
+                // FAB hides if you scroll down currently, and if we don't do this and the recycler doesn't
+                // have enough content to scroll, the FAB will be lost until a restart.
+                HideBottomViewOnScrollBehavior<FloatingActionButton> fabBehavior =
+                        (HideBottomViewOnScrollBehavior<FloatingActionButton>)
+                                ((CoordinatorLayout.LayoutParams) mBinding.fab.getLayoutParams())
+                                        .getBehavior();
+                if (fabBehavior != null) {
+                    fabBehavior.slideUp(mBinding.fab);
+                }
+
+                mPosition = mDay = -1;
+            });
         }
     }
 }

@@ -37,6 +37,57 @@
         </ViewFlipper>
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/addEventLayout"
+        android:orientation="horizontal"
+        android:layout_gravity="bottom|end"
+        android:gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_margin="@dimen/standard_21"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/addEventLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/item_name"
+            android:layout_marginEnd="5dp"
+            android:alpha="0"
+            android:textColor="@color/text_primary"
+            android:text="@string/add_event"/>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/addEventFab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fabSize="mini"
+            app:srcCompat="@drawable/baseline_edit_calendar_21" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/addTaskLayout"
+        android:orientation="horizontal"
+        android:layout_gravity="bottom|end"
+        android:gravity="center"
+        android:layout_margin="@dimen/standard_21"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/addTaskLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/item_name"
+            android:layout_marginEnd="5dp"
+            android:alpha="0"
+            android:textColor="@color/text_primary"
+            android:text="@string/add_task"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/addTaskFab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fabSize="mini"
+            app:srcCompat="@drawable/ic_baseline_add_24" />
+    </LinearLayout>
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"

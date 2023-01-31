@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     private long mEditedID;                        // ID of the currently edited task
     private int mPosition;                         // Position of button press
     private int mDay;                              // Day of button press
+    private boolean isFABOpen;                     // Is the fab vertically expanded
 
     // Key for the extra that stores the type of edit
     public static final String EXTRA_TYPE = "com.evanv.taskapp.ui.main.extras.TYPE";
@@ -241,7 +242,22 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         setSupportActionBar(mBinding.toolbar);
 
         // When the FAB is clicked, run intentAddItem to open the AddItem Activity
-        mBinding.fab.setOnClickListener(view -> intentAddItem(null, -1));
+//        mBinding.fab.setOnClickListener(view -> intentAddItem(null, -1));
+        mBinding.fab.setOnClickListener(view1 -> {
+            if (!isFABOpen) {
+                isFABOpen = true;
+                findViewById(R.id.addEventLayout).animate().translationY(-getResources().getDimension(R.dimen.standard_55));
+                findViewById(R.id.addTaskLayout).animate().translationY(-getResources().getDimension(R.dimen.standard_105));
+                findViewById(R.id.addTaskLabel).animate().alpha(1);
+                findViewById(R.id.addEventLabel).animate().alpha(1);
+            }
+            else {
+                closeFAB();
+            }
+        });
+
+        findViewById(R.id.addEventFab).setOnClickListener(v -> addEvent());
+        findViewById(R.id.addTaskFab).setOnClickListener(v -> addTask());
 
         // Make visible the main content
         mVF = findViewById(R.id.vf);
@@ -252,7 +268,30 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         else {
             mVF.setDisplayedChild(2);
         }
+    }
 
+    /**
+     * Close FAB from user view
+     */
+    private void closeFAB() {
+        isFABOpen = false;
+        findViewById(R.id.addEventLayout).animate().translationY(0);
+        findViewById(R.id.addTaskLayout).animate().translationY(0);
+        findViewById(R.id.addTaskLabel).animate().alpha(0);
+        findViewById(R.id.addEventLabel).animate().alpha(0);
+    }
+
+    /**
+     * Handles the back button being pressed. Allows FAB to be closed on back press.
+     */
+    @Override
+    public void onBackPressed() {
+        if (!isFABOpen) {
+            super.onBackPressed();
+        }
+        else {
+            closeFAB();
+        }
     }
 
     /**
@@ -292,6 +331,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
 
         mStartForResult.launch(intent);
+    }
+
+    private void addEvent() {
+        // TODO: Add Event BottomSheet
+    }
+
+    private void addTask() {
+        // TODO: Add Task BottomSheet
     }
 
     /**

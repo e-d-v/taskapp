@@ -80,15 +80,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     public static final String PREF_TIMED_TASK = "taskappTimerTask"; // TaskID for timer
     public static final String PREF_TIMER = "taskappTimerStart"; // Start Date for the timer
 
-
-    /**
-     * Calls the Optimizer to find an optimal schedule for the user's tasks, given the user's
-     * scheduled events.
-     */
-    private void Optimize() {
-        mLogicSubsystem.Optimize();
-    }
-
     /**
      * Runs on the start of the app. Most importantly it loads the user data from the file.
      *
@@ -422,7 +413,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         builder.setPositiveButton(R.string.complete_task, (dialogInterface, i) -> {
             mLogicSubsystem.addTodayTime(Integer.parseInt(input.getText().toString()));
 
-            finishButtonPress(newDays, oldDays);
+            finishButtonPress(newDays);
         });
 
         builder.show();
@@ -498,7 +489,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         mLogicSubsystem.onButtonClick(mPosition, mDay, 2, this);
         int newDays = mLogicSubsystem.getNumDays();
 
-        finishButtonPress(newDays, oldDays);
+        finishButtonPress(newDays);
     }
 
     /**
@@ -543,11 +534,10 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
 
-        int oldDays = mLogicSubsystem.getNumDays();
         mLogicSubsystem.onButtonClick(mPosition, mDay, 1, this);
         int newDays = mLogicSubsystem.getNumDays();
 
-        finishButtonPress(newDays, oldDays);
+        finishButtonPress(newDays);
     }
 
     /**
@@ -579,7 +569,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             builder.setPositiveButton("OK", (dialogInterface, i) -> {
                 mLogicSubsystem.addTodayTime(finalTimerVal);
 
-                finishButtonPress(newDays, oldDays);
+                finishButtonPress(newDays);
             });
 
             // If user chooses to use a different time, show the normal time to complete
@@ -614,11 +604,15 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * Updates the recycler after a button press has been handled.
      *
      * @param newDays How many days are in the recycler now
-     * @param oldDays How many days used to be in the recycler.
      */
-    private void finishButtonPress(int newDays, int oldDays) {
+    private void finishButtonPress(int newDays) {
+        int oldDays = mDayItemAdapter.mDayItemList.size();
         while (mDayItemAdapter.mDayItemList.size() > newDays) {
             mDayItemAdapter.mDayItemList.remove(newDays);
+        }
+
+        if (oldDays > newDays) {
+            mDayItemAdapter.notifyItemRangeRemoved(newDays, oldDays - newDays);
         }
 
         Runnable toRun = new OptimizeRunnable();
@@ -649,30 +643,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     }
 
     private class OptimizeRunnable implements Runnable {
-        private final int mNewDays;
-        private final int mOldDays;
-
-        public OptimizeRunnable() {
-            mNewDays = -1;
-            mOldDays = -1;
-        }
-
-        public OptimizeRunnable(int newDays, int oldDays) {
-            mNewDays = newDays;
-            mOldDays = oldDays;
-        }
-
         @Override
         public void run() {
             runOnUiThread(() ->mVF.setDisplayedChild(0));
-            Optimize();
+            mLogicSubsystem.Optimize();
 
             runOnUiThread(() -> {
                 updateRecycler();
 
-                if (mOldDays != mNewDays) {
-                    mDayItemAdapter.notifyItemRangeRemoved(mNewDays, mOldDays - mNewDays);
-                }
 
                 // If there are any tasks/events scheduled, show the recycler
                 if (!mLogicSubsystem.isEmpty()) {

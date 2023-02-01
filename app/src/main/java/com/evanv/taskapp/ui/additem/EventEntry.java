@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.fragment.app.DialogFragment;
 
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.Event;
@@ -73,6 +74,7 @@ public class EventEntry extends BottomSheetDialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setStyle(DialogFragment.STYLE_NORMAL, R.style.DialogStyle);
 
         mStartForResult = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),

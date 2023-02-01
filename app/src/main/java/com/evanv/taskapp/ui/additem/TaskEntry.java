@@ -4,14 +4,21 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.SpannableString;
+import android.text.TextWatcher;
+import android.text.style.StyleSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -21,6 +28,7 @@ import androidx.fragment.app.DialogFragment;
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.logic.Task;
+import com.evanv.taskapp.ui.FilterActivity;
 import com.evanv.taskapp.ui.additem.recur.NoRecurFragment;
 import com.evanv.taskapp.ui.additem.recur.RecurActivity;
 import com.evanv.taskapp.ui.additem.recur.RecurInput;
@@ -29,6 +37,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.temporal.ChronoField;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,20 +49,30 @@ import java.util.List;
  */
 public class TaskEntry extends BottomSheetDialogFragment {
     private View mContainer;   // The ViewGroup for the activity, allows easy access to views
-    private EditText mEditTextECD;  // The EditText for the earliest completion date
-    private SeekBar mSeekBar;       // The Priority SeekBar
-
-    private ArrayAdapter<String> mAdapter; // Adapter for the Project Spinner
-    private Spinner mProjectSpinner;       // The project spinner itself.
-
     private Bundle mRecur;       // Bundle containing recurrence information
+    private long mEarlyDate;     // Holds the user selected early date
+    private long mDueDate;       // Holds the user selected due date
+    private long mProject;       // Holds the ID of the user selected project
     private long[] mLabels;      // Array of labels added to this task.
     private List<Long> mParents; // Array of selected parents
     private long mID = -1;       // ID of the edited task (or -1 if adding a task)
     private View.OnClickListener mListener; // Listener for Submit Button
 
     private ActivityResultLauncher<Intent> mLaunchRecur;   // Launcher for the recurrence activity
-    private ActivityResultLauncher<Intent> mLaunchProject; // Launcher for the project activity
+    private EditText mNameET;
+    private ImageButton mECDButton;
+    private TextView mECDLabel;
+    private ImageButton mDDButton;
+    private ImageButton mProjectButton;
+    private TextView mDDLabel;
+    private TextView mProjectLabel;
+    private ImageButton mLabelsButton;
+    private TextView mLabelsLabel;
+    private EditText mTtcET;
+    private ImageButton mPrereqButton;
+    private TextView mParentsLabel;
+    private SeekBar mPrioritySeekbar;
+    private Button mRecurButton;
 
     /**
      * Required empty public constructor, creates new TaskEntry fragment
@@ -70,38 +89,17 @@ public class TaskEntry extends BottomSheetDialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setStyle(DialogFragment.STYLE_NORMAL, R.style.DialogStyle);
 
         mLaunchRecur = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> handleRecurInput(result.getResultCode(),
-                        result.getData()));
-        mLaunchProject = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> updateProjectSpinner(result.getResultCode(),
                         result.getData()));
 
         // null signifies that no parents are added.
         mParents = null;
 
         mLabels = new long[0];
-    }
-
-    /**
-     * Function that is called when result is received from project input activity.
-     *
-     * @param resultCode is Activity.RESULT_OK if a project was successfully added.
-     * @param data Ignored
-     */
-    private void updateProjectSpinner(int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK) {
-            // Update the project spinner
-            mAdapter.clear();
-            mAdapter.add(getString(R.string.project_spinner_default));
-            mAdapter.addAll(LogicSubsystem.getInstance().getProjectNames());
-
-            // Select the most recently added item.
-            mProjectSpinner.setSelection(mAdapter.getCount() - 1);
-        }
     }
 
     /**
@@ -131,132 +129,149 @@ public class TaskEntry extends BottomSheetDialogFragment {
         View view = inflater.inflate(R.layout.fragment_task_entry, container, false);
         mContainer = view;
 
-        // Sets the onClick behavior to the button to creating a dialog asking what parents the user
-        // wants to give the new task
-        view.findViewById(R.id.buttonAddParents).setOnClickListener
-                (new AddParentsListener());
-
-        view.findViewById(R.id.buttonAddLabels).setOnClickListener
-                (new AddLabelsListener());
-
-        // Get the EditTexts for dates`
-        mEditTextECD = view.findViewById(R.id.editTextECD);
-        EditText editTextDueDate = view.findViewById(R.id.editTextDueDate);
-
-        // Add click handler to button
-        Button button = view.findViewById(R.id.recurButton);
-        button.setOnClickListener(x -> intentRecur());
-
-        // Get the priority seek bar.
-        mSeekBar = view.findViewById(R.id.seekBar);
-
-        // Set options in the project spinner
-        ArrayList<String> projects = new ArrayList<>();
-        projects.add(getString(R.string.project_spinner_default));
-        projects.addAll(LogicSubsystem.getInstance().getProjectNames());
-        mProjectSpinner = view.findViewById(R.id.projectSpinner);
-        mAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, projects);
-        mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mProjectSpinner.setAdapter(mAdapter);
-
         // Add the default recurrence interval (none)
         mRecur = new Bundle();
         mRecur.putString(RecurInput.EXTRA_TYPE, NoRecurFragment.EXTRA_VAL_TYPE);
 
-        // Set the onClickListener so clicking the EditTexts opens a Date Picker dialog instead of
-        // a keyboard
-        mEditTextECD.setOnClickListener(view1 -> {
-            // Set the max date so the early date can't be set as later than the due date
-            LocalDate maxDate = null;
-            if (!editTextDueDate.getText().toString().equals("")) {
-                maxDate = LocalDate.from(Task.dateFormat.parse(editTextDueDate.getText().toString()));
+        mNameET = view.findViewById(R.id.editTextTaskName);
+        mECDButton = view.findViewById(R.id.startDateButton);
+        mECDLabel = view.findViewById(R.id.startDateLabel);
+        mDDButton = view.findViewById(R.id.endDateButton);
+        mDDLabel = view.findViewById(R.id.endDateLabel);
+        mProjectButton = view.findViewById(R.id.imageButtonProject);
+        mProjectLabel = view.findViewById(R.id.projectsLabel);
+        mLabelsButton = view.findViewById(R.id.imageButtonLabels);
+        mLabelsLabel = view.findViewById(R.id.labelsLabel);
+        mTtcET = view.findViewById(R.id.editTextTTC);
+        mPrereqButton = view.findViewById(R.id.buttonAddParents);
+        mParentsLabel = view.findViewById(R.id.parentsLabel);
+        mPrioritySeekbar = view.findViewById(R.id.seekBar);
+        mRecurButton = view.findViewById(R.id.recurButton);
+
+        // Sets the onClick behavior to the button to creating a dialog asking what parents the user
+        // wants to give the new task
+        mPrereqButton.setOnClickListener(new AddParentsListener());
+
+        // Make starting text bold
+        String startString = getString(R.string.early_date_default);
+        SpannableString startDateText = new SpannableString(startString);
+        startDateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
+                0, startString.indexOf('\n'), 0);
+        mECDLabel.setText(startDateText);
+
+        String endString = getString(R.string.due_date_default);
+        SpannableString endDateText = new SpannableString(endString);
+        endDateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
+                0, endString.indexOf('\n'), 0);
+        mDDLabel.setText(endDateText);
+
+        String projectString = getString(R.string.project_label);
+        SpannableString projectText = new SpannableString(projectString);
+        projectText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
+                0, projectString.indexOf('\n'), 0);
+        mProjectLabel.setText(projectText);
+
+        String labelsString = getString(R.string.label_label);
+        SpannableString labelsText = new SpannableString(labelsString);
+        labelsText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
+                0, labelsString.indexOf('\n'), 0);
+        mLabelsLabel.setText(labelsText);
+
+        mEarlyDate = 0;
+        mDueDate = 0;
+        mProject = 0;
+
+        // Set up the Early Date picker UI
+        EditText fakeEcdEt = new EditText(getContext());
+        fakeEcdEt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Do Nothing
             }
 
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                LocalDate toDisplay = LocalDate.from(Task.dateFormat.parse(charSequence.toString()));
+                mEarlyDate = toDisplay.toEpochDay();
+                setText(Task.dateFormat.format(toDisplay), mECDLabel,
+                        getString(R.string.early_date_format));
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                // Do Nothing
+            }
+        });
+        mECDButton.setOnClickListener(view1 -> {
+            // Set the max date so the early date can't be set as later than the due date
+            LocalDate maxDate = (mDueDate == 0) ? null : LocalDate.ofEpochDay(mDueDate);
+
             // Generate and show the DatePicker
-            DialogFragment newFragment = new DatePickerFragment(mEditTextECD, getString(R.string.ecd),
+            DialogFragment newFragment = new DatePickerFragment(fakeEcdEt, getString(R.string.ecd),
                     LocalDate.now(), maxDate, false);
             newFragment.show(getParentFragmentManager(), "datePicker");
         });
-        editTextDueDate.setOnClickListener(view1 -> {
-            // Set the min date so the due date can't be before the early date.
-            LocalDate minDate = LocalDate.now();
-            if (!mEditTextECD.getText().toString().equals("")) {
-                minDate = LocalDate.from(Task.dateFormat.parse(mEditTextECD.getText().toString()));
+
+        // Set up the End Date picker UI
+        EditText fakeDdET = new EditText(getContext());
+        fakeDdET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Do Nothing
             }
 
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                LocalDate toDisplay = LocalDate.from(Task.dateFormat.parse(charSequence.toString()));
+                mDueDate = toDisplay.toEpochDay();
+                setText(Task.dateFormat.format(toDisplay), mDDLabel,
+                        getString(R.string.due_date_format));
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                // Do Nothing
+            }
+        });
+        mDDButton.setOnClickListener(view1 -> {
+            // Set the max date so the early date can't be set as later than the due date
+            LocalDate minDate = (mEarlyDate == 0) ? LocalDate.now() :
+                    LocalDate.ofEpochDay(mEarlyDate);
+
             // Generate and show the DatePicker
-            DialogFragment newFragment = new DatePickerFragment(editTextDueDate,
-                    getString(R.string.due_date), minDate, null, false);
+            DialogFragment newFragment = new DatePickerFragment(fakeDdET, getString(R.string.due_date),
+                    minDate, null, false);
             newFragment.show(getParentFragmentManager(), "datePicker");
         });
 
-        // Initialize the information buttons to help the user understand the fields.
-        view.findViewById(R.id.ecdInfoButton).setOnClickListener(v -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage(R.string.task_ecd_info);
-            builder.setTitle(R.string.ecd);
-            builder.show();
-        });
+        mRecurButton.setOnClickListener(v -> intentRecur());
 
-        view.findViewById(R.id.ddInfoButton).setOnClickListener(v -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage(R.string.task_dd_info);
-            builder.setTitle(R.string.due_date);
-            builder.show();
-        });
+        // Add the AddLabelsListener
+        mLabelsButton.setOnClickListener(new AddLabelsListener());
 
-        view.findViewById(R.id.ttcInfoButton).setOnClickListener(v -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage(R.string.task_ttc_info);
-            builder.setTitle(R.string.ttc);
-            builder.show();
-        });
-
-        view.findViewById(R.id.priorityInfoButton).setOnClickListener(v -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage(R.string.priority_info);
-            builder.setTitle(R.string.priority);
-            builder.show();
-        });
-
-        // Set up the add project and add label buttons
-        view.findViewById(R.id.addProject).setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), ProjectEntry.class);
-            mLaunchProject.launch(intent);
-        });
-        view.findViewById(R.id.addLabel).setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), LabelEntry.class);
-            startActivity(intent);
-        });
+        // Add the PickProjectListener
+        mProjectButton.setOnClickListener(new PickProjectListener());
 
         // Load data about task onto screen
         if (mID != -1) {
-            // Set the task name
-            EditText etName = view.findViewById(R.id.editTextTaskName);
-            etName.setText(LogicSubsystem.getInstance().getTaskName(mID));
-
-            // Set the task ECD
-            mEditTextECD.setText(Task.dateFormat.format(LogicSubsystem.getInstance().getTaskECD(mID)));
-
-            // Set the task Due Date
-            editTextDueDate.setText(Task.dateFormat.format(LogicSubsystem.getInstance().getTaskDD(mID)));
-
-            // Set the task TTC
-            EditText etTTC = view.findViewById(R.id.editTextTTC);
-            etTTC.setText(Integer.toString(LogicSubsystem.getInstance().getTaskTTC(mID)));
-
-            // Set the task Priority
-            mSeekBar.setProgress(LogicSubsystem.getInstance().getTaskPriority(mID));
-
-            // Set the task Project
-            long projectID = LogicSubsystem.getInstance().getTaskProject(mID);
-            mProjectSpinner.setSelection(LogicSubsystem.getInstance().getProjectIndex(projectID) + 1);
-
-            // Set the task Labels
+            mNameET.setText(LogicSubsystem.getInstance().getTaskName(mID));
+            LocalDate toDisplay = LogicSubsystem.getInstance().getTaskECD(mID);
+            mEarlyDate = toDisplay.toEpochDay();
+            setText(Task.dateFormat.format(toDisplay), mECDLabel,
+                    getString(R.string.early_date_format));
+            toDisplay = LogicSubsystem.getInstance().getTaskDD(mID);
+            mDueDate = toDisplay.toEpochDay();
+            setText(Task.dateFormat.format(toDisplay), mDDLabel, getString(R.string.due_date_format));
+            mProject = LogicSubsystem.getInstance().getTaskProject(mID);
+            setText(LogicSubsystem.getInstance().getProjectName(mProject, getContext()), mProjectLabel,
+                    getString(R.string.project_replace));
             mLabels = convertLongListToArray(LogicSubsystem.getInstance().getTaskLabels(mID));
-
-            // Set the task Parents
+            setText(Integer.toString(mLabels.length), mLabelsLabel, getString(R.string.label_format));
+            mTtcET.setText(Integer.toString(LogicSubsystem.getInstance().getTaskTTC(mID)));
             mParents = LogicSubsystem.getInstance().getTaskParents(mID);
+            setText(Integer.toString(mParents.size()), mParentsLabel,
+                    getString(R.string.parent_tasks_format));
+            mPrioritySeekbar.setProgress(LogicSubsystem.getInstance().getTaskPriority(mID));
         }
 
         if (mListener != null) {
@@ -280,6 +295,17 @@ public class TaskEntry extends BottomSheetDialogFragment {
         mListener = listener;
     }
 
+    private void setText(String toShow, TextView element, String formatString) {
+
+        // Make starting text bold
+        SpannableString dateText = new SpannableString(String.format
+                (formatString, toShow));
+        dateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
+                0, formatString.indexOf('\n'), 0);
+
+        element.setText(dateText);
+    }
+
     /**
      * Launch a new intent to the RecurActivity, and give it the needed information
      */
@@ -288,17 +314,14 @@ public class TaskEntry extends BottomSheetDialogFragment {
         Intent intent = new Intent(getActivity(), RecurActivity.class);
 
         // Get the date information the user has entered
-        long time;
         LocalDate ecd;
-        String ecdText = mEditTextECD.getText().toString();
 
-        if (ecdText.isEmpty()) {
+        if (mEarlyDate == 0) {
             Toast.makeText(getContext(), "Please enter a start date first.", Toast.LENGTH_LONG).show();
             return;
         }
 
-        ecd = LocalDate.from(Task.dateFormat.parse(ecdText));
-        time = ecd.toEpochDay();
+        ecd = LocalDate.ofEpochDay(mEarlyDate);
 
         // Get the day in month e.g. "31st"
         intent.putExtra(EventEntry.EXTRA_DAY, EventEntry.getOrdinalDayInMonth(ecd));
@@ -311,7 +334,7 @@ public class TaskEntry extends BottomSheetDialogFragment {
                 getResources().getStringArray(R.array.months)[ecd.get(ChronoField.MONTH_OF_YEAR) - 1]);
 
         // Get the time
-        intent.putExtra(EventEntry.EXTRA_TIME, time);
+        intent.putExtra(EventEntry.EXTRA_TIME, mEarlyDate);
 
         // Launch RecurActivity
         mLaunchRecur.launch(intent);
@@ -325,13 +348,11 @@ public class TaskEntry extends BottomSheetDialogFragment {
     @SuppressWarnings("unused")
     public boolean addItem() {
         // Get the user's input
-        String taskName = ((EditText) mContainer.findViewById(R.id.editTextTaskName)).getText()
-                .toString();
-        String dueDate = ((EditText) mContainer.findViewById(R.id.editTextDueDate)).getText()
-                .toString();
-        String ecd = ((EditText) mContainer.findViewById(R.id.editTextECD)).getText().toString();
-        String ttc = ((EditText) mContainer.findViewById(R.id.editTextTTC)).getText().toString();
-        int priority = mSeekBar.getProgress();
+        String taskName = mNameET.getText().toString();
+        LocalDate early = LocalDate.ofEpochDay(mEarlyDate);
+        LocalDate due = LocalDate.ofEpochDay(mDueDate);
+        String ttc = mTtcET.getText().toString();
+        int priority = mPrioritySeekbar.getProgress();
 
         // Check if eventName is valid
         if (taskName.length() == 0) {
@@ -341,29 +362,19 @@ public class TaskEntry extends BottomSheetDialogFragment {
         }
 
         // Check if ECD is valid
-        LocalDate early;
-        if (ecd.length() == 0) {
+        if (mEarlyDate == 0) {
             Toast.makeText(getActivity(),
                     R.string.ecd_empty_task,
                     Toast.LENGTH_LONG).show();
             return false;
         }
-        else {
-            early = LocalDate.from(Task.dateFormat.parse(ecd));
-        }
 
         // Ensure the user entered a dueDate
-        LocalDate due;
-        if (dueDate.length() == 0) {
+        if (mDueDate == 0) {
             Toast.makeText(getActivity(),
                     R.string.due_empty_task,
                     Toast.LENGTH_LONG).show();
             return false;
-        }
-        // Ensure the user entered a valid due date. (Probably) not necessary as the DatePicker
-        // should handle this, but kept just in case.
-        else {
-            due = LocalDate.from(Task.dateFormat.parse(dueDate));
         }
 
         // Check if length is valid
@@ -385,11 +396,8 @@ public class TaskEntry extends BottomSheetDialogFragment {
             }
         }
 
-        // Get selected project
-        int project = mProjectSpinner.getSelectedItemPosition();
-
         // Add the specified task into the LogicSubsystem
-        LogicSubsystem.getInstance().editTask(taskName, early, due, mRecur, timeToComplete, project,
+        LogicSubsystem.getInstance().editTask(taskName, early, due, mRecur, timeToComplete, mProject,
                 mLabels, mParents, priority, mID, getContext());
 
         return true;
@@ -441,6 +449,8 @@ public class TaskEntry extends BottomSheetDialogFragment {
                                 for (int index : selectedItems) {
                                     mParents.add(LogicSubsystem.getInstance().getTaskID(index));
                                 }
+                                setText(Integer.toString(mParents.size()), mParentsLabel,
+                                        getString(R.string.parent_tasks_format));
                             }));
 
             builder.create();
@@ -531,6 +541,58 @@ public class TaskEntry extends BottomSheetDialogFragment {
                                     mLabels[i] = LogicSubsystem.getInstance()
                                             .getLabelID(selectedItems.get(i));
                                 }
+
+                                setText(Integer.toString(mLabels.length), mLabelsLabel,
+                                        getString(R.string.labels_format));
+                            }));
+
+            builder.create();
+            builder.show();
+        }
+    }
+
+    /**
+     * Handles the pick project dialog
+     */
+    private class PickProjectListener implements View.OnClickListener {
+        /**
+         * Opens a dialog allowing the user to set labels for the task
+         *
+         * @param view the button
+         */
+        @Override
+        public void onClick(View view) {
+            // Get the list of labels for the dialog
+            ArrayList<String> projectNames = LogicSubsystem.getInstance().getProjectNames();
+
+            showPickerDialog(convertListToArray(projectNames));
+        }
+
+        /**
+         * Builds and shows a picker dialog based on a list of label names.
+         *
+         * @param projectNamesArr List of names of labels
+         */
+        private void showPickerDialog(String[] projectNamesArr) {
+            // Define the dialog used to pick parent tasks
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setTitle(R.string.pick_project)
+                    .setSingleChoiceItems(projectNamesArr, -1, (dialogInterface, i) ->
+                            mProject = LogicSubsystem.getInstance().getProjectID(i))
+                    .setPositiveButton(R.string.ok,
+                            ((dialogInterface, unused) -> {
+                                // Get name of selected project
+                                String projectName = LogicSubsystem.getInstance()
+                                        .getProjectName(mProject, getContext());
+                                String formatString = getString(R.string.project_replace);
+
+                                // Make starting text bold
+                                SpannableString projectText = new SpannableString(String.format
+                                        (formatString, projectName));
+                                projectText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
+                                        0, formatString.indexOf('\n'), 0);
+
+                                mProjectLabel.setText(projectText);
                             }));
 
             builder.create();

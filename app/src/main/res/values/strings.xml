@@ -7,7 +7,7 @@
     <string name="task_name">Task Name</string>
     <string name="ecd">Earliest Completion Date</string>
     <string name="due_date">Due Date</string>
-    <string name="ttc">Time to Complete (in minutes)</string>
+    <string name="ttc">Completion Time (min.)</string>
     <string name="length">Length (in minutes)</string>
     <string name="start_time">Start Time</string>
     <string name="event_name">Event Name</string>
@@ -17,7 +17,7 @@
     <string name="optimizing">Optimizing…</string>
     <string name="complete_dialog_message">How long (in minutes) did the task take to complete?</string>
     <string name="complete_dialog_title">Complete Task</string>
-    <string name="parents_button">Choose prerequisite tasks</string>
+    <string name="parents_button">Complete After</string>
     <string name="ecd_help_text_format">Start times are formatted as MM/DD/YY HH:MM AM/PM.</string>
     <string name="ttc_error_empty">Make sure to enter an estimated completion time for the event.</string>
     <string name="ttc_error_empty_task">Make sure to enter an estimated completion time for the task.</string>
@@ -179,6 +179,7 @@
     <string name="project_replace">Project:\n%s</string>
     <string name="label_label">Labels:\nNone Chosen</string>
     <string name="label_replace">Labels:\n%d Chosen</string>
+    <string name="label_format">Labels:\n%s Chosen</string>
     <string name="min_priority">Minimum Priority</string>
     <string name="start_date">Start Date</string>
     <string name="pick_project">Pick Project</string>
@@ -190,4 +191,12 @@
     <string name="edit_event">Edit Event</string>
     <string name="edit_task">Edit Task</string>
     <string name="enter_start_time">Please enter a start time first.</string>
+    <string name="early_date_default">Early Date:\nNone Chosen</string>
+    <string name="due_date_default">Due Date:\nNone Chosen</string>
+    <string name="early_date_format">Early Date:\n%s</string>
+    <string name="due_date_format">Due Date:\n%s</string>
+    <string name="parent_tasks_default">Parent Tasks:\nNone Chosen</string>
+    <string name="parent_tasks_format">Parent Tasks:\n%s Chosen</string>
+    <string name="recur">Recur</string>
+    <string name="labels_format">Labels:\n%s Added</string>
 </resources>

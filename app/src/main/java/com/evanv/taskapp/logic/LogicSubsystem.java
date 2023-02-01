@@ -4,7 +4,6 @@ import static com.evanv.taskapp.logic.Task.getDiff;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
@@ -304,6 +303,7 @@ public class LogicSubsystem {
         // If the task is in the internal data structure, remove it.
         if (diff >= 0) {
             mTaskSchedule.get(diff).remove(task);
+
             mUpdatedIndices.add(diff);
         }
 
@@ -406,6 +406,15 @@ public class LogicSubsystem {
         int eventScheduleSize = mEventSchedule.size();
         if (eventScheduleSize > eventLowIndex) {
             mEventSchedule.subList(eventLowIndex, eventScheduleSize).clear();
+        }
+
+        int bothLowIndex = Math.max(taskLowIndex, eventLowIndex);
+
+        for (int i = 0; i < mUpdatedIndices.size(); i++) {
+            if (mUpdatedIndices.get(i) >= bothLowIndex) {
+                mUpdatedIndices.remove(i);
+                i--;
+            }
         }
     }
 
@@ -705,6 +714,8 @@ public class LogicSubsystem {
 
             mTaskAppViewModel.delete(toRemove);
             mUpdatedIndices.addAll(Complete(mTaskSchedule.get(day).get(position), context));
+
+            pareDownSchedules();
         }
         // Remove the given event from the schedule and re-optimize.
         if (action == 2) {
@@ -1455,7 +1466,7 @@ public class LogicSubsystem {
      * @param context Context for resources
      */
     public void editTask(String name, LocalDate early, LocalDate due, Bundle recur,
-                         int timeToComplete, int project, long[] labelIDs, List<Long> parents,
+                         int timeToComplete, long project, long[] labelIDs, List<Long> parents,
                          int priority, long id, Context context) {
         // Parse the recurrence information
         RecurrenceParser rp = new RecurrenceParser(context);
@@ -1484,8 +1495,13 @@ public class LogicSubsystem {
             // Add the given project
             if (project != 0) {
                 // Add task to selected project
-                toAdd.setProject(mProjects.get(project - 1));
-                mProjects.get(project - 1).addTask(toAdd);
+                for (Project p : mProjects) {
+                    if (p.getID() == project) {
+                        toAdd.setProject(p);
+                        p.addTask(toAdd);
+                        break;
+                    }
+                }
             }
 
             // Add all selected labels to task.

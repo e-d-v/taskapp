@@ -41,6 +41,8 @@ public class Event implements Comparable {
     public static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("M/d/yy hh:mm a");
     // SimpleDateFormat that formats time in the style "08:12 PM"
     public static final DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("hh:mm a");
+    // Type value representing Event
+    public static final String EXTRA_VAL_EVENT = "com.evanv.taskapp.extra.val.EVENT";
 
     /**
      * Initializes an object representing an event

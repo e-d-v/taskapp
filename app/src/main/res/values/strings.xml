@@ -92,7 +92,7 @@
     <string name="months_recur_prompt">Months to recur on:</string>
     <string name="recur_months_hint">Jan,Feb,Mar</string>
     <string name="weekly_recur_prompt">Recur every _ weeks:</string>
-    <string name="recur_button">Choose how often this event recurs</string>
+    <string name="recur_button">Recur</string>
     <string name="recur_on_the">Recur on the %s</string>
     <string name="recur_specific">Recur Specific Days</string>
     <string name="recur_specific_days_months">Recur specific months on specific days</string>

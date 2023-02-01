@@ -1,14 +1,10 @@
 package com.evanv.taskapp.ui;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.ContextMenu;
@@ -18,9 +14,8 @@ import android.widget.EditText;
 
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.LogicSubsystem;
-import com.evanv.taskapp.ui.additem.AddItem;
+import com.evanv.taskapp.ui.additem.TaskEntry;
 import com.evanv.taskapp.ui.main.ClickListener;
-import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.main.recycler.TaskItem;
 import com.evanv.taskapp.ui.main.recycler.TaskItemAdapter;
 
@@ -64,8 +59,6 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
     private int mPosition; // Position in the recycler of the selected task.
     private int mDay;      // Day of the selected task.
     private long mID;      // ID of the currently selected task.
-
-    private ActivityResultLauncher<Intent> mStartForResult; // Launches an activity
 
     /**
      * Creates a TaskListActivity. Bundle requires information including a list of taskNames,
@@ -113,24 +106,15 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         mPosition = -1;
         mID = -1;
 
-        // Create activity result handler for AddItem
-        mStartForResult = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> onActivityResult(result.getResultCode()
-                ));
     }
 
     /**
      * On activity result update recycler
-     *
-     * @param resultCode Activity.RESULT_OK if everything went well
      */
-    private void onActivityResult(int resultCode) {
-        if (resultCode == Activity.RESULT_OK) {
-            mAdapter.mTaskItemList.set(mPosition,
-                    LogicSubsystem.getInstance().TaskItemHelper(mID, mPosition, this));
-            mAdapter.notifyItemChanged(mPosition);
-        }
+    private void onActivityResult() {
+        mAdapter.mTaskItemList.set(mPosition,
+                LogicSubsystem.getInstance().TaskItemHelper(mID, mPosition, this));
+        mAdapter.notifyItemChanged(mPosition);
     }
 
     /**
@@ -273,21 +257,6 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
     }
 
     /**
-     * Launches the AddItem activity. Must be separate function so FAB handler can call it.
-     *
-     * @param id ID of the task/event if editing, unused if not
-     */
-    private void intentAddItem(long id) {
-        Intent intent = new Intent(this, AddItem.class);
-
-        // Handles Editing case
-        intent.putExtra(MainActivity.EXTRA_TYPE, AddItem.EXTRA_VAL_TASK);
-        intent.putExtra(MainActivity.EXTRA_ID, id);
-
-        mStartForResult.launch(intent);
-    }
-
-    /**
      * Handles the user choosing to start a timer on a task.
      */
     private void timeTask() {
@@ -321,8 +290,18 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
 
-        // Launch an edit intent
-        intentAddItem(mID);
+        long editedID = LogicSubsystem.getInstance().getTaskID(mPosition, mDay);
+
+        // Launch an edit dialog
+        TaskEntry frag = new TaskEntry();
+        frag.setID(editedID);
+        frag.addSubmitListener(v -> {
+            if (frag.addItem()) {
+                frag.dismiss();
+                onActivityResult();
+            }
+        });
+        frag.show(getSupportFragmentManager(), "TASK");
     }
 
     /**

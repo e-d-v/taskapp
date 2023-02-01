@@ -17,7 +17,6 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.LogicSubsystem;
@@ -25,8 +24,8 @@ import com.evanv.taskapp.logic.Task;
 import com.evanv.taskapp.ui.additem.recur.NoRecurFragment;
 import com.evanv.taskapp.ui.additem.recur.RecurActivity;
 import com.evanv.taskapp.ui.additem.recur.RecurInput;
-import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.temporal.ChronoField;
@@ -39,8 +38,8 @@ import java.util.List;
  *
  * @author Evan Voogd
  */
-public class TaskEntry extends Fragment implements ItemEntry {
-    private ViewGroup mContainer;   // The ViewGroup for the activity, allows easy access to views
+public class TaskEntry extends BottomSheetDialogFragment {
+    private View mContainer;   // The ViewGroup for the activity, allows easy access to views
     private EditText mEditTextECD;  // The EditText for the earliest completion date
     private SeekBar mSeekBar;       // The Priority SeekBar
 
@@ -50,7 +49,8 @@ public class TaskEntry extends Fragment implements ItemEntry {
     private Bundle mRecur;       // Bundle containing recurrence information
     private long[] mLabels;      // Array of labels added to this task.
     private List<Long> mParents; // Array of selected parents
-    private long mID;            // ID of the edited task (or -1 if adding a task)
+    private long mID = -1;       // ID of the edited task (or -1 if adding a task)
+    private View.OnClickListener mListener; // Listener for Submit Button
 
     private ActivityResultLauncher<Intent> mLaunchRecur;   // Launcher for the recurrence activity
     private ActivityResultLauncher<Intent> mLaunchProject; // Launcher for the project activity
@@ -128,9 +128,8 @@ public class TaskEntry extends Fragment implements ItemEntry {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mContainer = container;
-
         View view = inflater.inflate(R.layout.fragment_task_entry, container, false);
+        mContainer = view;
 
         // Sets the onClick behavior to the button to creating a dialog asking what parents the user
         // wants to give the new task
@@ -230,13 +229,8 @@ public class TaskEntry extends Fragment implements ItemEntry {
             startActivity(intent);
         });
 
-        // Load id from intent to see if we're editing a task.
-        mID = requireActivity().getIntent().getLongExtra(MainActivity.EXTRA_ID, -1);
-        boolean editOn = mID != -1;
-        String type = requireActivity().getIntent().getStringExtra(MainActivity.EXTRA_TYPE);
-
         // Load data about task onto screen
-        if (type != null && type.equals(AddItem.EXTRA_VAL_TASK) && editOn) {
+        if (mID != -1) {
             // Set the task name
             EditText etName = view.findViewById(R.id.editTextTaskName);
             etName.setText(LogicSubsystem.getInstance().getTaskName(mID));
@@ -265,8 +259,25 @@ public class TaskEntry extends Fragment implements ItemEntry {
             mParents = LogicSubsystem.getInstance().getTaskParents(mID);
         }
 
+        if (mListener != null) {
+            view.findViewById(R.id.submitButton).setOnClickListener(mListener);
+        }
+
         // Inflate the layout for this fragment
         return view;
+    }
+
+    /**
+     * Sets the ID of the event to edit.
+     *
+     * @param id the ID to edit.
+     */
+    public void setID(long id) {
+        mID = id;
+    }
+
+    public void addSubmitListener(View.OnClickListener listener) {
+        mListener = listener;
     }
 
     /**
@@ -312,7 +323,6 @@ public class TaskEntry extends Fragment implements ItemEntry {
      * @return true if item is successfully added, false otherwise
      */
     @SuppressWarnings("unused")
-    @Override
     public boolean addItem() {
         // Get the user's input
         String taskName = ((EditText) mContainer.findViewById(R.id.editTextTaskName)).getText()

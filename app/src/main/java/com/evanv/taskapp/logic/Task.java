@@ -82,6 +82,8 @@ public class Task implements Comparable<Task> {
 
     // Static field
     public static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("M/d/yy");
+    // Type value representing Task
+    public static final String EXTRA_VAL_TASK = "com.evanv.taskapp.extra.val.TASK";
 
     /**
      * Initializes an object representing a task

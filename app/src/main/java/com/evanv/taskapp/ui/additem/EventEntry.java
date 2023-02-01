@@ -15,7 +15,6 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.fragment.app.Fragment;
 
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.Event;
@@ -25,7 +24,7 @@ import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
 import com.evanv.taskapp.ui.additem.recur.NoRecurFragment;
 import com.evanv.taskapp.ui.additem.recur.RecurActivity;
 import com.evanv.taskapp.ui.additem.recur.RecurInput;
-import com.evanv.taskapp.ui.main.MainActivity;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
 import org.threeten.bp.LocalDate;
@@ -40,15 +39,16 @@ import java.util.Locale;
  *
  * @author Evan Voogd
  */
-public class EventEntry extends Fragment implements ItemEntry {
+public class EventEntry extends BottomSheetDialogFragment {
     // Fields
     private Bundle mRecur;               // The value returned by the recur activity.
     private EditText mEditTextEventName; // EditText containing the name of the event
     private EditText mEditTextECD;       // EditText containing the date/time of the event
     private EditText mEditTextEndTime;   // EditText containing the length of the event
-    private long mID;                    // ID of the Event to update, -1 if adding an event
+    private long mID = -1;               // ID of the Event to update, -1 if adding an event
     // Allows data to be pulled from activity
     private ActivityResultLauncher<Intent> mStartForResult;
+    private View.OnClickListener mListener; // Listener for Submit Button
 
     // The day the user has entered (e.g. 18)
     public static final String EXTRA_DAY = "com.evanv.taskapp.ui.additem.EventEntry.extra.DAY";
@@ -226,10 +226,7 @@ public class EventEntry extends Fragment implements ItemEntry {
         });
 
         // Load id from intent to see if we're editing a task.
-        mID = requireActivity().getIntent().getLongExtra(MainActivity.EXTRA_ID, -1);
-        String type = requireActivity().getIntent().getStringExtra(MainActivity.EXTRA_TYPE);
-
-        if (type != null && type.equals(AddItem.EXTRA_VAL_EVENT) && mID != -1) {
+        if (mID != -1) {
             // Set the event name
             mEditTextEventName.setText(LogicSubsystem.getInstance().getEventName(mID));
 
@@ -243,8 +240,25 @@ public class EventEntry extends Fragment implements ItemEntry {
             mEditTextEndTime.setText(Event.dateFormat.format(endTime));
         }
 
+        if(mListener != null) {
+            view.findViewById(R.id.submitButton).setOnClickListener(mListener);
+        }
+
         // Inflate the layout for this fragment
         return view;
+    }
+
+    /**
+     * Sets the ID of the event to edit.
+     *
+     * @param id the ID to edit.
+     */
+    public void setID(long id) {
+        mID = id;
+    }
+
+    public void addSubmitListener(View.OnClickListener listener) {
+        mListener = listener;
     }
 
     /**
@@ -321,5 +335,4 @@ public class EventEntry extends Fragment implements ItemEntry {
 
         return ordinalNumber + " " + weekdayString;
     }
-
 }

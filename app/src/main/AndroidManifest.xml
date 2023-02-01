@@ -51,16 +51,6 @@
             android:name=".ui.main.OptimizingActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.additem.AddItem"
-            android:exported="false"
-            android:label="@string/title_activity_add_item"
-            android:launchMode="singleTop"
-            android:theme="@style/Theme.Taskapp.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.evanv.taskapp.ui.main.MainActivity" />
-        </activity>
-        <activity
             android:name=".ui.main.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Taskapp.NoActionBar">

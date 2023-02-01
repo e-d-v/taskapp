@@ -29,7 +29,8 @@ import com.evanv.taskapp.R;
 import com.evanv.taskapp.databinding.ActivityMainBinding;
 import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.ui.FilterActivity;
-import com.evanv.taskapp.ui.additem.AddItem;
+import com.evanv.taskapp.ui.additem.EventEntry;
+import com.evanv.taskapp.ui.additem.TaskEntry;
 import com.evanv.taskapp.ui.main.recycler.DayItem;
 import com.evanv.taskapp.ui.main.recycler.DayItemAdapter;
 import com.evanv.taskapp.ui.projects.ProjectActivity;
@@ -58,7 +59,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     private DayItemAdapter mDayItemAdapter;        // Adapter for recycler showing user commitments
     private ViewFlipper mVF;                       // Swaps between loading screen and recycler
     // Allows data to be pulled from activity
-    private ActivityResultLauncher<Intent> mStartForResult;
     private ActivityResultLauncher<Intent> mUpdateUILauncher;
     // Allows us to manually show FAB when task/event completed/deleted.
     LogicSubsystem mLogicSubsystem;                // Subsystem that handles logic for taskapp
@@ -80,25 +80,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     public static final String PREF_TIMED_TASK = "taskappTimerTask"; // TaskID for timer
     public static final String PREF_TIMER = "taskappTimerStart"; // Start Date for the timer
 
-    /**
-     * Handles activities started for a result, in this case when the AddItem activity returns with
-     * a new Event/Task to be added. Parses the data in the BundleExtra AddItem.EXTRA_ITEM into a
-     * Task/Event depending on their AddItem.EXTRA_TYPE.
-     *
-     * @param resultCode RESULT_OK if there were no issues with user input
-     * @param data Contains the BundleExtra AddItem.EXTRA_ITEM, with all the data needed to build
-     *             the item.
-     */
-    protected void onActivityResult(int resultCode, @Nullable Intent data) {
-        // Show loading screen
-        if (resultCode == RESULT_OK) {
-            // As the task dependency graph has been updated, we must reoptimize it
-            Runnable toRun = new OptimizeRunnable();
-
-            Thread thread = new Thread(toRun);
-            thread.start();
-        }
-    }
 
     /**
      * Calls the Optimizer to find an optimal schedule for the user's tasks, given the user's
@@ -144,12 +125,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         if (mLogicSubsystem == null) {
             mLogicSubsystem = new LogicSubsystem(this, todayTime, timedTaskID, timerStart);
         }
-
-        // Create activity result handler for AddItem
-        mStartForResult = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> MainActivity.this.onActivityResult(result.getResultCode(),
-                        result.getData()));
 
         // Will eventually return info from projects
         mUpdateUILauncher = registerForActivityResult(
@@ -241,8 +216,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // Adds the action bar at the top of the screen
         setSupportActionBar(mBinding.toolbar);
 
-        // When the FAB is clicked, run intentAddItem to open the AddItem Activity
-//        mBinding.fab.setOnClickListener(view -> intentAddItem(null, -1));
+        // When fab is clicked, show the two smaller FABs
         mBinding.fab.setOnClickListener(view1 -> {
             if (!isFABOpen) {
                 isFABOpen = true;
@@ -256,8 +230,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             }
         });
 
-        findViewById(R.id.addEventFab).setOnClickListener(v -> addEvent());
-        findViewById(R.id.addTaskFab).setOnClickListener(v -> addTask());
+        findViewById(R.id.addEventFab).setOnClickListener(v -> {
+            closeFAB();
+            addEvent();
+        });
+        findViewById(R.id.addTaskFab).setOnClickListener(v -> {
+            closeFAB();
+            addTask();
+        });
 
         // Make visible the main content
         mVF = findViewById(R.id.vf);
@@ -313,32 +293,44 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     }
 
     /**
-     * Launches the AddItem activity. Must be separate function so FAB handler can call it.
-     *
-     * @param type Null if adding an item, one of EXTRA_TASK or EXTRA_EVENT if editing
-     * @param id ID of the task/event if editing, unused if not
+     * Launch the TaskEntry Bottom Sheet
      */
-    private void intentAddItem(String type, long id) {
-        Intent intent = new Intent(this, AddItem.class);
-
-        // Handles Editing case
-        if (type != null) {
-            intent.putExtra(EXTRA_TYPE, type);
-            intent.putExtra(EXTRA_ID, id);
-        }
-        else {
-            mEditedID = -1;
-        }
-
-        mStartForResult.launch(intent);
-    }
-
     private void addEvent() {
-        // TODO: Add Event BottomSheet
+        EventEntry frag = new EventEntry();
+        frag.setID(mEditedID);
+        frag.addSubmitListener(v -> {
+            if (frag.addItem()) {
+                frag.dismiss();
+                onActivityResult();
+            }
+        });
+        frag.show(getSupportFragmentManager(), "EVENT");
     }
 
+    /**
+     * Launch the EventEntry Bottom Sheet
+     */
     private void addTask() {
-        // TODO: Add Task BottomSheet
+        TaskEntry frag = new TaskEntry();
+        frag.setID(mEditedID);
+        frag.addSubmitListener(v -> {
+            if (frag.addItem()) {
+                frag.dismiss();
+                onActivityResult();
+            }
+        });
+        frag.show(getSupportFragmentManager(), "TASK");
+    }
+
+    /**
+     * Optimizes and updates UI after TaskEntry/EventEntry has been called.
+     */
+    protected void onActivityResult() {
+        // As the task dependency graph has been updated, we must reoptimize it
+        Runnable toRun = new OptimizeRunnable();
+
+        Thread thread = new Thread(toRun);
+        thread.start();
     }
 
     /**
@@ -396,7 +388,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             // Normal button press, mark task as complete
             case 0:
                 // Show optimizing... screen
-                mVF.setDisplayedChild(0);
                 mPosition = position;
                 mDay = day;
                 completeTask();
@@ -467,12 +458,10 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         switch (item.getItemId()) {
             case (R.id.action_delete_task):
                 // Show optimizing... screen
-                mVF.setDisplayedChild(0);
                 deleteTask();
                 break;
             case (R.id.action_edit_task):
                 // Show optimizing... screen
-                mVF.setDisplayedChild(0);
                 editTask();
                 break;
             case (R.id.action_time_task):
@@ -480,12 +469,10 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 break;
             case (R.id.action_delete_event):
                 // Show optimizing... screen
-                mVF.setDisplayedChild(0);
                 deleteEvent();
                 break;
             case (R.id.action_edit_event):
                 // Show optimizing... screen
-                mVF.setDisplayedChild(0);
                 editEvent();
                 break;
         }
@@ -500,7 +487,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         mEditedID = mLogicSubsystem.getEventID(mPosition, mDay);
 
         // Launch an edit intent
-        intentAddItem(AddItem.EXTRA_VAL_EVENT, mEditedID);
+        addEvent();
     }
 
     /**
@@ -546,7 +533,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         mEditedID = mLogicSubsystem.getTaskID(mPosition, mDay);
 
         // Launch an edit intent
-        intentAddItem(AddItem.EXTRA_VAL_TASK, mEditedID);
+        addTask();
     }
 
     /**
@@ -634,7 +621,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             mDayItemAdapter.mDayItemList.remove(newDays);
         }
 
-        mVF.setDisplayedChild(0);
         Runnable toRun = new OptimizeRunnable();
         Thread thread = new Thread(toRun);
         thread.start();

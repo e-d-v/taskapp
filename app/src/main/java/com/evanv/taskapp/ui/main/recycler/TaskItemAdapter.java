@@ -2,6 +2,7 @@ package com.evanv.taskapp.ui.main.recycler;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -144,7 +145,24 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         name.setSpan(span, start, name.length(), 0);
         RelativeSizeSpan span2 = new RelativeSizeSpan((float)(7.0/9.0));
         name.setSpan(span2, start, name.length(), 0);
-        ForegroundColorSpan span3 = new ForegroundColorSpan(Color.parseColor("#B8B8B8"));
+        ForegroundColorSpan span3;
+
+        int nightModeFlags =
+                mContext.getResources().getConfiguration().uiMode &
+                        Configuration.UI_MODE_NIGHT_MASK;
+        switch (nightModeFlags) {
+            case Configuration.UI_MODE_NIGHT_YES:
+                span3 = new ForegroundColorSpan(Color.parseColor("#B8B8B8"));
+                break;
+
+            case Configuration.UI_MODE_NIGHT_NO:
+                span3 = new ForegroundColorSpan(Color.parseColor("#707070"));
+                break;
+
+            default:
+                span3 = new ForegroundColorSpan(Color.parseColor("#949494"));
+                break;
+        }
         name.setSpan(span3, start, name.length(), 0);
 
         // Set project color

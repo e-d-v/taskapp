@@ -544,6 +544,10 @@ public class TaskEntry extends BottomSheetDialogFragment {
 
                                 setText(Integer.toString(mLabels.length), mLabelsLabel,
                                         getString(R.string.labels_format));
+                            })).setNeutralButton(getString(R.string.add_label),
+                            ((dialogInterface, i) -> {
+                                Intent intent = new Intent(getActivity(), LabelEntry.class);
+                                startActivity(intent);
                             }));
 
             builder.create();
@@ -593,7 +597,11 @@ public class TaskEntry extends BottomSheetDialogFragment {
                                         0, formatString.indexOf('\n'), 0);
 
                                 mProjectLabel.setText(projectText);
-                            }));
+                            }))
+                    .setNeutralButton(getString(R.string.add_project), ((dialogInterface, i) -> {
+                        Intent intent = new Intent(getActivity(), ProjectEntry.class);
+                        startActivity(intent);
+                    }));
 
             builder.create();
             builder.show();

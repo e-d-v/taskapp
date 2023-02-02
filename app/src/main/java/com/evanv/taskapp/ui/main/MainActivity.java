@@ -209,6 +209,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
         // When fab is clicked, show the two smaller FABs
         mBinding.fab.setOnClickListener(view1 -> {
+            mEditedID = -1;
             if (!isFABOpen) {
                 isFABOpen = true;
                 findViewById(R.id.addEventLayout).animate().translationY(-getResources().getDimension(R.dimen.standard_55));

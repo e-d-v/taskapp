@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.TextWatcher;
+import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.view.View;
 import android.widget.CheckBox;
@@ -57,29 +58,13 @@ public class FilterActivity extends AppCompatActivity {
                 (new PickProjectListener());
 
         // Make starting text bold
-        String startString = getString(R.string.start_date_label);
-        SpannableString startDateText = new SpannableString(startString);
-        startDateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                0, startString.indexOf('\n'), 0);
-        ((TextView) findViewById(R.id.startDateLabel)).setText(startDateText);
-
-        String endString = getString(R.string.end_date_label);
-        SpannableString endDateText = new SpannableString(endString);
-        endDateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                0, endString.indexOf('\n'), 0);
-        ((TextView) findViewById(R.id.endDateLabel)).setText(endDateText);
-
-        String projectString = getString(R.string.project_label);
-        SpannableString projectText = new SpannableString(projectString);
-        projectText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                0, projectString.indexOf('\n'), 0);
-        ((TextView) findViewById(R.id.projectsLabel)).setText(projectText);
-
-        String labelsString = getString(R.string.label_label);
-        SpannableString labelsText = new SpannableString(labelsString);
-        labelsText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                0, labelsString.indexOf('\n'), 0);
-        ((TextView) findViewById(R.id.labelsLabel)).setText(labelsText);
+        setText("None Chosen", findViewById(R.id.startDateLabel),
+                getString(R.string.start_time_format));
+        setText("None Chosen", findViewById(R.id.endDateLabel),
+                getString(R.string.end_time_format));
+        setText("None Chosen", findViewById(R.id.projectsLabel),
+                getString(R.string.project_replace));
+        setText("None", findViewById(R.id.labelsLabel), getString(R.string.labels_format));
 
         mStartDate = 0;
         mEndDate = 0;
@@ -100,18 +85,9 @@ public class FilterActivity extends AppCompatActivity {
 
                 // Update the UI
                 TextView startDateLabel = findViewById(R.id.startDateLabel);
-
-                // Get number of selected labels
                 String dateString = Task.dateFormat.format(toConvert);
                 String formatString = getString(R.string.start_date_replace);
-
-                // Make starting text bold
-                SpannableString startDateText = new SpannableString(String.format
-                        (formatString, dateString));
-                startDateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                        0, formatString.indexOf('\n'), 0);
-
-                startDateLabel.setText(startDateText);
+                setText(dateString, startDateLabel, formatString);
             }
 
             @Override
@@ -145,17 +121,10 @@ public class FilterActivity extends AppCompatActivity {
                 // Update the UI
                 TextView endDateLabel = findViewById(R.id.endDateLabel);
 
-                // Get number of selected labels
+                // Show end date
                 String dateString = Task.dateFormat.format(toConvert);
                 String formatString = getString(R.string.end_date_replace);
-
-                // Make starting text bold
-                SpannableString endDateText = new SpannableString(String.format
-                        (formatString, dateString));
-                endDateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                        0, formatString.indexOf('\n'), 0);
-
-                endDateLabel.setText(endDateText);
+                setText(dateString, endDateLabel, formatString);
             }
 
             @Override
@@ -224,6 +193,18 @@ public class FilterActivity extends AppCompatActivity {
         intent.putExtra(TaskListActivity.EXTRA_COMPLETABLE, checkBox.isChecked());
 
         startActivity(intent);
+    }
+
+    private void setText(String toShow, TextView element, String formatString) {
+        // Make starting text bold
+        SpannableString dateText = new SpannableString(String.format
+                (formatString, toShow));
+        dateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
+                0, formatString.indexOf('\n'), 0);
+        dateText.setSpan(new RelativeSizeSpan((float)0.75), formatString.indexOf('\n'),
+                dateText.length(), 0);
+
+        element.setText(dateText);
     }
 
     /**
@@ -296,16 +277,8 @@ public class FilterActivity extends AppCompatActivity {
 
                                 // Get number of selected labels
                                 int numLabels = mLabels.length;
-                                String formatString = getString(R.string.label_replace);
-
-                                // Make starting text bold
-                                SpannableString labelsText = new SpannableString(String.format
-                                        (formatString, numLabels));
-                                labelsText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                                        0, formatString.indexOf('\n'), 0);
-
-                                labelsLabel.setText(labelsText);
-
+                                setText(Integer.toString(numLabels), labelsLabel,
+                                        getString(R.string.labels_format));
                             }));
 
             builder.create();
@@ -349,14 +322,7 @@ public class FilterActivity extends AppCompatActivity {
                                 String projectName = LogicSubsystem.getInstance()
                                         .getProjectName(mProject, mContext);
                                 String formatString = getString(R.string.project_replace);
-
-                                // Make starting text bold
-                                SpannableString projectText = new SpannableString(String.format
-                                        (formatString, projectName));
-                                projectText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                                        0, formatString.indexOf('\n'), 0);
-
-                                projectLabel.setText(projectText);
+                                setText(projectName, projectLabel, formatString);
                             }));
 
             builder.create();

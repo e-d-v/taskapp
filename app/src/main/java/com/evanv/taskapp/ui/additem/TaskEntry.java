@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.TextWatcher;
+import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -153,29 +154,11 @@ public class TaskEntry extends BottomSheetDialogFragment {
         mPrereqButton.setOnClickListener(new AddParentsListener());
 
         // Make starting text bold
-        String startString = getString(R.string.early_date_default);
-        SpannableString startDateText = new SpannableString(startString);
-        startDateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                0, startString.indexOf('\n'), 0);
-        mECDLabel.setText(startDateText);
-
-        String endString = getString(R.string.due_date_default);
-        SpannableString endDateText = new SpannableString(endString);
-        endDateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                0, endString.indexOf('\n'), 0);
-        mDDLabel.setText(endDateText);
-
-        String projectString = getString(R.string.project_label);
-        SpannableString projectText = new SpannableString(projectString);
-        projectText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                0, projectString.indexOf('\n'), 0);
-        mProjectLabel.setText(projectText);
-
-        String labelsString = getString(R.string.label_label);
-        SpannableString labelsText = new SpannableString(labelsString);
-        labelsText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                0, labelsString.indexOf('\n'), 0);
-        mLabelsLabel.setText(labelsText);
+        setText("None Chosen", mECDLabel, getString(R.string.start_time_format));
+        setText("None Chosen", mDDLabel, getString(R.string.end_time_format));
+        setText("None Chosen", mProjectLabel, getString(R.string.project_replace));
+        setText("None", mLabelsLabel, getString(R.string.labels_format));
+        setText("None", mParentsLabel, getString(R.string.parent_tasks_format));
 
         mEarlyDate = 0;
         mDueDate = 0;
@@ -296,12 +279,13 @@ public class TaskEntry extends BottomSheetDialogFragment {
     }
 
     private void setText(String toShow, TextView element, String formatString) {
-
         // Make starting text bold
         SpannableString dateText = new SpannableString(String.format
                 (formatString, toShow));
         dateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
                 0, formatString.indexOf('\n'), 0);
+        dateText.setSpan(new RelativeSizeSpan((float)0.75), formatString.indexOf('\n'),
+                dateText.length(), 0);
 
         element.setText(dateText);
     }

@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.TextWatcher;
+import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -166,17 +167,8 @@ public class EventEntry extends BottomSheetDialogFragment {
         mEndTimeLabel = view.findViewById(R.id.endDateLabel);
 
         // Make starting text bold
-        String startString = getString(R.string.start_time_default);
-        SpannableString startDateText = new SpannableString(startString);
-        startDateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                0, startString.indexOf('\n'), 0);
-        mStartTimeLabel.setText(startDateText);
-
-        String endString = getString(R.string.end_time_default);
-        SpannableString endDateText = new SpannableString(endString);
-        endDateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                0, endString.indexOf('\n'), 0);
-        mEndTimeLabel.setText(endDateText);
+        setText("None Chosen", mStartTimeLabel, getString(R.string.start_time_format));
+        setText("None Chosen", mEndTimeLabel, getString(R.string.end_time_format));
 
         // Add the default recurrence interval (none)
         mRecur = new Bundle();
@@ -285,6 +277,8 @@ public class EventEntry extends BottomSheetDialogFragment {
                 (formatString, toShow));
         dateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
                 0, formatString.indexOf('\n'), 0);
+        dateText.setSpan(new RelativeSizeSpan((float)0.75), formatString.indexOf('\n'),
+                dateText.length(), 0);
 
         element.setText(dateText);
     }

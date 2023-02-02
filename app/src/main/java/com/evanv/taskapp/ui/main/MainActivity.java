@@ -291,6 +291,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         frag.setID(mEditedID);
         frag.addSubmitListener(v -> {
             if (frag.addItem()) {
+                mEditedID = -1;
                 frag.dismiss();
                 onActivityResult();
             }
@@ -306,6 +307,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         frag.setID(mEditedID);
         frag.addSubmitListener(v -> {
             if (frag.addItem()) {
+                mEditedID = -1;
                 frag.dismiss();
                 onActivityResult();
             }

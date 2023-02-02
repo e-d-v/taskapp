@@ -5,12 +5,17 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.SpannableString;
+import android.text.TextWatcher;
+import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -44,8 +49,6 @@ public class EventEntry extends BottomSheetDialogFragment {
     // Fields
     private Bundle mRecur;               // The value returned by the recur activity.
     private EditText mEditTextEventName; // EditText containing the name of the event
-    private EditText mEditTextECD;       // EditText containing the date/time of the event
-    private EditText mEditTextEndTime;   // EditText containing the length of the event
     private long mID = -1;               // ID of the Event to update, -1 if adding an event
     // Allows data to be pulled from activity
     private ActivityResultLauncher<Intent> mStartForResult;
@@ -59,6 +62,12 @@ public class EventEntry extends BottomSheetDialogFragment {
     public static final String EXTRA_MONTH = "com.evanv.taskapp.ui.additem.EventEntry.extra.MONTH";
     // The time the user has entered
     public static final String EXTRA_TIME = "com.evanv.taskapp.ui.additem.EventEntry.extra.TIME";
+    private ImageButton mStartTimeButton;
+    private TextView mStartTimeLabel;
+    private ImageButton mEndTimeButton;
+    private TextView mEndTimeLabel;
+    LocalDateTime mStartTime; // Start time for event
+    LocalDateTime mEndTime;   // End time for event
 
     /**
      * Required empty public constructor
@@ -104,8 +113,6 @@ public class EventEntry extends BottomSheetDialogFragment {
     public boolean addItem() {
         // Get user input from views
         String eventName = mEditTextEventName.getText().toString();
-        String ecd = mEditTextECD.getText().toString();
-        String endTime = mEditTextEndTime.getText().toString();
 
         // Check if eventName is valid
         if (eventName.length() == 0) {
@@ -114,40 +121,24 @@ public class EventEntry extends BottomSheetDialogFragment {
             return false;
         }
 
-        LocalDateTime startTime;
-
         // Check if ECD is valid
-        if (ecd.length() == 0) {
+        if (mStartTime == null) {
             Toast.makeText(getActivity(),
                     R.string.ecd_empty_event,
                     Toast.LENGTH_LONG).show();
             return false;
         }
-        else {
-            startTime = LocalDateTime.from(Event.dateFormat.parse(ecd));
-        }
 
         // Check if End Time is valid
-        LocalDateTime endTimeDate;
-        if (endTime.length() == 0) {
+        if (mEndTime == null) {
             Toast.makeText(getActivity(),
                     R.string.enter_end_time,
                     Toast.LENGTH_LONG).show();
             return false;
         }
-        else {
-            try {
-                endTimeDate = LocalDateTime.from(Event.dateFormat.parse(endTime));
-                assert endTimeDate != null;
-                assert !endTimeDate.isBefore(startTime);
-            } catch (Throwable e) {
-                Toast.makeText(getActivity(), R.string.enter_end_time, Toast.LENGTH_LONG).show();
-                return false;
-            }
-        }
 
         // Add/Edit the event in the LogicSubsystem
-        LogicSubsystem.getInstance().editEvent(eventName, startTime, endTimeDate, mRecur, mID,
+        LogicSubsystem.getInstance().editEvent(eventName, mStartTime, mEndTime, mRecur, mID,
                 getContext());
 
         // Return true as item was added successfully.
@@ -169,8 +160,23 @@ public class EventEntry extends BottomSheetDialogFragment {
 
         // Get needed views
         mEditTextEventName = view.findViewById(R.id.editTextEventName);
-        mEditTextECD = view.findViewById(R.id.editTextECD);
-        mEditTextEndTime = view.findViewById(R.id.editTextEndTime);
+        mStartTimeButton = view.findViewById(R.id.startDateButton);
+        mStartTimeLabel = view.findViewById(R.id.startDateLabel);
+        mEndTimeButton = view.findViewById(R.id.endDateButton);
+        mEndTimeLabel = view.findViewById(R.id.endDateLabel);
+
+        // Make starting text bold
+        String startString = getString(R.string.start_time_default);
+        SpannableString startDateText = new SpannableString(startString);
+        startDateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
+                0, startString.indexOf('\n'), 0);
+        mStartTimeLabel.setText(startDateText);
+
+        String endString = getString(R.string.end_time_default);
+        SpannableString endDateText = new SpannableString(endString);
+        endDateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
+                0, endString.indexOf('\n'), 0);
+        mEndTimeLabel.setText(endDateText);
 
         // Add the default recurrence interval (none)
         mRecur = new Bundle();
@@ -180,51 +186,75 @@ public class EventEntry extends BottomSheetDialogFragment {
         Button button = view.findViewById(R.id.recurButton);
         button.setOnClickListener(v -> intentRecur());
 
-        mEditTextECD.setOnClickListener(v -> {
+        EditText fakeECDet = new EditText(getContext());
+        mStartTimeButton.setOnClickListener(v -> {
             // Clear End Time picker
-            mEditTextEndTime.setText("");
+            fakeECDet.setText("");
 
             // Show a date picker fragment
-            new DatePickerFragment(mEditTextECD,
-                getString(R.string.start_time), LocalDate.now(), null, true)
-                .show(getParentFragmentManager(), getTag());
+            new DatePickerFragment(fakeECDet,
+                    getString(R.string.start_time), LocalDate.now(), null, true)
+                    .show(getParentFragmentManager(), getTag());
         });
-        mEditTextEndTime.setOnClickListener(v -> {
-            // Load Start Time into EditText
-            String startStr = mEditTextECD.getText().toString();
-            if (!startStr.isEmpty()) {
-                try {
-                    LocalDate startDate = LocalDate.from(Event.dateFormat.parse(startStr));
-                    mEditTextEndTime.setText(Task.dateFormat.format(startDate));
+        fakeECDet.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Do Nothing
+            }
 
-                    // Show a time picker fragment.
-                    new TimePickerFragment(mEditTextEndTime, "Choose start time")
-                            .show(getParentFragmentManager(), getTag());
-                } catch (Exception e) {
-                    Toast.makeText(getContext(), getString(R.string.enter_start_time), Toast.LENGTH_LONG)
-                            .show();
-                }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                try {
+                    mStartTime = LocalDateTime.from(Event.dateFormat.parse(charSequence));
+                    setText(Event.dateFormat.format(mStartTime), mStartTimeLabel,
+                            getString(R.string.start_time_format));
+                    mEndTime = null;
+                    String endString = getString(R.string.end_time_default);
+                    SpannableString endDateText = new SpannableString(endString);
+                    endDateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
+                            0, endString.indexOf('\n'), 0);
+                    mEndTimeLabel.setText(endDateText);
+                } catch (Exception ignored) { }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                // Do Nothing
+            }
+        });
+        EditText fakeDDet = new EditText(getContext());
+        mEndTimeButton.setOnClickListener(v -> {
+            if (mStartTime != null) {
+                fakeDDet.setText(Task.dateFormat.format(mStartTime.toLocalDate()));
+
+                new TimePickerFragment(fakeDDet, "Choose end time")
+                        .show(getParentFragmentManager(), getTag());
             }
             else {
                 Toast.makeText(getContext(), getString(R.string.enter_start_time), Toast.LENGTH_LONG)
                         .show();
             }
         });
+        fakeDDet.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Do Nothing
+            }
 
-        // Initialize the information buttons to help the user understand the fields.
-        ImageButton infoECD = view.findViewById(R.id.ecdInfoButton);
-        ImageButton infoLength = view.findViewById(R.id.lengthInfoButton);
-        infoECD.setOnClickListener(v -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage(R.string.event_ecd_info);
-            builder.setTitle(R.string.start_time);
-            builder.show();
-        });
-        infoLength.setOnClickListener(v -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage(R.string.event_length_info);
-            builder.setTitle(R.string.length);
-            builder.show();
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                try {
+                    mEndTime = LocalDateTime.from(Event.dateFormat.parse(charSequence));
+                    setText(Event.dateFormat.format(mEndTime), mEndTimeLabel,
+                            getString(R.string.end_time_format));
+                }
+                catch (Exception ignored) { }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                // Do Nothing
+            }
         });
 
         // Load id from intent to see if we're editing a task.
@@ -232,14 +262,13 @@ public class EventEntry extends BottomSheetDialogFragment {
             // Set the event name
             mEditTextEventName.setText(LogicSubsystem.getInstance().getEventName(mID));
 
-            // Set the start time
-            mEditTextECD.setText(Event.dateFormat.format(LogicSubsystem.getInstance().getEventECD(mID)));
-
-            // Set the end time
-            int ttc = LogicSubsystem.getInstance().getEventTTC(mID);
-            LocalDateTime endTime =
-                    LogicSubsystem.getInstance().getEventECD(mID).plus(ttc, ChronoUnit.MINUTES);
-            mEditTextEndTime.setText(Event.dateFormat.format(endTime));
+            mStartTime = LogicSubsystem.getInstance().getEventECD(mID);
+            setText(Event.dateFormat.format(mStartTime),
+                    mStartTimeLabel, getString(R.string.start_time_format));
+            mEndTime = LogicSubsystem.getInstance().getEventECD(mID).plus(
+                    LogicSubsystem.getInstance().getEventTTC(mID), ChronoUnit.MINUTES);
+            setText(Event.dateFormat.format(mEndTime), mEndTimeLabel,
+                    getString(R.string.end_time_format));
         }
 
         if(mListener != null) {
@@ -248,6 +277,16 @@ public class EventEntry extends BottomSheetDialogFragment {
 
         // Inflate the layout for this fragment
         return view;
+    }
+
+    private void setText(String toShow, TextView element, String formatString) {
+        // Make starting text bold
+        SpannableString dateText = new SpannableString(String.format
+                (formatString, toShow));
+        dateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
+                0, formatString.indexOf('\n'), 0);
+
+        element.setText(dateText);
     }
 
     /**
@@ -273,12 +312,11 @@ public class EventEntry extends BottomSheetDialogFragment {
         // Get the date information the user has entered
         long time;
         LocalDate ecd;
-        String ecdText = mEditTextECD.getText().toString();
-        if (ecdText.isEmpty()) {
+        if (mStartTime == null) {
             Toast.makeText(getContext(), "Please enter a start date first.", Toast.LENGTH_LONG).show();
             return;
         }
-        ecd = LocalDate.from(Event.dateFormat.parse(ecdText));
+        ecd = mStartTime.toLocalDate();
         time = ecd.toEpochDay();
 
         // Get the day in month e.g. "31st"

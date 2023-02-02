@@ -199,4 +199,8 @@
     <string name="parent_tasks_format">Parent Tasks:\n%s Chosen</string>
     <string name="recur">Recur</string>
     <string name="labels_format">Labels:\n%s Added</string>
+    <string name="start_time_format">Start Time:\n%s</string>
+    <string name="end_time_format">End Time:\n%s</string>
+    <string name="start_time_default">Start Time:\nNone Chosen</string>
+    <string name="end_time_default">End Time:\nNone Chosen</string>
 </resources>

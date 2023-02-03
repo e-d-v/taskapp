@@ -1,24 +1,19 @@
 package com.evanv.taskapp.ui.additem;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.TextWatcher;
-import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,16 +24,11 @@ import androidx.fragment.app.DialogFragment;
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.logic.Task;
-import com.evanv.taskapp.ui.FilterActivity;
 import com.evanv.taskapp.ui.additem.recur.NoRecurFragment;
-import com.evanv.taskapp.ui.additem.recur.RecurActivity;
 import com.evanv.taskapp.ui.additem.recur.RecurInput;
 import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import org.threeten.bp.LocalDate;
-import org.threeten.bp.temporal.ChronoField;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,16 +38,12 @@ import java.util.List;
  *
  * @author Evan Voogd
  */
-public class TaskEntry extends BottomSheetDialogFragment {
-    private View mContainer;   // The ViewGroup for the activity, allows easy access to views
-    private Bundle mRecur;       // Bundle containing recurrence information
-    private long mEarlyDate;     // Holds the user selected early date
+public class TaskEntry extends ItemEntry {
     private long mDueDate;       // Holds the user selected due date
     private long mProject;       // Holds the ID of the user selected project
     private long[] mLabels;      // Array of labels added to this task.
     private List<Long> mParents; // Array of selected parents
     private long mID = -1;       // ID of the edited task (or -1 if adding a task)
-    private View.OnClickListener mListener; // Listener for Submit Button
 
     private ActivityResultLauncher<Intent> mLaunchRecur;   // Launcher for the recurrence activity
     private EditText mNameET;
@@ -74,6 +60,7 @@ public class TaskEntry extends BottomSheetDialogFragment {
     private TextView mParentsLabel;
     private SeekBar mPrioritySeekbar;
     private Button mRecurButton;
+
 
     /**
      * Required empty public constructor, creates new TaskEntry fragment
@@ -103,17 +90,6 @@ public class TaskEntry extends BottomSheetDialogFragment {
         mLabels = new long[0];
     }
 
-    /**
-     * Function that is called when result is received from recurrence activity.
-     *
-     * @param resultCode Is Activity.RESULT_OK if ran successfully
-     * @param data A bundle of data that describes the recurrence chosen
-     */
-    private void handleRecurInput(int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK) {
-            mRecur = data.getBundleExtra(RecurActivity.EXTRA_RECUR);
-        }
-    }
 
     /**
      * Initializes important views. Most importantly it defines the dialog that shows up when
@@ -128,7 +104,6 @@ public class TaskEntry extends BottomSheetDialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_task_entry, container, false);
-        mContainer = view;
 
         // Add the default recurrence interval (none)
         mRecur = new Bundle();
@@ -272,56 +247,6 @@ public class TaskEntry extends BottomSheetDialogFragment {
      */
     public void setID(long id) {
         mID = id;
-    }
-
-    public void addSubmitListener(View.OnClickListener listener) {
-        mListener = listener;
-    }
-
-    private void setText(String toShow, TextView element, String formatString) {
-        // Make starting text bold
-        SpannableString dateText = new SpannableString(String.format
-                (formatString, toShow));
-        dateText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                0, formatString.indexOf('\n'), 0);
-        dateText.setSpan(new RelativeSizeSpan((float)0.75), formatString.indexOf('\n'),
-                dateText.length(), 0);
-
-        element.setText(dateText);
-    }
-
-    /**
-     * Launch a new intent to the RecurActivity, and give it the needed information
-     */
-    private void intentRecur() {
-        // Create a new intent
-        Intent intent = new Intent(getActivity(), RecurActivity.class);
-
-        // Get the date information the user has entered
-        LocalDate ecd;
-
-        if (mEarlyDate == 0) {
-            Toast.makeText(getContext(), "Please enter a start date first.", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        ecd = LocalDate.ofEpochDay(mEarlyDate);
-
-        // Get the day in month e.g. "31st"
-        intent.putExtra(EventEntry.EXTRA_DAY, EventEntry.getOrdinalDayInMonth(ecd));
-
-        // Get the ordinal day of week e.g. "3rd Monday"
-        intent.putExtra(EventEntry.EXTRA_DESC, EventEntry.getOrdinalDayInWeek(requireContext(), ecd));
-
-        // Get the month e.g. "August"
-        intent.putExtra(EventEntry.EXTRA_MONTH,
-                getResources().getStringArray(R.array.months)[ecd.get(ChronoField.MONTH_OF_YEAR) - 1]);
-
-        // Get the time
-        intent.putExtra(EventEntry.EXTRA_TIME, mEarlyDate);
-
-        // Launch RecurActivity
-        mLaunchRecur.launch(intent);
     }
 
     /**

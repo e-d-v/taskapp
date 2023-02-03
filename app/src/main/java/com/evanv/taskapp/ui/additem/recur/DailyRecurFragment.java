@@ -7,9 +7,11 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import com.evanv.taskapp.R;
+import com.evanv.taskapp.ui.main.ClickListener;
 
 import java.util.Objects;
 
@@ -18,8 +20,9 @@ import java.util.Objects;
  *
  * @author Evan Voogd
  */
-public class DailyRecurFragment extends Fragment implements RecurInput {
+public class DailyRecurFragment extends DialogFragment {
     private EditText mIntervalET; // Edit text containing the interval value
+    private View.OnClickListener mSubmitListener;
 
     // Value for a Bundle extra that represents daily recurrence happening.
     public static final String EXTRA_VAL_TYPE = "com.evanv.taskapp.ui.additem.recur.DailyRecurFragment.extra.val.TYPE";
@@ -30,6 +33,10 @@ public class DailyRecurFragment extends Fragment implements RecurInput {
      * Required empty public constructor
      */
     public DailyRecurFragment() {
+    }
+
+    public void addSubmitListener(View.OnClickListener listener) {
+        mSubmitListener = listener;
     }
 
     /**
@@ -66,10 +73,15 @@ public class DailyRecurFragment extends Fragment implements RecurInput {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        getDialog().setTitle("How many days between recurrences?");
         // Inflate the layout for this fragment
         View toReturn = inflater.inflate(R.layout.fragment_daily_recur, container, false);
 
         mIntervalET = Objects.requireNonNull(toReturn).findViewById(R.id.daysBetween);
+
+        if (mSubmitListener != null) {
+            toReturn.findViewById(R.id.submitButton).setOnClickListener(mSubmitListener);
+        }
 
         return toReturn;
     }
@@ -79,7 +91,6 @@ public class DailyRecurFragment extends Fragment implements RecurInput {
      *
      * @return a bundle containing extras defining the user's recurrence choices.
      */
-    @Override
     public Bundle getRecurInfo() {
         // Create a Bundle and set it's type to be Daily Recurrence
         Bundle toReturn = new Bundle();

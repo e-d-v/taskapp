@@ -216,6 +216,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 findViewById(R.id.addTaskLayout).animate().translationY(-getResources().getDimension(R.dimen.standard_105));
                 findViewById(R.id.addTaskLabel).animate().alpha(1);
                 findViewById(R.id.addEventLabel).animate().alpha(1);
+                findViewById(R.id.addTaskFab).animate().alpha(1);
+                findViewById(R.id.addEventFab).animate().alpha(1);
             }
             else {
                 closeFAB();
@@ -223,12 +225,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         });
 
         findViewById(R.id.addEventFab).setOnClickListener(v -> {
-            closeFAB();
-            addEvent();
+            if (isFABOpen) {
+                closeFAB();
+                addEvent();
+            }
         });
         findViewById(R.id.addTaskFab).setOnClickListener(v -> {
-            closeFAB();
-            addTask();
+            if (isFABOpen) {
+                closeFAB();
+                addTask();
+            }
         });
 
         // Make visible the main content
@@ -251,6 +257,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         findViewById(R.id.addTaskLayout).animate().translationY(0);
         findViewById(R.id.addTaskLabel).animate().alpha(0);
         findViewById(R.id.addEventLabel).animate().alpha(0);
+        findViewById(R.id.addTaskFab).animate().alpha(0);
+        findViewById(R.id.addEventFab).animate().alpha(0);
     }
 
     /**

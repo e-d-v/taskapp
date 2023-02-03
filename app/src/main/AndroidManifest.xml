@@ -41,13 +41,6 @@
             android:label="@string/title_activity_project_entry"
             android:theme="@style/Theme.Taskapp.NoActionBar" />
         <activity
-            android:name=".ui.additem.recur.RecurActivity"
-            android:exported="false">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.evanv.taskapp.ui.additem.AddItem" />
-        </activity>
-        <activity
             android:name=".ui.main.OptimizingActivity"
             android:exported="false" />
         <activity

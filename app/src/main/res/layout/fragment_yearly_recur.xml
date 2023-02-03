@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
     android:orientation="vertical"
     tools:context=".ui.additem.recur.YearlyRecurFragment">
 
@@ -30,7 +31,7 @@
     </LinearLayout>
 
     <RadioGroup
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/yearlyRadioGroup">
         <RadioButton
@@ -65,7 +66,7 @@
     <LinearLayout
         android:id="@+id/recurMonthsLayout"
         android:visibility="invisible"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content">
         <TextView
             android:layout_width="wrap_content"
@@ -101,7 +102,7 @@
         <EditText
             android:inputType="textShortMessage"
             android:id="@+id/recurDaysEditText"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
             android:hint="@string/recur_days_hint"
@@ -109,5 +110,11 @@
             tools:ignore="SpUsage"
             android:importantForAutofill="no" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/submitButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/submit"/>
 
 </LinearLayout>

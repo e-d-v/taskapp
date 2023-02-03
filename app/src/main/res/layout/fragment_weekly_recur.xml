@@ -2,8 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
     tools:context=".ui.additem.recur.WeeklyRecurFragment">
 
     <LinearLayout
@@ -16,7 +17,7 @@
             android:id="@+id/weeklySubheader"
             android:labelFor="@id/weeksBetween"
             style="@style/subheader"
-            android:text="@string/weekly_recur_prompt"/>
+            android:text="Weeks between recurrences:"/>
         <EditText
             android:id="@+id/weeksBetween"
             android:layout_width="wrap_content"
@@ -30,7 +31,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
         <CheckBox
@@ -83,5 +84,11 @@
             android:layout_height="wrap_content"
             android:text="@string/saturday_initial"/>
     </LinearLayout>
+
+    <Button
+        android:id="@+id/submitButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/submit"/>
 
 </LinearLayout>

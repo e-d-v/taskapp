@@ -8,6 +8,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import com.evanv.taskapp.R;
@@ -19,13 +20,14 @@ import java.util.Objects;
  *
  * @author Evan Voogd
  */
-public class WeeklyRecurFragment extends Fragment implements RecurInput {
+public class WeeklyRecurFragment extends DialogFragment {
     // Value for a Bundle extra that represents weekly recurrence happening.
     public static final String EXTRA_VAL_TYPE = "com.evanv.taskapp.ui.additem.recur.WeeklyRecurFragment.extra.val.TYPE";
     // Extra key for a value containing how many weeks between each recurrence of this event.
     public static final String EXTRA_INTERVAL = "com.evanv.taskapp.ui.additem.recur.WeeklyRecurFragment.extra.INTERVAL";
     // Extra key for a value containing an array of booleans representing if events occur these days
     public static final String EXTRA_DAYS = "com.evanv.taskapp.ui.additem.recur.WeeklyRecurFragment.extra.DAYS";
+    private View.OnClickListener mSubmitListener;
 
     private EditText mIntervalET;  // Edit text containing the interval value
     private CheckBox[] checkBoxes; // Array of the CheckBoxes representing the weeks
@@ -36,6 +38,11 @@ public class WeeklyRecurFragment extends Fragment implements RecurInput {
     public WeeklyRecurFragment() {
         // Required empty public constructor
     }
+
+    public void addSubmitListener(View.OnClickListener listener) {
+        mSubmitListener = listener;
+    }
+
 
     /**
      * Creates a new fragment representing weekly recurrences
@@ -84,6 +91,10 @@ public class WeeklyRecurFragment extends Fragment implements RecurInput {
         checkBoxes[5] = Objects.requireNonNull(toReturn).findViewById(R.id.fridayCheckBox);
         checkBoxes[6] = Objects.requireNonNull(toReturn).findViewById(R.id.saturdayCheckBox);
 
+        if (mSubmitListener != null) {
+            toReturn.findViewById(R.id.submitButton).setOnClickListener(mSubmitListener);
+        }
+
         // Inflate the layout for this fragment
         return toReturn;
     }
@@ -93,7 +104,6 @@ public class WeeklyRecurFragment extends Fragment implements RecurInput {
      *
      * @return a bundle containing extras defining the user's recurrence choices.
      */
-    @Override
     public Bundle getRecurInfo() {
         // Create a bundle and set it's type to this one
         Bundle toReturn = new Bundle();

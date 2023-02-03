@@ -1,28 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
     tools:context=".ui.additem.recur.DailyRecurFragment">
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/dailySubheader"
-        android:labelFor="@id/daysBetween"
-        style="@style/subheader"
-        android:text="@string/daily_recur_prompt"/>
 
     <EditText
         android:id="@+id/daysBetween"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="2dp"
+        android:hint="@string/days_between_recur"
+        android:importantForAutofill="no"
         android:inputType="number"
-        android:text="1"
         android:textSize="@dimen/subheader_height"
-        tools:ignore="HardcodedText,SpUsage"
-        android:importantForAutofill="no" />
+        tools:ignore="HardcodedText,SpUsage" />
+
+    <Button
+        android:id="@+id/submitButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/submit"/>
 
 </LinearLayout>

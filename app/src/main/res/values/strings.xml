@@ -86,9 +86,9 @@
     <string name="oct">Oct</string>
     <string name="nov">Nov</string>
     <string name="dec">Dec</string>
-    <string name="monthly_recur_prompt">Recur every _ months:</string>
+    <string name="monthly_recur_prompt">Months between recurrences:</string>
     <string name="recur_days_hint">1,2,3</string>
-    <string name="years_recur_prompt">Recur every _ years:</string>
+    <string name="years_recur_prompt">Years between recurrences:</string>
     <string name="months_recur_prompt">Months to recur on:</string>
     <string name="recur_months_hint">Jan,Feb,Mar</string>
     <string name="weekly_recur_prompt">Recur every _ weeks:</string>
@@ -205,4 +205,6 @@
     <string name="end_time_default">End Time:\nNone Chosen</string>
     <string name="add_project">Add Project</string>
     <string name="add_label">Add Label</string>
+    <string name="days_between_recur">Days between recurrences</string>
+    <string name="how_many_days_between_recurrences">How many days between recurrences?</string>
 </resources>

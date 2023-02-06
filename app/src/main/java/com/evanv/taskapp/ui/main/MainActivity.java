@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ViewFlipper;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -672,15 +673,30 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                     mVF.setDisplayedChild(2);
                 }
 
-                // If the FAB is currently hidden, show the FAB again, to prevent it from being lost as the
-                // FAB hides if you scroll down currently, and if we don't do this and the recycler doesn't
-                // have enough content to scroll, the FAB will be lost until a restart.
+                // If the FAB is currently hidden, show the FAB again, to prevent it from being lost
+                // as the FAB hides if you scroll down currently, and if we don't do this and the
+                // recycler doesn't have enough content to scroll, the FAB will be lost until a
+                // restart.
                 HideBottomViewOnScrollBehavior<FloatingActionButton> fabBehavior =
                         (HideBottomViewOnScrollBehavior<FloatingActionButton>)
                                 ((CoordinatorLayout.LayoutParams) mBinding.fab.getLayoutParams())
                                         .getBehavior();
                 if (fabBehavior != null) {
                     fabBehavior.slideUp(mBinding.fab);
+                }
+                HideBottomViewOnScrollBehavior<FloatingActionButton> fabBehavior1 =
+                        (HideBottomViewOnScrollBehavior<FloatingActionButton>)
+                                ((CoordinatorLayout.LayoutParams) mBinding.addEventFab.
+                                        getLayoutParams()).getBehavior();
+                if (fabBehavior1 != null) {
+                    fabBehavior1.slideUp(mBinding.fab);
+                }
+                HideBottomViewOnScrollBehavior<FloatingActionButton> fabBehavior2 =
+                        (HideBottomViewOnScrollBehavior<FloatingActionButton>)
+                                ((CoordinatorLayout.LayoutParams) mBinding.addTaskFab
+                                        .getLayoutParams()).getBehavior();
+                if (fabBehavior2 != null) {
+                    fabBehavior2.slideUp(mBinding.fab);
                 }
 
                 mPosition = mDay = -1;

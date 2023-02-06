@@ -54,13 +54,19 @@
             android:alpha="0"
             android:textColor="@color/text_primary"
             android:text="@string/add_event"/>
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/addEventFab"
-            android:alpha="0"
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:fabSize="mini"
-            app:srcCompat="@drawable/baseline_edit_calendar_21" />
+            android:layout_height="wrap_content">
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/addEventFab"
+                android:alpha="0"
+                app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:fabSize="mini"
+                app:srcCompat="@drawable/baseline_edit_calendar_21"
+                android:contentDescription="TODO" />
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -81,13 +87,18 @@
             android:textColor="@color/text_primary"
             android:text="@string/add_task"/>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/addTaskFab"
-            android:alpha="0"
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:fabSize="mini"
-            app:srcCompat="@drawable/ic_baseline_add_24" />
+            android:layout_height="wrap_content">
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/addTaskFab"
+                android:alpha="0"
+                app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:fabSize="mini"
+                app:srcCompat="@drawable/ic_baseline_add_24" />
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
     </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

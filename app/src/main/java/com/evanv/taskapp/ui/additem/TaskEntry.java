@@ -129,8 +129,8 @@ public class TaskEntry extends ItemEntry {
         mPrereqButton.setOnClickListener(new AddParentsListener());
 
         // Make starting text bold
-        setText("None Chosen", mECDLabel, getString(R.string.start_time_format));
-        setText("None Chosen", mDDLabel, getString(R.string.end_time_format));
+        setText("None Chosen", mECDLabel, getString(R.string.early_date_format));
+        setText("None Chosen", mDDLabel, getString(R.string.due_date_format));
         setText("None Chosen", mProjectLabel, getString(R.string.project_replace));
         setText("None", mLabelsLabel, getString(R.string.labels_format));
         setText("None", mParentsLabel, getString(R.string.parent_tasks_format));

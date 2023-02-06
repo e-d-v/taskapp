@@ -195,8 +195,8 @@
     <string name="due_date_default">Due Date:\nNone Chosen</string>
     <string name="early_date_format">Early Date:\n%s</string>
     <string name="due_date_format">Due Date:\n%s</string>
-    <string name="parent_tasks_default">Parent Tasks:\nNone Chosen</string>
-    <string name="parent_tasks_format">Parent Tasks:\n%s Chosen</string>
+    <string name="parent_tasks_default">Prereq Tasks:\nNone Chosen</string>
+    <string name="parent_tasks_format">Prereq Tasks:\n%s Chosen</string>
     <string name="recur">Recur</string>
     <string name="labels_format">Labels:\n%s Added</string>
     <string name="start_time_format">Start Time:\n%s</string>

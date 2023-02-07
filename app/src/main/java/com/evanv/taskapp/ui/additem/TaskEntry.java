@@ -27,6 +27,7 @@ import com.evanv.taskapp.logic.Task;
 import com.evanv.taskapp.ui.additem.recur.NoRecurFragment;
 import com.evanv.taskapp.ui.additem.recur.RecurInput;
 import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
+import com.evanv.taskapp.ui.additem.recur.YearlyRecurFragment;
 
 import org.threeten.bp.LocalDate;
 
@@ -508,8 +509,9 @@ public class TaskEntry extends ItemEntry {
                                 mProjectLabel.setText(projectText);
                             }))
                     .setNeutralButton(getString(R.string.add_project), ((dialogInterface, i) -> {
-                        Intent intent = new Intent(getActivity(), ProjectEntry.class);
-                        startActivity(intent);
+                        // Yearly recurrence
+                        ProjectEntry projectEntry = new ProjectEntry();
+                        projectEntry.show(getParentFragmentManager(), "PROJECTENTRY");
                     }));
 
             builder.create();

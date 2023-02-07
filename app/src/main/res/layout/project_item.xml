@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/parent"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingBottom="8dp"
@@ -43,8 +44,8 @@
         app:tint="@color/text_primary"
         android:background="@null"
         android:scaleType="fitXY"
-        android:contentDescription="@string/right_arrow"
-        android:src="@drawable/ic_baseline_chevron_right_32"
+        android:contentDescription="@string/three_dots"
+        android:src="@drawable/ic_baseline_more_vert_32"
         android:layout_width="32dp"/>
 
 </LinearLayout>

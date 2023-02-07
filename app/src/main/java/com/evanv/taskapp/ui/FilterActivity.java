@@ -324,7 +324,7 @@ public class FilterActivity extends AppCompatActivity {
 
                                 // Get name of selected project
                                 String projectName = LogicSubsystem.getInstance()
-                                        .getProjectName(mProject, mContext);
+                                        .getProjectName(mProject);
                                 String formatString = getString(R.string.project_replace);
                                 setText(projectName, projectLabel, formatString);
                             }));

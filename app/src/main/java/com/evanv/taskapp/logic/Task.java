@@ -619,4 +619,8 @@ public class Task implements Comparable<Task> {
     public static int getDiff(LocalDateTime endDate, LocalDate startDate) {
         return (int) ChronoUnit.DAYS.between(startDate, endDate.toLocalDate());
     }
+
+    public void removeProject() {
+        mProject = null;
+    }
 }

@@ -30,6 +30,8 @@ public class ProjectEntry extends DialogFragment {
     private TextView mColorLabel;
     private EditText mNameET;
     private EditText mGoalET;
+    private long mEditedID = -1;
+    private View.OnClickListener mOnSubmit;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -46,7 +48,46 @@ public class ProjectEntry extends DialogFragment {
                     Uri.parse(getString(R.string.project_url)));
             startActivity(browserIntent);
         });
+
+        if (mEditedID != -1) {
+            mNameET.setText(LogicSubsystem.getInstance().getProjectName(mEditedID));
+            color = LogicSubsystem.getInstance().getProjectColor(mEditedID);
+            mGoalET.setText(LogicSubsystem.getInstance().getProjectGoal(mEditedID));
+
+            // Change the color of the label to the chosen color.
+            String labelStart = getString(R.string.colorLabel);
+            SpannableString colorText = new SpannableString(labelStart +
+                    getResources().getStringArray(R.array.colors)[color]);
+
+            int[] colors = {getResources().getColor(R.color.pale_blue),
+                    getResources().getColor(R.color.blue),
+                    getResources().getColor(R.color.pale_green),
+                    getResources().getColor(R.color.green),
+                    getResources().getColor(R.color.pink),
+                    getResources().getColor(R.color.red),
+                    getResources().getColor(R.color.pale_orange),
+                    getResources().getColor(R.color.orange),
+                    getResources().getColor(R.color.lavender),
+                    getResources().getColor(R.color.purple),
+                    getResources().getColor(R.color.yellow),
+                    getResources().getColor(R.color.gray)};
+
+            int colorResource = colors[color];
+
+            colorText.setSpan(
+                    new ForegroundColorSpan(colorResource), labelStart.length(), colorText.length(), 0);
+
+            mColorLabel.setText(colorText);
+        }
         return view;
+    }
+
+    public void setID(long id) {
+        mEditedID = id;
+    }
+
+    public void setOnSubmit(View.OnClickListener callback) {
+        mOnSubmit = callback;
     }
 
     /**
@@ -149,10 +190,18 @@ public class ProjectEntry extends DialogFragment {
         }
 
         // Add Project to LogicSubsystem
-        LogicSubsystem.getInstance().addProject(name, color, goal);
+        if (mEditedID != -1) {
+            LogicSubsystem.getInstance().editProject(name, color, goal, mEditedID);
+        }
+        else {
+            LogicSubsystem.getInstance().addProject(name, color, goal);
+        }
+
+        if (mOnSubmit != null) {
+            mOnSubmit.onClick(null);
+        }
 
         // Return control
-        Intent replyIntent = new Intent();
         dismiss();
     }
 }

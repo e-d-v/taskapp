@@ -59,4 +59,9 @@
         <item>Edit Label</item>
         <item>Delete Label</item>
     </string-array>
+
+    <string-array name="project_options">
+        <item>Edit Project</item>
+        <item>Delete Project</item>
+    </string-array>
 </resources>

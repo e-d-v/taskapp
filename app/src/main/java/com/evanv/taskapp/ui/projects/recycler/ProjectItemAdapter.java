@@ -1,16 +1,21 @@
 package com.evanv.taskapp.ui.projects.recycler;
 
+import android.app.AlertDialog;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.evanv.taskapp.R;
+import com.evanv.taskapp.logic.LogicSubsystem;
+import com.evanv.taskapp.ui.additem.ProjectEntry;
 import com.evanv.taskapp.ui.main.ClickListener;
 import com.google.android.material.chip.Chip;
 
@@ -24,6 +29,9 @@ import java.util.List;
 public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.ProjectViewHolder> {
     public final List<ProjectItem> mProjectsList; // List of project information
     private final ClickListener mListener;  // The listener to handle button presses.
+    private final AppCompatActivity mActivity;
+    private long mEditedID = -1;
+    private View.OnClickListener mOnSubmit;
 
     /**
      * Construct a new ProjectItemAdapter
@@ -31,9 +39,10 @@ public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.
      * @param list The list of projects to display
      * @param clickListener The listener to handle button presses
      */
-    public ProjectItemAdapter(List<ProjectItem> list, ClickListener clickListener) {
+    public ProjectItemAdapter(List<ProjectItem> list, ClickListener clickListener, AppCompatActivity activity) {
         mProjectsList = list;
         mListener = clickListener;
+        mActivity = activity;
     }
 
     /**
@@ -101,7 +110,30 @@ public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.
         // Set project goal
         holder.mGoalLabel.setText(curr.getGoal());
 
-        holder.mExpandButton.setOnClickListener(v -> mListener.onButtonClick(position, -1, 0));
+        holder.mExpandButton.setOnClickListener(v -> {
+            AlertDialog.Builder diag = new AlertDialog.Builder(mActivity);
+            diag.setItems(R.array.project_options, (dialogInterface, i) -> {
+                switch (i) {
+                    case 0:
+                        ProjectEntry projectEntry = new ProjectEntry();
+                        projectEntry.setID(curr.getID());
+                        projectEntry.setOnSubmit(view1 -> {
+                            mProjectsList.set(position, LogicSubsystem.getInstance().getProjectItem(curr.getID()));
+                            notifyItemChanged(position);
+                        });
+                        projectEntry.show(mActivity.getSupportFragmentManager(), "PROJECTENTRY");
+                        break;
+                    case 1:
+                        LogicSubsystem.getInstance().deleteProject(curr.getID());
+                        mProjectsList.remove(position);
+                        notifyItemRemoved(position);
+                        break;
+                }
+            });
+            diag.show();
+        });
+
+        holder.mParent.setOnClickListener(v -> mListener.onButtonClick(position, -1, 0));
     }
 
     /**
@@ -122,6 +154,8 @@ public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.
         public final TextView mGoalLabel;       // The label that displays the goal of the project
         public final ImageButton mExpandButton; // The button to show the list of tasks in project
 
+        public final LinearLayout mParent;
+
         /**
          * Construct a new ViewHolder
          *
@@ -132,6 +166,7 @@ public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.
             mProjectChip = view.findViewById(R.id.projectChip);
             mGoalLabel = view.findViewById(R.id.projectGoalTextView);
             mExpandButton = view.findViewById(R.id.buttonExpandProject);
+            mParent = view.findViewById(R.id.parent);
         }
     }
 }

@@ -9,6 +9,7 @@ public class ProjectItem {
     private final String mName; // The name of the project
     private final String mGoal; // The goal of the project
     private final int mColor;   // The color of the project (index into a color array)
+    private final long mID;     // The ID of the project
 
     /**
      * Construct a new item representing a project for the recycler.
@@ -17,10 +18,11 @@ public class ProjectItem {
      * @param goal Goal of the project
      * @param color Color representing the project
      */
-    public ProjectItem(String name, String goal, int color) {
+    public ProjectItem(String name, String goal, int color, long id) {
         mName = name;
         mGoal = goal;
         mColor = color;
+        mID = id;
     }
 
     /**
@@ -48,5 +50,9 @@ public class ProjectItem {
      */
     public int getColor() {
         return mColor;
+    }
+
+    public long getID() {
+        return mID;
     }
 }

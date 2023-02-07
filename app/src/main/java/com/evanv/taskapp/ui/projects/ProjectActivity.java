@@ -55,13 +55,13 @@ public class ProjectActivity extends AppCompatActivity implements ClickListener 
         List<ProjectItem> mProjectItemList = new ArrayList<>();
 
         for (int i = 0; i < projectNames.size(); i++) {
-            mProjectItemList.add(
-                    new ProjectItem(projectNames.get(i), projectGoals.get(i), projectColors.get(i)));
+            mProjectItemList.add(new ProjectItem(projectNames.get(i), projectGoals.get(i),
+                    projectColors.get(i), LogicSubsystem.getInstance().getProjectID(i)));
         }
 
         RecyclerView recycler = findViewById(R.id.projects_recyclerview);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        recycler.setAdapter(new ProjectItemAdapter(mProjectItemList, this));
+        recycler.setAdapter(new ProjectItemAdapter(mProjectItemList, this, this));
         recycler.setLayoutManager(layoutManager);
     }
 

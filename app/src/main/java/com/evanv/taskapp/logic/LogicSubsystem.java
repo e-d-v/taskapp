@@ -4,7 +4,6 @@ import static com.evanv.taskapp.logic.Task.getDiff;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
@@ -16,6 +15,7 @@ import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.main.recycler.DayItem;
 import com.evanv.taskapp.ui.main.recycler.EventItem;
 import com.evanv.taskapp.ui.main.recycler.TaskItem;
+import com.evanv.taskapp.ui.projects.recycler.ProjectItem;
 
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.LocalDateTime;
@@ -27,8 +27,6 @@ import org.threeten.bp.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import kotlin.Pair;
 
@@ -1168,17 +1166,16 @@ public class LogicSubsystem {
      * Get the name of a specific project by ID
      *
      * @param ID ID of the project
-     * @param context Context for resources
      * @return the Name of the project with the given ID
      */
-    public String getProjectName(long ID, Context context) {
+    public String getProjectName(long ID) {
         for (Project p : mProjects) {
             if (p.getID() == ID) {
                 return p.getName();
             }
         }
 
-        return context.getString(R.string.none_chosen);
+        return "";
     }
 
     /**
@@ -1707,6 +1704,60 @@ public class LogicSubsystem {
                 candidate.setColor(color);
                 mTaskAppViewModel.update(candidate);
                 return;
+            }
+        }
+    }
+
+    public void deleteProject(long id) {
+        for (Project p : mProjects) {
+            if (p.getID() == id) {
+                for (Task t : p.getTasks()) {
+                    t.removeProject();
+                    mTaskAppViewModel.update(t);
+                    mUpdatedIndices.add(getDiff(t.getDoDate(), mStartDate));
+                }
+                mProjects.remove(p);
+                mTaskAppViewModel.delete(p);
+                return;
+            }
+        }
+    }
+
+    public int getProjectColor(long id) {
+        for (Project p : mProjects) {
+            if (id == p.getID()) {
+                return p.getColor();
+            }
+        }
+
+        return 11;
+    }
+
+    public String getProjectGoal(long id) {
+        for (Project p : mProjects) {
+            if (id == p.getID()) {
+                return p.getGoal();
+            }
+        }
+
+        return "";
+    }
+
+    public ProjectItem getProjectItem(long id) {
+        return new ProjectItem(getProjectName(id), getProjectGoal(id), getProjectColor(id), id);
+    }
+
+    public void editProject(String name, int color, String goal, long id) {
+        for (Project p : mProjects) {
+            if (p.getID() == id) {
+                p.setName(name);
+                p.setColor(color);
+                p.setGoal(goal);
+                mTaskAppViewModel.update(p);
+
+                for (Task t : p.getTasks()) {
+                    mUpdatedIndices.add(getDiff(t.getDoDate(), mStartDate));
+                }
             }
         }
     }

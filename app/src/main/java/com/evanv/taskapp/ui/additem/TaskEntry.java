@@ -28,7 +28,6 @@ import com.evanv.taskapp.logic.Task;
 import com.evanv.taskapp.ui.additem.recur.NoRecurFragment;
 import com.evanv.taskapp.ui.additem.recur.RecurInput;
 import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
-import com.evanv.taskapp.ui.additem.recur.YearlyRecurFragment;
 
 import org.threeten.bp.LocalDate;
 
@@ -223,7 +222,7 @@ public class TaskEntry extends ItemEntry {
             mDueDate = toDisplay.toEpochDay();
             setText(Task.dateFormat.format(toDisplay), mDDLabel, getString(R.string.due_date_format));
             mProject = LogicSubsystem.getInstance().getTaskProject(mID);
-            setText(LogicSubsystem.getInstance().getProjectName(mProject, getContext()), mProjectLabel,
+            setText(LogicSubsystem.getInstance().getProjectName(mProject), mProjectLabel,
                     getString(R.string.project_replace));
             mLabels = convertLongListToArray(LogicSubsystem.getInstance().getTaskLabels(mID));
             setText(Integer.toString(mLabels.length), mLabelsLabel, getString(R.string.label_format));
@@ -505,7 +504,7 @@ public class TaskEntry extends ItemEntry {
                             ((dialogInterface, unused) -> {
                                 // Get name of selected project
                                 String projectName = LogicSubsystem.getInstance()
-                                        .getProjectName(mProject, getContext());
+                                        .getProjectName(mProject);
                                 String formatString = getString(R.string.project_replace);
 
                                 // Make starting text bold

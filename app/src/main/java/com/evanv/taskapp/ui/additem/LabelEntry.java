@@ -2,13 +2,16 @@ package com.evanv.taskapp.ui.additem;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
 
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -22,20 +25,21 @@ import com.evanv.taskapp.logic.LogicSubsystem;
  *
  * @author Evan Voogd
  */
-public class LabelEntry extends AppCompatActivity {
+public class LabelEntry extends DialogFragment {
     public int color; // User-selected label color
+    private EditText mNameET;
+    private TextView mColorLabel;
 
-    /**
-     * On creation of the label entry screen.
-     *
-     * @param savedInstanceState not used
-     */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_label_entry);
-
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.activity_label_entry, container, false);
+        view.findViewById(R.id.colorSelectTextView).setOnClickListener(this::handleColorPress);
+        view.findViewById(R.id.submitButton).setOnClickListener(this::submit);
+        mNameET = view.findViewById(R.id.editTextLabelName);
+        mColorLabel = view.findViewById(R.id.colorSelectTextView);
         color = 11;
+        return view;
     }
 
     /**
@@ -44,7 +48,7 @@ public class LabelEntry extends AppCompatActivity {
      * @param view not used
      */
     public void handleColorPress(View view) {
-        final Dialog dialog = new Dialog(this);
+        final Dialog dialog = new Dialog(getContext());
         dialog.setContentView(R.layout.color_picker);
         dialog.setTitle(R.string.pick_label_color);
 
@@ -69,12 +73,12 @@ public class LabelEntry extends AppCompatActivity {
                 for (ImageButton button : buttons) {
                     button.setSelected(false);
                     button.setImageDrawable(
-                            ContextCompat.getDrawable(this, R.drawable.ic_baseline_circle_24));
+                            ContextCompat.getDrawable(requireContext(),R.drawable.ic_baseline_circle_24));
                 }
 
                 v.setSelected(true);
                 ((ImageButton) v).setImageDrawable(
-                        ContextCompat.getDrawable(this, R.drawable.ic_select_color_24));
+                        ContextCompat.getDrawable(requireContext(), R.drawable.ic_select_color_24));
             });
         }
 
@@ -89,7 +93,6 @@ public class LabelEntry extends AppCompatActivity {
             }
 
             // Change the color of the label to the chosen color.
-            TextView colorLabel = findViewById(R.id.colorSelectTextView);
             String labelStart = getString(R.string.colorLabel);
             SpannableString colorText = new SpannableString(labelStart +
                     getResources().getStringArray(R.array.colors)[color]);
@@ -112,7 +115,7 @@ public class LabelEntry extends AppCompatActivity {
             colorText.setSpan(
                     new ForegroundColorSpan(colorResource), labelStart.length(), colorText.length(), 0);
 
-            colorLabel.setText(colorText);
+            mColorLabel.setText(colorText);
 
             dialog.dismiss();
         });
@@ -126,14 +129,14 @@ public class LabelEntry extends AppCompatActivity {
      * @param view not used
      */
     public void submit(View view) {
-        String name = String.valueOf(((EditText)findViewById(R.id.editTextLabelName)).getText());
+        String name = String.valueOf(mNameET.getText());
 
         if (name.equals("")) {
-            Toast.makeText(this, R.string.name_reminder, Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), R.string.name_reminder, Toast.LENGTH_LONG).show();
             return;
         }
 
         LogicSubsystem.getInstance().addLabel(name, color);
-        finish();
+        dismiss();
     }
 }

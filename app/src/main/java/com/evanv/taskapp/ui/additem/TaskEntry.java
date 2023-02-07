@@ -456,8 +456,9 @@ public class TaskEntry extends ItemEntry {
                                         getString(R.string.labels_format));
                             })).setNeutralButton(getString(R.string.add_label),
                             ((dialogInterface, i) -> {
-                                Intent intent = new Intent(getActivity(), LabelEntry.class);
-                                startActivity(intent);
+                                // Open Label Entry dialog
+                                LabelEntry labelEntry = new LabelEntry();
+                                labelEntry.show(getParentFragmentManager(), "LABELENTRY");
                             }));
 
             builder.create();
@@ -509,7 +510,7 @@ public class TaskEntry extends ItemEntry {
                                 mProjectLabel.setText(projectText);
                             }))
                     .setNeutralButton(getString(R.string.add_project), ((dialogInterface, i) -> {
-                        // Yearly recurrence
+                        // Open Project Entry dialog
                         ProjectEntry projectEntry = new ProjectEntry();
                         projectEntry.show(getParentFragmentManager(), "PROJECTENTRY");
                     }));

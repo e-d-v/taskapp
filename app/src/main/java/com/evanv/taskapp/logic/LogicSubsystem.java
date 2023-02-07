@@ -1609,4 +1609,16 @@ public class LogicSubsystem {
 
         return null;
     }
+
+    public void postponeTask(int mPosition, int mDay) {
+        Task toPostpone = mTaskSchedule.get(mDay).get(mPosition);
+
+        if (toPostpone.getEarlyDate().isEqual(toPostpone.getDueDate())) {
+            toPostpone.setDueDate(toPostpone.getEarlyDate().plusDays(1));
+        }
+
+        toPostpone.setEarlyDate(toPostpone.getEarlyDate().plusDays(1));
+
+        mTaskAppViewModel.update(toPostpone);
+    }
 }

@@ -456,10 +456,20 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
         else if (v.getId() == R.id.buttonTaskOptions) {
             if (mLogicSubsystem.isTimed(mPosition, mDay)) {
-                getMenuInflater().inflate(R.menu.task_options_timed, menu);
+                if (mDay != 0) {
+                    getMenuInflater().inflate(R.menu.task_options_timed, menu);
+                }
+                else {
+                    getMenuInflater().inflate(R.menu.task_options_timed_today, menu);
+                }
             }
             else {
-                getMenuInflater().inflate(R.menu.task_options, menu);
+                if (mDay != 0) {
+                    getMenuInflater().inflate(R.menu.task_options, menu);
+                }
+                else {
+                    getMenuInflater().inflate(R.menu.task_options_today, menu);
+                }
             }
         }
     }
@@ -491,6 +501,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             case (R.id.action_edit_event):
                 // Show optimizing... screen
                 editEvent();
+                break;
+            case (R.id.action_postpone_task):
+                postponeTask();
                 break;
         }
 
@@ -561,6 +574,19 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         convertDay();
 
         mLogicSubsystem.onButtonClick(mPosition, mDay, 1, this);
+        int newDays = mLogicSubsystem.getNumDays();
+
+        finishButtonPress(newDays);
+    }
+
+    /**
+     * Handles the user choosing to postpone a task.
+     */
+    private void postponeTask() {
+        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
+        convertDay();
+
+        mLogicSubsystem.postponeTask(mPosition, mDay);
         int newDays = mLogicSubsystem.getNumDays();
 
         finishButtonPress(newDays);

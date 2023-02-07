@@ -208,4 +208,5 @@
     <string name="add_label">Add Label</string>
     <string name="days_between_recur">Days between recurrences</string>
     <string name="how_many_days_between_recurrences">How many days between recurrences?</string>
+    <string name="postpone_task">Postpone Task</string>
 </resources>

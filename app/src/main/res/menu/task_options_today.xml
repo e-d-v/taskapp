@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_delete_task"
+        android:orderInCategory="100"
+        android:title="@string/delete"/>
+
+    <item
+        android:id="@+id/action_edit_task"
+        android:orderInCategory="101"
+        android:title="@string/edit"/>
+
+    <item
+        android:id="@+id/action_time_task"
+        android:orderInCategory="102"
+        android:title="@string/start_timer"/>
+
+    <item
+        android:id="@+id/action_postpone_task"
+        android:orderInCategory="103"
+        android:title="@string/postpone_task"/>
+</menu>

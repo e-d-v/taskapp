@@ -29,7 +29,7 @@
     <string name="ttc_format_event">Make sure to enter a whole number (in minutes) for completion time.</string>
     <string name="recur_format_event">Make sure to enter a whole number for the number of %s between recurrences.</string>
     <string name="complete_task">Complete Task</string>
-    <string name="schedule_for">Schedule for %s (%d minutes):</string>
+    <string name="schedule_for">%s\n%d minutes</string>
     <string name="minutes_to_complete">%d Minutes</string>
     <string name="ok">OK</string>
     <string name="name_empty_task">Make sure to enter a name for the task.</string>

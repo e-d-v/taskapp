@@ -1,17 +1,21 @@
 package com.evanv.taskapp.ui;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.TextWatcher;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -59,9 +63,9 @@ public class FilterActivity extends AppCompatActivity {
 
         // Make starting text bold
         setText("None Chosen", findViewById(R.id.startDateLabel),
-                getString(R.string.start_time_format));
+                getString(R.string.start_date_replace));
         setText("None Chosen", findViewById(R.id.endDateLabel),
-                getString(R.string.end_time_format));
+                getString(R.string.end_date_replace));
         setText("None Chosen", findViewById(R.id.projectsLabel),
                 getString(R.string.project_replace));
         setText("None", findViewById(R.id.labelsLabel), getString(R.string.labels_format));
@@ -328,5 +332,22 @@ public class FilterActivity extends AppCompatActivity {
             builder.create();
             builder.show();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.help_button_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_help) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse(getString(R.string.filter_tasks_url)));
+            startActivity(browserIntent);
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

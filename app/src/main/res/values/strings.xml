@@ -209,4 +209,10 @@
     <string name="days_between_recur">Days between recurrences</string>
     <string name="how_many_days_between_recurrences">How many days between recurrences?</string>
     <string name="postpone_task">Postpone Task</string>
+    <string name="help">Help</string>
+    <string name="filter_tasks_url">http://www.evanv.com/taskapp/filter-tasks/</string>
+    <string name="add_task_url">http://www.evanv.com/taskapp/add-task/</string>
+    <string name="add_event_url">http://www.evanv.com/taskapp/add-event/</string>
+    <string name="label_url">http://www.evanv.com/taskapp/labels/</string>
+    <string name="project_url">http://www.evanv.com/taskapp/projects/</string>
 </resources>

@@ -2,6 +2,7 @@ package com.evanv.taskapp.ui.additem;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.SpannableString;
@@ -236,6 +237,12 @@ public class TaskEntry extends ItemEntry {
         if (mListener != null) {
             view.findViewById(R.id.submitButton).setOnClickListener(mListener);
         }
+
+        view.findViewById(R.id.helpButton).setOnClickListener(v -> {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse(getString(R.string.add_task_url)));
+            startActivity(browserIntent);
+        });
 
         // Inflate the layout for this fragment
         return view;

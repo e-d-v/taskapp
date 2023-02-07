@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_help"
+        android:orderInCategory="100"
+        android:title="@string/help"
+        android:icon="@drawable/baseline_help_24"
+        app:iconTint="@color/text_primary"
+        app:showAsAction="always" />
+</menu>

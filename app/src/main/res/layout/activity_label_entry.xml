@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="10dp"
     android:orientation="vertical"
     tools:context=".ui.additem.LabelEntry">
@@ -30,9 +31,27 @@
         android:text="@string/default_color"
         android:textSize="18sp" />
 
-    <Button
-        android:id="@+id/submitButton"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_marginTop="6dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/submit"/>
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/submitButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/submit"/>
+        <LinearLayout
+            android:gravity="right|center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <ImageButton
+                android:id="@+id/helpButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/baseline_help_24"
+                android:background="@null"
+                app:tint="@color/text_primary"/>
+        </LinearLayout>
+    </LinearLayout>
 </LinearLayout>

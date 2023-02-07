@@ -5,6 +5,7 @@ import androidx.fragment.app.DialogFragment;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -40,6 +41,11 @@ public class ProjectEntry extends DialogFragment {
         view.findViewById(R.id.colorSelectTextView).setOnClickListener(this::handleColorPress);
         view.findViewById(R.id.submitButton).setOnClickListener(this::submit);
         color = 11;
+        view.findViewById(R.id.helpButton).setOnClickListener(v -> {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse(getString(R.string.project_url)));
+            startActivity(browserIntent);
+        });
         return view;
     }
 

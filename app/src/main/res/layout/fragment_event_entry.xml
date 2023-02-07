@@ -102,6 +102,18 @@
             android:layout_height="wrap_content"
             android:text="@string/recur"
             android:id="@+id/recurButton"/>
+        <LinearLayout
+            android:gravity="right|center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <ImageButton
+                android:id="@+id/helpButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/baseline_help_24"
+                android:background="@null"
+                app:tint="@color/text_primary"/>
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

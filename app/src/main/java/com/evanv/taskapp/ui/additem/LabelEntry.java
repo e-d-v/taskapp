@@ -6,6 +6,7 @@ import androidx.fragment.app.DialogFragment;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -39,6 +40,11 @@ public class LabelEntry extends DialogFragment {
         mNameET = view.findViewById(R.id.editTextLabelName);
         mColorLabel = view.findViewById(R.id.colorSelectTextView);
         color = 11;
+        view.findViewById(R.id.helpButton).setOnClickListener(v -> {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse(getString(R.string.label_url)));
+            startActivity(browserIntent);
+        });
         return view;
     }
 

@@ -1,7 +1,10 @@
 package com.evanv.taskapp.ui.projects;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.ui.TaskListActivity;
@@ -9,6 +12,7 @@ import com.evanv.taskapp.ui.main.ClickListener;
 import com.evanv.taskapp.ui.projects.recycler.ProjectItem;
 import com.evanv.taskapp.ui.projects.recycler.ProjectItemAdapter;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -74,5 +78,22 @@ public class ProjectActivity extends AppCompatActivity implements ClickListener 
         intent.putExtra(TaskListActivity.EXTRA_PROJECT,
                 LogicSubsystem.getInstance().getProjectID(position));
         startActivity(intent);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.help_button_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_help) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse(getString(R.string.project_url)));
+            startActivity(browserIntent);
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

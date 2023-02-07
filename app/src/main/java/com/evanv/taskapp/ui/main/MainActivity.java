@@ -247,6 +247,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         else {
             mVF.setDisplayedChild(2);
         }
+
+        HideBottomViewOnScrollBehavior<FloatingActionButton> fabBehaviorTask =
+                (HideBottomViewOnScrollBehavior<FloatingActionButton>)
+                        ((CoordinatorLayout.LayoutParams) mBinding.addTaskLayout.getLayoutParams())
+                                .getBehavior();
+        if (fabBehaviorTask != null) {
+            fabBehaviorTask.addOnScrollStateChangedListener((bottomView, newState) -> closeFAB());
+        }
     }
 
     /**
@@ -683,20 +691,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                                         .getBehavior();
                 if (fabBehavior != null) {
                     fabBehavior.slideUp(mBinding.fab);
-                }
-                HideBottomViewOnScrollBehavior<FloatingActionButton> fabBehavior1 =
-                        (HideBottomViewOnScrollBehavior<FloatingActionButton>)
-                                ((CoordinatorLayout.LayoutParams) mBinding.addEventFab.
-                                        getLayoutParams()).getBehavior();
-                if (fabBehavior1 != null) {
-                    fabBehavior1.slideUp(mBinding.fab);
-                }
-                HideBottomViewOnScrollBehavior<FloatingActionButton> fabBehavior2 =
-                        (HideBottomViewOnScrollBehavior<FloatingActionButton>)
-                                ((CoordinatorLayout.LayoutParams) mBinding.addTaskFab
-                                        .getLayoutParams()).getBehavior();
-                if (fabBehavior2 != null) {
-                    fabBehavior2.slideUp(mBinding.fab);
                 }
 
                 mPosition = mDay = -1;

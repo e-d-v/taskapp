@@ -455,7 +455,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             getMenuInflater().inflate(R.menu.event_options, menu);
         }
         else if (v.getId() == R.id.buttonTaskOptions) {
-            getMenuInflater().inflate(R.menu.task_options, menu);
+            if (mLogicSubsystem.isTimed(mPosition, mDay)) {
+                getMenuInflater().inflate(R.menu.task_options_timed, menu);
+            }
+            else {
+                getMenuInflater().inflate(R.menu.task_options, menu);
+            }
         }
     }
 

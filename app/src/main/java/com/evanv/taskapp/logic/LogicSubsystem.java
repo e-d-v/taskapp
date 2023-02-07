@@ -4,12 +4,14 @@ import static com.evanv.taskapp.logic.Task.getDiff;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.db.TaskAppViewModel;
+import com.evanv.taskapp.ui.additem.EventEntry;
 import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.main.recycler.DayItem;
 import com.evanv.taskapp.ui.main.recycler.EventItem;
@@ -18,11 +20,15 @@ import com.evanv.taskapp.ui.main.recycler.TaskItem;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.ZoneOffset;
+import org.threeten.bp.format.FormatStyle;
 import org.threeten.bp.temporal.ChronoUnit;
+import org.threeten.bp.format.DateTimeFormatter;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import kotlin.Pair;
 
@@ -460,8 +466,36 @@ public class LogicSubsystem {
         int totalTime = getTotalTime(i);
 
         // Set the fields
+        String day = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).format(curr);
+        String[] toks = day.split(" ");
+
+        // Incredibly stupid, but ensures that the string is formatted as an ordinal day.
+        for (int j = 0; j < toks.length; j++) {
+            try {
+                Integer.parseInt(toks[j].split(",")[0]);
+
+                String ordinal = EventEntry.getOrdinalDayInMonth(curr);
+                ordinal += ",";
+
+                StringBuilder sb = new StringBuilder();
+
+                for (int k = 0; k < toks.length; k++) {
+                    if (k == j) {
+                        sb.append(ordinal).append(" ");
+                        continue;
+                    }
+                    sb.append(toks[k]).append(' ');
+                }
+                day = sb.toString();
+                break;
+            } catch (Exception ignored) {}
+        }
+
+        if (curr.getYear() == mStartDate.getYear()) {
+            day = day.split(", ")[0];
+        }
         dayString = String.format(context.getString(R.string.schedule_for),
-                Task.dateFormat.format(curr), totalTime);
+                day, totalTime);
         events = EventItemList(i);
         tasks = i < mTaskSchedule.size() ? TaskItemList(mTaskSchedule.get(i), context) :
                 new ArrayList<>();

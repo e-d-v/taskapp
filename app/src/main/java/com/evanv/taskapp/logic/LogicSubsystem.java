@@ -1430,9 +1430,13 @@ public class LogicSubsystem {
             if (first) {
                 toAdd.setID(id);
 
-                for (int i = 0; i < mEventSchedule.get(index).size(); i++) {
-                    if (mEventSchedule.get(index).get(i).getID() == id) {
-                        mEventSchedule.get(index).set(i, toAdd);
+                for (int i = 0; i < mEventSchedule.size(); i++) {
+                    for (int j = 0; j < mEventSchedule.get(i).size(); j++) {
+                        if (mEventSchedule.get(i).get(j).getID() == id) {
+                            mEventSchedule.get(i).remove(j);
+                            mUpdatedIndices.add(i);
+                            break;
+                        }
                     }
                 }
 
@@ -1442,9 +1446,10 @@ public class LogicSubsystem {
             }
             // If not necessary, insert a new event
             else {
-                mEventSchedule.get(index).add(toAdd);
                 mTaskAppViewModel.insert(toAdd);
             }
+
+            mEventSchedule.get(index).add(toAdd);
 
             mUpdatedIndices.add(index);
         }

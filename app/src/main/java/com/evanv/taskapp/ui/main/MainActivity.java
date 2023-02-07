@@ -22,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.compose.ui.text.android.InternalPlatformTextApi;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -45,7 +46,7 @@ import java.util.List;
 
 import kotlin.Pair;
 
-/**
+@InternalPlatformTextApi /**
  * Main Activity for the app. Display's the user's schedule of Tasks/Events, while allowing for
  * Task completion/addition (with the latter done through the use of a separate AddItem activity).
  *

@@ -53,4 +53,10 @@
         <item>Yellow</item>
         <item>Gray</item>
     </string-array>
+
+    <string-array name="label_options">
+        <item>View Tasks with Label</item>
+        <item>Edit Label</item>
+        <item>Delete Label</item>
+    </string-array>
 </resources>

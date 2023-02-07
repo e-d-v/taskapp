@@ -1,6 +1,5 @@
 package com.evanv.taskapp.ui.additem;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
@@ -30,6 +29,8 @@ public class LabelEntry extends DialogFragment {
     public int color; // User-selected label color
     private EditText mNameET;
     private TextView mColorLabel;
+    private long mEditedID = -1;
+    private View.OnClickListener mOnSubmit;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -45,7 +46,47 @@ public class LabelEntry extends DialogFragment {
                     Uri.parse(getString(R.string.label_url)));
             startActivity(browserIntent);
         });
+
+        if (mEditedID != -1) {
+            mNameET.setText(LogicSubsystem.getInstance().getLabelName(mEditedID));
+
+            color = LogicSubsystem.getInstance().getLabelColor(mEditedID);
+
+            // Change the color of the label to the chosen color.
+            String labelStart = getString(R.string.colorLabel);
+            SpannableString colorText = new SpannableString(labelStart +
+                    getResources().getStringArray(R.array.colors)[color]);
+
+            int[] colors = {getResources().getColor(R.color.pale_blue),
+                    getResources().getColor(R.color.blue),
+                    getResources().getColor(R.color.pale_green),
+                    getResources().getColor(R.color.green),
+                    getResources().getColor(R.color.pink),
+                    getResources().getColor(R.color.red),
+                    getResources().getColor(R.color.pale_orange),
+                    getResources().getColor(R.color.orange),
+                    getResources().getColor(R.color.lavender),
+                    getResources().getColor(R.color.purple),
+                    getResources().getColor(R.color.yellow),
+                    getResources().getColor(R.color.gray)};
+
+            int colorResource = colors[color];
+
+            colorText.setSpan(
+                    new ForegroundColorSpan(colorResource), labelStart.length(), colorText.length(), 0);
+
+            mColorLabel.setText(colorText);
+        }
+
         return view;
+    }
+
+    public void setID(long id) {
+        mEditedID = id;
+    }
+
+    public void setOnSubmit(View.OnClickListener callback) {
+        mOnSubmit = callback;
     }
 
     /**
@@ -142,7 +183,16 @@ public class LabelEntry extends DialogFragment {
             return;
         }
 
-        LogicSubsystem.getInstance().addLabel(name, color);
+        if (mEditedID != -1) {
+            LogicSubsystem.getInstance().editLabel(name, color, mEditedID);
+        }
+        else {
+            LogicSubsystem.getInstance().addLabel(name, color);
+        }
+
+        if (mOnSubmit != null) {
+            mOnSubmit.onClick(null);
+        }
         dismiss();
     }
 }

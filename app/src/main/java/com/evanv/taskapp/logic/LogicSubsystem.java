@@ -1655,4 +1655,59 @@ public class LogicSubsystem {
 
         mTaskAppViewModel.update(toPostpone);
     }
+
+    public void deleteLabel(long id) {
+        Label toRemove = null;
+        
+        for (Label candidate : mLabels) {
+            if (candidate.getID() == id) {
+                toRemove = candidate;
+                break;
+            }
+        }
+        
+        if (toRemove == null) {
+            return;
+        }
+
+        for (Task t : toRemove.getTasks()) {
+            t.removeLabel(toRemove);
+            mTaskAppViewModel.update(t);
+            mUpdatedIndices.add(getDiff(t.getDoDate(), mStartDate));
+        }
+
+        mLabels.remove(toRemove);
+        mTaskAppViewModel.delete(toRemove);
+    }
+
+    public String getLabelName(long id) {
+        for (Label candidate : mLabels) {
+            if (candidate.getID() == id) {
+                return candidate.getName();
+            }
+        }
+
+        return "";
+    }
+
+    public int getLabelColor(long id) {
+        for (Label candidate : mLabels) {
+            if (candidate.getID() == id) {
+                return candidate.getColor();
+            }
+        }
+
+        return 11;
+    }
+
+    public void editLabel(String name, int color, long id) {
+        for (Label candidate : mLabels) {
+            if (candidate.getID() == id) {
+                candidate.setName(name);
+                candidate.setColor(color);
+                mTaskAppViewModel.update(candidate);
+                return;
+            }
+        }
+    }
 }

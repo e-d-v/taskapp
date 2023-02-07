@@ -215,4 +215,5 @@
     <string name="add_event_url">http://www.evanv.com/taskapp/add-event/</string>
     <string name="label_url">http://www.evanv.com/taskapp/labels/</string>
     <string name="project_url">http://www.evanv.com/taskapp/projects/</string>
+    <string name="labels">Labels</string>
 </resources>

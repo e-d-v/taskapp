@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:padding="10dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.LabelsActivity">
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroup"
+        app:chipSpacing="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    </com.google.android.material.chip.ChipGroup>
+
+</LinearLayout>

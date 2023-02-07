@@ -80,7 +80,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         LocalDate endDate = LocalDate.ofEpochDay
                 (getIntent().getLongExtra(EXTRA_END_DATE, 0));
         endDate = endDate.toEpochDay() == 0 ? null : endDate;
-        long project = getIntent().getLongExtra(EXTRA_PROJECT, 0);
+        long project = getIntent().getLongExtra(EXTRA_PROJECT, -1);
         String name = getIntent().getStringExtra(EXTRA_NAME);
         int minTime = getIntent().getIntExtra(EXTRA_MIN_TIME, -1);
         int maxTime = getIntent().getIntExtra(EXTRA_MAX_TIME, -1);

@@ -13,13 +13,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ViewFlipper;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.compose.ui.text.android.InternalPlatformTextApi;
@@ -125,7 +123,17 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> updateRecycler());
 
-        String[] overdueNames = mLogicSubsystem.getOverdueTasks(this);
+        String[] overdueNames;
+        try {
+            overdueNames = mLogicSubsystem.getOverdueTasks(this);
+        } catch (Exception e) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(
+                    String.format(getString(R.string.corrupt_error), mLogicSubsystem.getNumFailures()));
+            builder.setPositiveButton(R.string.ok, null);
+            builder.show();
+            overdueNames = mLogicSubsystem.getOverdueTasks(this);
+        }
 
         // Prompt the user with a dialog containing overdue tasks so they can mark overdue tasks
         // so taskapp can reoptimize the schedule if some tasks are overdue.

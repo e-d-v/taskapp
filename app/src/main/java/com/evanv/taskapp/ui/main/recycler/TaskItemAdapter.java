@@ -140,7 +140,6 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         }
 
         int start = name.toString().indexOf('\n');
-        Log.d("START", "" + start);
         StyleSpan span = new StyleSpan(android.graphics.Typeface.BOLD);
         name.setSpan(span, start, name.length(), 0);
         RelativeSizeSpan span2 = new RelativeSizeSpan((float)(7.0/9.0));

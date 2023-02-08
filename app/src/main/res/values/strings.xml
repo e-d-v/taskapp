@@ -217,4 +217,5 @@
     <string name="project_url">http://www.evanv.com/taskapp/projects/</string>
     <string name="labels">Labels</string>
     <string name="three_dots">Three Dots</string>
+    <string name="corrupt_error">Our apologies, taskapp encountered an error. %d tasks were corrupted in the process.</string>
 </resources>

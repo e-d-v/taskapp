@@ -53,6 +53,8 @@ public class LogicSubsystem {
     private final List<Project> mProjects;        // List of current projects.
     private final List<Label> mLabels;            // List of current labels.
     private List<Integer> mUpdatedIndices;        // List of updated indices.
+    private boolean mCorruptionDetected;          // Did we find corruption?
+    private int mFailures;                        // Number of corrupted tasks
 
     private static volatile LogicSubsystem INSTANCE; // The singleton of the LogicSubsystem
 
@@ -72,6 +74,7 @@ public class LogicSubsystem {
         }
 
         this.mTodayTime = todayTime;
+        mFailures = 0;
 
         // startDate is our representation for the current date upon the launch of TaskApp.
         mStartDate = LocalDate.now();
@@ -132,6 +135,13 @@ public class LogicSubsystem {
                 // Add to taskSchedule
                 mTaskSchedule.get(index).add(t);
             } else {
+                if (index < -20000 || t.getName().isEmpty()) {
+                    mCorruptionDetected = true;
+                    mFailures++;
+                    mTaskAppViewModel.delete(t);
+                    continue;
+                }
+
                 overdueTasks.add(t);
             }
 
@@ -177,9 +187,14 @@ public class LogicSubsystem {
      *
      * @return Return list of currently unhandled overdue tasks.
      */
-    public String[] getOverdueTasks(Context context) {
+    public String[] getOverdueTasks(Context context) throws IllegalStateException {
         if (overdueTasks == null) {
             return null;
+        }
+
+        if (mCorruptionDetected) {
+            mCorruptionDetected = false;
+            throw new IllegalStateException();
         }
 
         String[] overdueNames = new String[overdueTasks.size()];
@@ -200,6 +215,15 @@ public class LogicSubsystem {
         }
 
         return overdueNames;
+    }
+
+    /**
+     * Get the number of tasks that were corrupted.
+     *
+     * @return number of corrupted tasks
+     */
+    public int getNumFailures() {
+        return mFailures;
     }
 
     /**

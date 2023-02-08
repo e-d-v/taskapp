@@ -507,13 +507,7 @@ public class TaskEntry extends ItemEntry {
                                         .getProjectName(mProject);
                                 String formatString = getString(R.string.project_replace);
 
-                                // Make starting text bold
-                                SpannableString projectText = new SpannableString(String.format
-                                        (formatString, projectName));
-                                projectText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                                        0, formatString.indexOf('\n'), 0);
-
-                                mProjectLabel.setText(projectText);
+                                setText(projectName, mProjectLabel, formatString);
                             }))
                     .setNeutralButton(getString(R.string.add_project), ((dialogInterface, i) -> {
                         // Open Project Entry dialog

@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class TaskItem {
     private final String mName; // Name of the task (e.g. "Read Ch. 3")
-    private final int mIndex;   // Index into taskSchedule.get(day) for this event
+    private int mIndex;   // Index into taskSchedule.get(day) for this event
     private final boolean mCompletable; // Can be completed today
     private final boolean mHasTimer;    // Task has active timer.
     private final int mPriority;        // Priority of task
@@ -56,6 +56,14 @@ public class TaskItem {
      */
     public int getIndex() {
         return mIndex;
+    }
+
+    /**
+     * Changes the index of the TaskItem to reflect it's new state in the recycler
+     * @param index The new index in the tasklist
+     */
+    public void setIndex(int index) {
+        mIndex = index;
     }
 
     /**

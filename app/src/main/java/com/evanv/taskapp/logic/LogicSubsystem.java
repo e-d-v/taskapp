@@ -1571,6 +1571,10 @@ public class LogicSubsystem {
                     if (mTasks.get(i).getID() == id) {
                         Task oldTask = mTasks.get(i);
 
+                        // Schedule the task for it's previously scheduled do date. This will
+                        // eventually be replaced by the Optimizer.
+                        toAdd.setDoDate(oldTask.getDoDate());
+
                         // Replace oldTask with toAdd in the data structures
                         mTasks.set(i, toAdd);
                         int taskScheduleIndex = getDiff(oldTask.getDoDate(), mStartDate);

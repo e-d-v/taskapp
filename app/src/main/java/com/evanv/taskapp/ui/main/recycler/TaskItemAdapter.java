@@ -236,7 +236,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         });
         holder.options.setOnClickListener(view -> {
             // Tell MainActivity what item to perform actions on
-            mListener.onButtonClick(position, mDay, 2);
+            mListener.onButtonClick(taskItem.getIndex(), mDay, 2);
 
             // Handle onClickListener
             mActivity.registerForContextMenu(holder.options);

@@ -59,6 +59,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
     private int mPosition; // Position in the recycler of the selected task.
     private int mDay;      // Day of the selected task.
     private long mID;      // ID of the currently selected task.
+    private Thread mOptimizer; // Holds optimizer thread if currently available.
 
     /**
      * Creates a TaskListActivity. Bundle requires information including a list of taskNames,
@@ -88,7 +89,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         List<Long> labels = convertArrayToList(getIntent().getLongArrayExtra(EXTRA_LABELS));
         int priority = getIntent().getIntExtra(EXTRA_PRIORITY, -1);
 
-        List<TaskItem> taskItemList = LogicSubsystem.getInstance().filter(startDate, endDate,
+        List<TaskItem> taskItemList = getLogicSubsystem().filter(startDate, endDate,
                 project, name, minTime, maxTime, completable, labels, priority, this);
 
         mIDs = new ArrayList<>();
@@ -105,6 +106,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
 
         mPosition = -1;
         mID = -1;
+        mOptimizer = null;
 
     }
 
@@ -113,8 +115,10 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
      */
     private void onActivityResult() {
         mAdapter.mTaskItemList.set(mPosition,
-                LogicSubsystem.getInstance().TaskItemHelper(mID, mPosition, this));
+                getLogicSubsystem().TaskItemHelper(mID, mPosition, this));
         mAdapter.notifyItemChanged(mPosition);
+
+        optimize();
     }
 
     /**
@@ -162,15 +166,15 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
 
-        boolean isTimed = LogicSubsystem.getInstance().isTimed(mPosition, mDay);
+        boolean isTimed = getLogicSubsystem().isTimed(mPosition, mDay);
         int timerVal = -1;
 
         if (isTimed) {
-            timerVal = LogicSubsystem.getInstance().getTimer();
+            timerVal = getLogicSubsystem().getTimer();
         }
 
-        LogicSubsystem.getInstance().onButtonClick(mID, 0, this);
-        LogicSubsystem.getInstance().getNumDays();
+        getLogicSubsystem().onButtonClick(mID, 0, this);
+        getLogicSubsystem().getNumDays();
 
         if (isTimed) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -181,7 +185,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
             // continue.
             int finalTimerVal = timerVal;
             builder.setPositiveButton("OK", (dialogInterface, i) -> {
-                LogicSubsystem.getInstance().addTodayTime(finalTimerVal);
+                getLogicSubsystem().addTodayTime(finalTimerVal);
 
                 removeItem();
             });
@@ -196,6 +200,8 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
 
         // User did not have a timer set, so use the normal time to complete dialog.
         ttcPrompt();
+
+
     }
 
     /**
@@ -263,22 +269,22 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
 
-        long oldTimer = LogicSubsystem.getInstance().getTimedID();
+        long oldTimer = getLogicSubsystem().getTimedID();
 
         int index = mIDs.indexOf(mID);
 
-        LogicSubsystem.getInstance().timer(mPosition, mDay);
+        getLogicSubsystem().timer(mPosition, mDay);
 
         // Update the recycler at the mPosition
         mAdapter.mTaskItemList.set(index,
-                LogicSubsystem.getInstance().TaskItemHelper(mID, index, this));
+                getLogicSubsystem().TaskItemHelper(mID, index, this));
         mAdapter.notifyItemChanged(index);
 
         // Update the recycler at the oldTimer location
         if (oldTimer != -1) {
             int oldPosition = mIDs.indexOf(oldTimer);
             mAdapter.mTaskItemList.set(oldPosition,
-                    LogicSubsystem.getInstance().TaskItemHelper(oldTimer, oldPosition, this));
+                    getLogicSubsystem().TaskItemHelper(oldTimer, oldPosition, this));
             mAdapter.notifyItemChanged(oldPosition);
         }
     }
@@ -290,7 +296,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
 
-        long editedID = LogicSubsystem.getInstance().getTaskID(mPosition, mDay);
+        long editedID = getLogicSubsystem().getTaskID(mPosition, mDay);
 
         // Launch an edit dialog
         TaskEntry frag = new TaskEntry();
@@ -311,7 +317,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
 
-        LogicSubsystem.getInstance().onButtonClick(mID, 1, this);
+        getLogicSubsystem().onButtonClick(mID, 1, this);
 
         removeItem();
     }
@@ -321,7 +327,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
      * uses the right indices.
      */
     private void convertDay() {
-        Pair<Integer, Integer> convertedDates = LogicSubsystem.getInstance().convertDay(mID);
+        Pair<Integer, Integer> convertedDates = getLogicSubsystem().convertDay(mID);
 
         if (convertedDates != null) {
             mPosition = convertedDates.getFirst();
@@ -346,7 +352,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         builder.setView(input);
 
         builder.setPositiveButton(R.string.complete_task, (dialogInterface, i) -> {
-            LogicSubsystem.getInstance().addTodayTime(Integer.parseInt(input.getText().toString()));
+            getLogicSubsystem().addTodayTime(Integer.parseInt(input.getText().toString()));
 
             removeItem();
         });
@@ -364,11 +370,57 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         mAdapter.notifyItemRemoved(index);
         mIDs.remove(index);
 
+        // Update the indices of the recycler so all items know their new positions.
         for (int i = index; i < mAdapter.mTaskItemList.size(); i++) {
-            mAdapter.mTaskItemList.set(index,
-                    LogicSubsystem.getInstance().TaskItemHelper(mIDs.get(i), i, this));
+            TaskItem curr = mAdapter.mTaskItemList.get(i);
+            curr.setIndex(curr.getIndex() - 1);
         }
 
-        mAdapter.notifyItemRangeChanged(index, mAdapter.getItemCount() - index + 1);
+        optimize();
+    }
+
+    /**
+     * Optimizes the task list asynchronously
+     */
+    private void optimize() {
+        // Variable is here to ensure that we wait properly for mOptimizer to be null.
+        //noinspection UnnecessaryLocalVariable
+        Thread newThread = new Thread(() -> {
+            getLogicSubsystem().Optimize();
+            mOptimizer = null;
+        });
+
+        mOptimizer = newThread;
+
+        mOptimizer.start();
+    }
+
+    /**
+     * Ensures that we don't accidentally leave this activity until we're done optimizing.
+     */
+    @Override
+    public void onBackPressed() {
+        if (mOptimizer != null) {
+            try {
+                mOptimizer.wait();
+            } catch (Exception ignored) { }
+        }
+
+        super.onBackPressed();
+    }
+
+    /**
+     * Ensures that we wait to use the LogicSubsystem until we're done optimizing.
+     *
+     * @return The logic subsystem
+     */
+    private LogicSubsystem getLogicSubsystem() {
+        if (mOptimizer != null) {
+            try {
+                mOptimizer.wait();
+            } catch (Exception ignored) { }
+        }
+
+        return LogicSubsystem.getInstance();
     }
 }

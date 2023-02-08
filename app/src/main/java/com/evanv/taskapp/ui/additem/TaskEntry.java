@@ -5,15 +5,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.SpannableString;
 import android.text.TextWatcher;
-import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,16 +46,16 @@ public class TaskEntry extends ItemEntry {
 
     private ActivityResultLauncher<Intent> mLaunchRecur;   // Launcher for the recurrence activity
     private EditText mNameET;
-    private ImageButton mECDButton;
+    private LinearLayout mECDLayout;
     private TextView mECDLabel;
-    private ImageButton mDDButton;
-    private ImageButton mProjectButton;
+    private LinearLayout mDDLayout;
+    private LinearLayout mProjectLayout;
     private TextView mDDLabel;
     private TextView mProjectLabel;
-    private ImageButton mLabelsButton;
+    private LinearLayout mLabelsLayout;
     private TextView mLabelsLabel;
     private EditText mTtcET;
-    private ImageButton mPrereqButton;
+    private LinearLayout mPrereqLayout;
     private TextView mParentsLabel;
     private SeekBar mPrioritySeekbar;
     private Button mRecurButton;
@@ -111,23 +109,23 @@ public class TaskEntry extends ItemEntry {
         mRecur.putString(RecurInput.EXTRA_TYPE, NoRecurFragment.EXTRA_VAL_TYPE);
 
         mNameET = view.findViewById(R.id.editTextTaskName);
-        mECDButton = view.findViewById(R.id.startDateButton);
+        mECDLayout = view.findViewById(R.id.startDateLayout);
         mECDLabel = view.findViewById(R.id.startDateLabel);
-        mDDButton = view.findViewById(R.id.endDateButton);
+        mDDLayout = view.findViewById(R.id.endDateLayout);
         mDDLabel = view.findViewById(R.id.endDateLabel);
-        mProjectButton = view.findViewById(R.id.imageButtonProject);
+        mProjectLayout = view.findViewById(R.id.projectLayout);
         mProjectLabel = view.findViewById(R.id.projectsLabel);
-        mLabelsButton = view.findViewById(R.id.imageButtonLabels);
+        mLabelsLayout = view.findViewById(R.id.labelsLayout);
         mLabelsLabel = view.findViewById(R.id.labelsLabel);
         mTtcET = view.findViewById(R.id.editTextTTC);
-        mPrereqButton = view.findViewById(R.id.buttonAddParents);
+        mPrereqLayout = view.findViewById(R.id.parentsLayout);
         mParentsLabel = view.findViewById(R.id.parentsLabel);
         mPrioritySeekbar = view.findViewById(R.id.seekBar);
         mRecurButton = view.findViewById(R.id.recurButton);
 
         // Sets the onClick behavior to the button to creating a dialog asking what parents the user
         // wants to give the new task
-        mPrereqButton.setOnClickListener(new AddParentsListener());
+        mPrereqLayout.setOnClickListener(new AddParentsListener());
 
         // Make starting text bold
         setText("None Chosen", mECDLabel, getString(R.string.early_date_format));
@@ -161,7 +159,7 @@ public class TaskEntry extends ItemEntry {
                 // Do Nothing
             }
         });
-        mECDButton.setOnClickListener(view1 -> {
+        mECDLayout.setOnClickListener(view1 -> {
             // Set the max date so the early date can't be set as later than the due date
             LocalDate maxDate = (mDueDate == 0) ? null : LocalDate.ofEpochDay(mDueDate);
 
@@ -192,7 +190,7 @@ public class TaskEntry extends ItemEntry {
                 // Do Nothing
             }
         });
-        mDDButton.setOnClickListener(view1 -> {
+        mDDLayout.setOnClickListener(view1 -> {
             // Set the max date so the early date can't be set as later than the due date
             LocalDate minDate = (mEarlyDate == 0) ? LocalDate.now() :
                     LocalDate.ofEpochDay(mEarlyDate);
@@ -206,10 +204,10 @@ public class TaskEntry extends ItemEntry {
         mRecurButton.setOnClickListener(v -> intentRecur());
 
         // Add the AddLabelsListener
-        mLabelsButton.setOnClickListener(new AddLabelsListener());
+        mLabelsLayout.setOnClickListener(new AddLabelsListener());
 
         // Add the PickProjectListener
-        mProjectButton.setOnClickListener(new PickProjectListener());
+        mProjectLayout.setOnClickListener(new PickProjectListener());
 
         // Load data about task onto screen
         if (mID != -1) {
@@ -222,8 +220,8 @@ public class TaskEntry extends ItemEntry {
             mDueDate = toDisplay.toEpochDay();
             setText(Task.dateFormat.format(toDisplay), mDDLabel, getString(R.string.due_date_format));
             mProject = LogicSubsystem.getInstance().getTaskProject(mID);
-            setText(LogicSubsystem.getInstance().getProjectName(mProject), mProjectLabel,
-                    getString(R.string.project_replace));
+            setText(LogicSubsystem.getInstance().getProjectName(mProject, requireContext()),
+                    mProjectLabel, getString(R.string.project_replace));
             mLabels = convertLongListToArray(LogicSubsystem.getInstance().getTaskLabels(mID));
             setText(Integer.toString(mLabels.length), mLabelsLabel, getString(R.string.label_format));
             mTtcET.setText(Integer.toString(LogicSubsystem.getInstance().getTaskTTC(mID)));
@@ -504,7 +502,7 @@ public class TaskEntry extends ItemEntry {
                             ((dialogInterface, unused) -> {
                                 // Get name of selected project
                                 String projectName = LogicSubsystem.getInstance()
-                                        .getProjectName(mProject);
+                                        .getProjectName(mProject, requireContext());
                                 String formatString = getString(R.string.project_replace);
 
                                 setText(projectName, mProjectLabel, formatString);

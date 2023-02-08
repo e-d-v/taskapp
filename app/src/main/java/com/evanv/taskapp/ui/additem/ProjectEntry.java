@@ -50,7 +50,7 @@ public class ProjectEntry extends DialogFragment {
         });
 
         if (mEditedID != -1) {
-            mNameET.setText(LogicSubsystem.getInstance().getProjectName(mEditedID));
+            mNameET.setText(LogicSubsystem.getInstance().getProjectName(mEditedID, requireContext()));
             color = LogicSubsystem.getInstance().getProjectColor(mEditedID);
             mGoalET.setText(LogicSubsystem.getInstance().getProjectGoal(mEditedID));
 

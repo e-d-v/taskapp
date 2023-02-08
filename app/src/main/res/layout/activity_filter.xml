@@ -26,16 +26,16 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
             <LinearLayout
+                android:id="@+id/startDateLayout"
                 android:gravity="center_vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="horizontal">
 
-                <ImageButton
+                <ImageView
                     app:tint="@color/text_primary"
                     android:background="@null"
-                    android:id="@+id/startDateButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="6dp"
@@ -52,16 +52,16 @@
                     android:text="@string/start_date_label" />
             </LinearLayout>
             <LinearLayout
+                android:id="@+id/endDateLayout"
                 android:gravity="center_vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="horizontal">
 
-                <ImageButton
+                <ImageView
                     app:tint="@color/text_primary"
                     android:background="@null"
-                    android:id="@+id/endDateButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="6dp"
@@ -84,16 +84,16 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
             <LinearLayout
+                android:id="@+id/projectLayout"
                 android:layout_width="match_parent"
                 android:gravity="center_vertical"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="horizontal">
 
-                <ImageButton
+                <ImageView
                     app:tint="@color/text_primary"
                     android:background="@null"
-                    android:id="@+id/imageButtonProject"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="6dp"
@@ -110,16 +110,16 @@
                     android:text="@string/project_label" />
             </LinearLayout>
             <LinearLayout
+                android:id="@+id/labelsLayout"
                 android:gravity="center_vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="horizontal">
 
-                <ImageButton
+                <ImageView
                     app:tint="@color/text_primary"
                     android:background="@null"
-                    android:id="@+id/imageButtonLabels"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="6dp"

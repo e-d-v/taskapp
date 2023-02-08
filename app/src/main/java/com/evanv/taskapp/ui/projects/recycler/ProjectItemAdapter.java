@@ -118,7 +118,8 @@ public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.
                         ProjectEntry projectEntry = new ProjectEntry();
                         projectEntry.setID(curr.getID());
                         projectEntry.setOnSubmit(view1 -> {
-                            mProjectsList.set(position, LogicSubsystem.getInstance().getProjectItem(curr.getID()));
+                            mProjectsList.set(position, LogicSubsystem.getInstance()
+                                    .getProjectItem(curr.getID(), mActivity));
                             notifyItemChanged(position);
                         });
                         projectEntry.show(mActivity.getSupportFragmentManager(), "PROJECTENTRY");

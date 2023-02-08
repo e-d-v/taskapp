@@ -54,11 +54,11 @@ public class FilterActivity extends AppCompatActivity {
         mContext = this;
 
         // Add the AddLabelsListener
-        findViewById(R.id.imageButtonLabels).setOnClickListener
+        findViewById(R.id.labelsLayout).setOnClickListener
                 (new AddLabelsListener());
 
         // Add the PickProjectListener
-        findViewById(R.id.imageButtonProject).setOnClickListener
+        findViewById(R.id.projectLayout).setOnClickListener
                 (new PickProjectListener());
 
         // Make starting text bold
@@ -84,14 +84,16 @@ public class FilterActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                LocalDate toConvert = LocalDate.from(Task.dateFormat.parse(charSequence.toString()));
-                mStartDate = toConvert.toEpochDay();
+                try {
+                    LocalDate toConvert = LocalDate.from(Task.dateFormat.parse(charSequence.toString()));
+                    mStartDate = toConvert.toEpochDay();
 
-                // Update the UI
-                TextView startDateLabel = findViewById(R.id.startDateLabel);
-                String dateString = Task.dateFormat.format(toConvert);
-                String formatString = getString(R.string.start_date_replace);
-                setText(dateString, startDateLabel, formatString);
+                    // Update the UI
+                    TextView startDateLabel = findViewById(R.id.startDateLabel);
+                    String dateString = Task.dateFormat.format(toConvert);
+                    String formatString = getString(R.string.start_date_replace);
+                    setText(dateString, startDateLabel, formatString);
+                } catch (Exception ignored) {}
             }
 
             @Override
@@ -99,7 +101,7 @@ public class FilterActivity extends AppCompatActivity {
                 // Do Nothing
             }
         });
-        findViewById(R.id.startDateButton).setOnClickListener(view1 -> {
+        findViewById(R.id.startDateLayout).setOnClickListener(view1 -> {
             // Set the max date so the early date can't be set as later than the due date
             LocalDate maxDate = (mEndDate == 0) ? null : LocalDate.ofEpochDay(mEndDate);
             fakeStartET.setText("");
@@ -119,16 +121,18 @@ public class FilterActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                LocalDate toConvert = LocalDate.from(Task.dateFormat.parse(charSequence.toString()));
-                mEndDate = toConvert.toEpochDay();
+                try {
+                    LocalDate toConvert = LocalDate.from(Task.dateFormat.parse(charSequence.toString()));
+                    mEndDate = toConvert.toEpochDay();
 
-                // Update the UI
-                TextView endDateLabel = findViewById(R.id.endDateLabel);
+                    // Update the UI
+                    TextView endDateLabel = findViewById(R.id.endDateLabel);
 
-                // Show end date
-                String dateString = Task.dateFormat.format(toConvert);
-                String formatString = getString(R.string.end_date_replace);
-                setText(dateString, endDateLabel, formatString);
+                    // Show end date
+                    String dateString = Task.dateFormat.format(toConvert);
+                    String formatString = getString(R.string.end_date_replace);
+                    setText(dateString, endDateLabel, formatString);
+                } catch (Exception ignored) {}
             }
 
             @Override
@@ -136,7 +140,7 @@ public class FilterActivity extends AppCompatActivity {
                 // Do Nothing
             }
         });
-        findViewById(R.id.endDateButton).setOnClickListener(view1 -> {
+        findViewById(R.id.endDateLayout).setOnClickListener(view1 -> {
             // Set the max date so the early date can't be set as later than the due date
             LocalDate minDate = (mStartDate == 0) ? LocalDate.now() :
                     LocalDate.ofEpochDay(mStartDate);
@@ -324,7 +328,7 @@ public class FilterActivity extends AppCompatActivity {
 
                                 // Get name of selected project
                                 String projectName = LogicSubsystem.getInstance()
-                                        .getProjectName(mProject);
+                                        .getProjectName(mProject, getApplicationContext());
                                 String formatString = getString(R.string.project_replace);
                                 setText(projectName, projectLabel, formatString);
                             }));

@@ -1192,14 +1192,14 @@ public class LogicSubsystem {
      * @param ID ID of the project
      * @return the Name of the project with the given ID
      */
-    public String getProjectName(long ID) {
+    public String getProjectName(long ID, Context context) {
         for (Project p : mProjects) {
             if (p.getID() == ID) {
                 return p.getName();
             }
         }
 
-        return "";
+        return context.getString(R.string.none_chosen);
     }
 
     /**
@@ -1771,8 +1771,8 @@ public class LogicSubsystem {
         return "";
     }
 
-    public ProjectItem getProjectItem(long id) {
-        return new ProjectItem(getProjectName(id), getProjectGoal(id), getProjectColor(id), id);
+    public ProjectItem getProjectItem(long id, Context context) {
+        return new ProjectItem(getProjectName(id, context), getProjectGoal(id), getProjectColor(id), id);
     }
 
     public void editProject(String name, int color, String goal, long id) {

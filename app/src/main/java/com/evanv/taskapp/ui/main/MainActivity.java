@@ -30,6 +30,7 @@ import com.evanv.taskapp.databinding.ActivityMainBinding;
 import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.ui.FilterActivity;
 import com.evanv.taskapp.ui.LabelsActivity;
+import com.evanv.taskapp.ui.TaskListActivity;
 import com.evanv.taskapp.ui.additem.EventEntry;
 import com.evanv.taskapp.ui.additem.TaskEntry;
 import com.evanv.taskapp.ui.main.recycler.DayItem;
@@ -394,6 +395,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         else if (id == R.id.action_labels) {
             Intent intent = new Intent(this, LabelsActivity.class);
             mUpdateUILauncher.launch(intent);
+        }
+        else if (id == R.id.action_work_ahead) {
+            Intent intent = new Intent(this, TaskListActivity.class);
+            intent.putExtra(TaskListActivity.EXTRA_COMPLETABLE, true);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);

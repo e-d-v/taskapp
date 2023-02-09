@@ -5,7 +5,6 @@ import static com.evanv.taskapp.logic.Task.getDiff;
 import android.content.Context;
 import android.os.Bundle;
 
-import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.evanv.taskapp.R;
@@ -49,7 +48,6 @@ public class LogicSubsystem {
     private List<Task> overdueTasks;              // Overdue tasks
     private Task mTimerTask;                      // Task currently being timed.
     private LocalDateTime mTimer;                 // Start time of current timer
-    @Nullable private List<Task> mWorkAheadTasks; // List of tasks currently work ahead.
     private final List<Project> mProjects;        // List of current projects.
     private final List<Label> mLabels;            // List of current labels.
     private List<Integer> mUpdatedIndices;        // List of updated indices.
@@ -522,33 +520,7 @@ public class LogicSubsystem {
         tasks = i < mTaskSchedule.size() ? TaskItemList(mTaskSchedule.get(i), context) :
                 new ArrayList<>();
 
-        // If it is today's date and there are currently no tasks scheduled today, add a
-        // "Work Ahead" page to today.
-        boolean workAhead = i == 0 && tasks.size() == 0;
-        if (workAhead) {
-            tasks = new ArrayList<>();
-
-            int numTasks = 0;
-
-            mWorkAheadTasks = new ArrayList<>();
-
-            // For each task, check if it can be completed today. If it can, then add it.
-            for (Task t : mTasks) {
-                TaskItem temp = TaskItemHelper(t, numTasks, context);
-
-                if (temp.isCompletable()) {
-                    tasks.add(temp);
-                    mWorkAheadTasks.add(t);
-                    numTasks++;
-                }
-            }
-        }
-        // If Work Ahead is not displayed, do not keep a list.
-        else if (i == 0) {
-            mWorkAheadTasks = null;
-        }
-
-        return new DayItem(dayString, events, tasks, i, workAhead);
+        return new DayItem(dayString, events, tasks, i);
     }
 
     /**
@@ -900,32 +872,6 @@ public class LogicSubsystem {
      */
     public int getTimerDay() {
         return (mTimerTask == null) ? -1 : getDiff(mTimerTask.getDoDate(), mStartDate);
-    }
-
-    /**
-     * Must be for today's date. If today's date is currently displaying work ahead, then it returns
-     * the position of the task on it's normal date.
-     *
-     * @param position Position in the work ahead list.
-     *
-     * @return <Position, Day> pair if Work Ahead is displayed, null otherwise.
-     */
-    public Pair<Integer, Integer> convertDay(int position) {
-        if (mWorkAheadTasks == null) {
-            return null;
-        }
-
-        Task toRemove = mWorkAheadTasks.get(position);
-
-        int day = getDiff(toRemove.getDoDate(), mStartDate);
-
-        position = mTaskSchedule.get(day).indexOf(toRemove);
-
-        if (position == -1) {
-            return null;
-        }
-
-        return new Pair<>(position, day);
     }
 
     /**

@@ -100,7 +100,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         RecyclerView recycler = findViewById(R.id.projects_recyclerview);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         mAdapter = new TaskItemAdapter
-                (taskItemList, this, -1, null, false, this);
+                (taskItemList, this, -1, null, this);
         recycler.setAdapter(mAdapter);
         recycler.setLayoutManager(layoutManager);
 

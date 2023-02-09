@@ -11,10 +11,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.evanv.taskapp.R;
+import com.evanv.taskapp.databinding.ActivityLabelsBinding;
+import com.evanv.taskapp.databinding.ActivityProjectBinding;
 import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.ui.additem.LabelEntry;
 import com.google.android.material.chip.Chip;
@@ -33,10 +36,12 @@ import javax.security.auth.callback.Callback;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_labels);
+        ActivityLabelsBinding binding = ActivityLabelsBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         mChipGroup = findViewById(R.id.chipGroup);
 
+        setSupportActionBar(binding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         List<String> labelNames = LogicSubsystem.getInstance().getLabelNames();
@@ -116,8 +121,19 @@ import javax.security.auth.callback.Callback;
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.help_button_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
+        if (item.getItemId() == R.id.action_help) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse(getString(R.string.labels_url)));
+            startActivity(browserIntent);
+        }
+        else if (item.getItemId() == android.R.id.home) {
             onBackPressed();
             return true;
         }

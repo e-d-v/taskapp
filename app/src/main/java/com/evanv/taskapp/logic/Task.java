@@ -293,7 +293,7 @@ public class Task implements Comparable<Task> {
      * @param child The dependent task to add
      */
     public void addChild(Task child) {
-        if (!mChildren.contains(child) && !mParents.contains(child) && parent != this) {
+        if (!mChildren.contains(child) && !mParents.contains(child) && child != this) {
             this.mChildren.add(child);
         }
     }

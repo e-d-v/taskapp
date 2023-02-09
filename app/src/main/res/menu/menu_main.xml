@@ -22,4 +22,16 @@
         android:orderInCategory="103"
         android:icon="@drawable/baseline_fast_forward_24"
         android:title="@string/work_ahead"/>
+
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="104"
+        android:icon="@drawable/baseline_settings_24"
+        android:title="@string/settings"/>
+
+    <item
+        android:id="@+id/action_about"
+        android:orderInCategory="104"
+        android:icon="@drawable/ic_outline_info_24"
+        android:title="@string/about"/>
 </menu>

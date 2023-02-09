@@ -388,31 +388,37 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // the Home/Up button, so long as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        // Handles the settings menu item being chosen
-        if (id == R.id.action_projects) {
-            Intent intent = new Intent(this, ProjectActivity.class);
+        Intent intent;
 
-            mUpdateUILauncher.launch(intent);
-
-            return true;
-        }
-        else if (id == R.id.action_search) {
-            Intent intent = new Intent(this, FilterActivity.class);
-            mUpdateUILauncher.launch(intent);
-        }
-        else if (id == R.id.action_labels) {
-            Intent intent = new Intent(this, LabelsActivity.class);
-            mUpdateUILauncher.launch(intent);
-        }
-        else if (id == R.id.action_work_ahead) {
-            Intent intent = new Intent(this, TaskListActivity.class);
-            intent.putExtra(TaskListActivity.EXTRA_COMPLETABLE, true);
-            startActivity(intent);
-        }
-        else if (item.getItemId() == R.id.action_help) {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW,
-                    Uri.parse(getString(R.string.schedule_url)));
-            startActivity(browserIntent);
+        switch (item.getItemId()) {
+            case (R.id.action_projects):
+                intent = new Intent(this, ProjectActivity.class);
+                mUpdateUILauncher.launch(intent);
+                return true;
+            case (R.id.action_search):
+                intent = new Intent(this, FilterActivity.class);
+                mUpdateUILauncher.launch(intent);
+                return true;
+            case (R.id.action_labels):
+                intent = new Intent(this, LabelsActivity.class);
+                mUpdateUILauncher.launch(intent);
+                return true;
+            case (R.id.action_work_ahead):
+                intent = new Intent(this, TaskListActivity.class);
+                intent.putExtra(TaskListActivity.EXTRA_COMPLETABLE, true);
+                startActivity(intent);
+                return true;
+            case (R.id.action_help):
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW,
+                        Uri.parse(getString(R.string.schedule_url)));
+                startActivity(browserIntent);
+                return true;
+            case (R.id.action_about):
+                // TODO: Show about screen
+                return true;
+            case (R.id.action_settings):
+                // TODO: Show settings screen
+                return true;
         }
 
         return super.onOptionsItemSelected(item);

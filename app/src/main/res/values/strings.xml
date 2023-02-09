@@ -221,4 +221,6 @@
     <string name="close">Close</string>
     <string name="open">Open</string>
     <string name="schedule_url">http://www.evanv.com/taskapp/schedule/</string>
+    <string name="settings">Settings</string>
+    <string name="about">About taskapp</string>
 </resources>

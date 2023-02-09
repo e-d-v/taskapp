@@ -2,6 +2,7 @@ package com.evanv.taskapp.ui;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.compose.ui.text.android.InternalPlatformTextApi;
 import androidx.fragment.app.DialogFragment;
 
 import android.app.AlertDialog;
@@ -31,7 +32,7 @@ import org.threeten.bp.LocalDate;
 
 import java.util.ArrayList;
 
-/**
+@InternalPlatformTextApi /**
  * Search field for user to lookup tasks.
  */
 public class FilterActivity extends AppCompatActivity {

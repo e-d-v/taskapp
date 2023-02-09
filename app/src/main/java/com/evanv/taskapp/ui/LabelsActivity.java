@@ -1,13 +1,17 @@
 package com.evanv.taskapp.ui;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.compose.ui.text.android.InternalPlatformTextApi;
 
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.MenuItem;
 import android.view.View;
 
 import com.evanv.taskapp.R;
@@ -18,10 +22,11 @@ import com.google.android.material.chip.ChipGroup;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.security.auth.callback.Callback;
 
-public class LabelsActivity extends AppCompatActivity {
+@InternalPlatformTextApi public class LabelsActivity extends AppCompatActivity {
 
     private ChipGroup mChipGroup;
 
@@ -32,6 +37,7 @@ public class LabelsActivity extends AppCompatActivity {
 
         mChipGroup = findViewById(R.id.chipGroup);
 
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         List<String> labelNames = LogicSubsystem.getInstance().getLabelNames();
         List<Integer> labelColors = LogicSubsystem.getInstance().getLabelColors();
@@ -107,5 +113,15 @@ public class LabelsActivity extends AppCompatActivity {
         toAdd.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         toAdd.setOnClickListener(v -> clickChip(id, v));
         mChipGroup.addView(toAdd);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

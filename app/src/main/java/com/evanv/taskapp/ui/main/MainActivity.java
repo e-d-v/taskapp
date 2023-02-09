@@ -18,10 +18,12 @@ import android.widget.ViewFlipper;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.compose.ui.text.android.InternalPlatformTextApi;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -38,11 +40,13 @@ import com.evanv.taskapp.ui.main.recycler.DayItemAdapter;
 import com.evanv.taskapp.ui.projects.ProjectActivity;
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 
 import org.threeten.bp.LocalDate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import kotlin.Pair;
 
@@ -218,6 +222,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
         // Adds the action bar at the top of the screen
         setSupportActionBar(mBinding.toolbar);
+
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+
+        DrawerLayout drawerLayout = findViewById(R.id.drawerLayout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, mBinding.toolbar, R.string.open, R.string.close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navView = findViewById(R.id.nav_view);
+        navView.setNavigationItemSelectedListener(this::onOptionsItemSelected);
 
         // When fab is clicked, show the two smaller FABs
         mBinding.fab.setOnClickListener(view1 -> {

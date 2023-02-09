@@ -59,6 +59,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
     private TaskItemAdapter mAdapter;           // The adapter for the recycler
 
     private List<Long> mIDs;
+    private int mIndex;    // Index into the recycler to update.
     private int mPosition; // Position in the recycler of the selected task.
     private int mDay;      // Day of the selected task.
     private long mID;      // ID of the currently selected task.
@@ -134,9 +135,9 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
      * On activity result update recycler
      */
     private void onActivityResult() {
-        mAdapter.mTaskItemList.set(mPosition,
-                getLogicSubsystem().TaskItemHelper(mID, mPosition, this));
-        mAdapter.notifyItemChanged(mPosition);
+        mAdapter.mTaskItemList.set(mIndex,
+                getLogicSubsystem().TaskItemHelper(mID, mIndex, this));
+        mAdapter.notifyItemChanged(mIndex);
 
         optimize();
     }
@@ -171,6 +172,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
      */
     @Override
     public void onButtonClick(int position, int day, int action) {
+        mIndex = position;
         mPosition = position;
         mID = mIDs.get(position);
 

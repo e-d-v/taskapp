@@ -554,9 +554,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * Handles the user choosing to start a timer on a task.
      */
     private void timeTask() {
-        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
-        convertDay();
-
         int oldTimer = mLogicSubsystem.getTimerDay();
 
         mLogicSubsystem.timer(mPosition, mDay);
@@ -576,9 +573,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * Handles the user choosing to edit a task.
      */
     private void editTask() {
-        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
-        convertDay();
-
         mEditedID = mLogicSubsystem.getTaskID(mPosition, mDay);
 
         // Launch an edit intent
@@ -589,9 +583,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * Handles the user choosing to delete a task.
      */
     private void deleteTask() {
-        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
-        convertDay();
-
         mLogicSubsystem.onButtonClick(mPosition, mDay, 1, this);
         int newDays = mLogicSubsystem.getNumDays();
 
@@ -602,9 +593,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * Handles the user choosing to postpone a task.
      */
     private void postponeTask() {
-        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
-        convertDay();
-
         mLogicSubsystem.postponeTask(mPosition, mDay);
         int newDays = mLogicSubsystem.getNumDays();
 
@@ -615,9 +603,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * Handles a user choosing to complete a task
      */
     private void completeTask() {
-        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
-        convertDay();
-
         boolean isTimed = mLogicSubsystem.isTimed(mPosition, mDay);
         int timerVal = -1;
 
@@ -654,21 +639,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
         // User did not have a timer set, so use the normal time to complete dialog.
         ttcPrompt(newDays, oldDays);
-    }
-
-    /**
-     * Ensures that if the user selected a task that was on the work ahead screen that the activity
-     * uses the right indices.
-     */
-    private void convertDay() {
-        if (mDay == 0) {
-            Pair<Integer, Integer> convertedDates = mLogicSubsystem.convertDay(mPosition);
-
-            if (convertedDates != null) {
-                mPosition = convertedDates.getFirst();
-                mDay = convertedDates.getSecond();
-            }
-        }
     }
 
     /**

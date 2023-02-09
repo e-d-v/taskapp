@@ -450,8 +450,8 @@ public class Optimizer {
 
         // True if the swap makes less changes to today's schedule than the current scheduling
         int currSame = (doDateIndex == getDiff(t1.getDoDate(), startDate) && doDateIndex == 0 ? 1 : 0) +
-                (otherDateIndex == getDiff(t2.getDoDate(), startDate) && doDateIndex == 0 ? 1 : 0);
-        int newSame = (otherDateIndex == getDiff(t1.getDoDate(), startDate) && doDateIndex == 0 ? 1 : 0) +
+                (otherDateIndex == getDiff(t2.getDoDate(), startDate) && otherDateIndex == 0 ? 1 : 0);
+        int newSame = (otherDateIndex == getDiff(t1.getDoDate(), startDate) && otherDateIndex == 0 ? 1 : 0) +
                 (doDateIndex == getDiff(t2.getDoDate(), startDate) && doDateIndex == 0 ? 1 : 0);
         preservesOrder |= newSame > currSame;
 

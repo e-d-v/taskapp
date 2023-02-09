@@ -2,9 +2,11 @@ package com.evanv.taskapp.ui;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.compose.ui.text.android.InternalPlatformTextApi;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.ContextMenu;
@@ -16,6 +18,7 @@ import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.ui.additem.TaskEntry;
 import com.evanv.taskapp.ui.main.ClickListener;
+import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.main.recycler.TaskItem;
 import com.evanv.taskapp.ui.main.recycler.TaskItemAdapter;
 
@@ -27,7 +30,7 @@ import java.util.Objects;
 
 import kotlin.Pair;
 
-/**
+@InternalPlatformTextApi /**
  * Activity that displays a list of Tasks. Can be created by various screens that need to show
  * a list of tasks, such as a Filter Screen or the Projects Screen.
  *
@@ -60,6 +63,20 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
     private int mDay;      // Day of the selected task.
     private long mID;      // ID of the currently selected task.
     private Thread mOptimizer; // Holds optimizer thread if currently available.
+
+    @Override
+    protected void onPause() {
+        // Update todayTime in SharedPreferences
+        SharedPreferences sp = getSharedPreferences(MainActivity.PREF_FILE, MODE_PRIVATE);
+        SharedPreferences.Editor edit = sp.edit();
+        edit.putLong(MainActivity.PREF_DAY, getLogicSubsystem().getStartDate().toEpochDay());
+        edit.putInt(MainActivity.PREF_TIME, getLogicSubsystem().getTodayTime());
+        edit.putLong(MainActivity.PREF_TIMED_TASK, getLogicSubsystem().getTimedID());
+        edit.putLong(MainActivity.PREF_TIMER, getLogicSubsystem().getTimerStart());
+
+        edit.apply();
+        super.onPause();
+    }
 
     /**
      * Creates a TaskListActivity. Bundle requires information including a list of taskNames,

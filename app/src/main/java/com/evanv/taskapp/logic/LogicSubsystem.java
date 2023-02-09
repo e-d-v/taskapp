@@ -875,6 +875,15 @@ public class LogicSubsystem {
     }
 
     /**
+     * Get today's date.
+     *
+     * @return LocalDate representing today's date.
+     */
+    public LocalDate getStartDate() {
+        return mStartDate;
+    }
+
+    /**
      * Return the project names for the AddItem screen.
      *
      * @return A list of names of Projects

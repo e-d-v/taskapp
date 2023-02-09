@@ -262,7 +262,7 @@ public class Task implements Comparable<Task> {
      * @param parent The task that whose completion is required for the completion of the task
      */
     public void addParent(Task parent) {
-        if (!mParents.contains(parent)) {
+        if (!mParents.contains(parent) && !mChildren.contains(parent) && parent != this) {
             this.mParents.add(parent);
             this.mParentArr.add(parent.getID());
         }
@@ -293,7 +293,7 @@ public class Task implements Comparable<Task> {
      * @param child The dependent task to add
      */
     public void addChild(Task child) {
-        if (!mChildren.contains(child)) {
+        if (!mChildren.contains(child) && !mParents.contains(child) && parent != this) {
             this.mChildren.add(child);
         }
     }

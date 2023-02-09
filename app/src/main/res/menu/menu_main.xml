@@ -5,21 +5,21 @@
     <item
         android:id="@+id/action_projects"
         android:orderInCategory="100"
-        android:title="@string/projects"
-        app:showAsAction="never" />
+        android:icon="@drawable/ic_baseline_inventory_24"
+        android:title="@string/projects"/>
     <item
         android:id="@+id/action_labels"
         android:orderInCategory="101"
-        android:title="@string/labels"
-        app:showAsAction="never" />
+        android:icon="@drawable/ic_baseline_label_24"
+        android:title="@string/labels"/>
     <item
         android:id="@+id/action_search"
         android:orderInCategory="102"
-        android:title="@string/search"
-        app:showAsAction="never" />
+        android:icon="@drawable/baseline_search_24"
+        android:title="@string/search"/>
     <item
         android:id="@+id/action_work_ahead"
         android:orderInCategory="103"
-        android:title="@string/work_ahead"
-        app:showAsAction="never" />
+        android:icon="@drawable/baseline_fast_forward_24"
+        android:title="@string/work_ahead"/>
 </menu>

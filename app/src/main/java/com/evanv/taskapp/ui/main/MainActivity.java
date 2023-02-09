@@ -370,19 +370,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     }
 
     /**
-     * Adds the items to the three dot menu in the ActionBar. Left to defaults for now.
-     *
-     * @param menu The menu in the top right of the screen
-     * @return always true
-     */
-    @Override
-    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    /**
      * Handles action bar clicks. Left to defaults for now
      *
      * @param item The MenuItem selected

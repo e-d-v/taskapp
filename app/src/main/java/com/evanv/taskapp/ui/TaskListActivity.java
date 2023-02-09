@@ -64,6 +64,9 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
     private long mID;      // ID of the currently selected task.
     private Thread mOptimizer; // Holds optimizer thread if currently available.
 
+    /**
+     * Updates todayTime in SharedPreferences
+     */
     @Override
     protected void onPause() {
         // Update todayTime in SharedPreferences

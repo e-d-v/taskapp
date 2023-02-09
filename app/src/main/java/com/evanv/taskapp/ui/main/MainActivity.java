@@ -414,7 +414,10 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 startActivity(browserIntent);
                 return true;
             case (R.id.action_about):
-                // TODO: Show about screen
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(R.string.about);
+                builder.setMessage(R.string.about_message);
+                builder.show();
                 return true;
             case (R.id.action_settings):
                 // TODO: Show settings screen

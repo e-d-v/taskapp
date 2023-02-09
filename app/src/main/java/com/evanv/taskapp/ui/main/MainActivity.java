@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 
@@ -308,6 +309,12 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.help_button_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
     /**
      * Updates todayTime in SharedPreferences
      */
@@ -401,6 +408,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             Intent intent = new Intent(this, TaskListActivity.class);
             intent.putExtra(TaskListActivity.EXTRA_COMPLETABLE, true);
             startActivity(intent);
+        }
+        else if (item.getItemId() == R.id.action_help) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse(getString(R.string.schedule_url)));
+            startActivity(browserIntent);
         }
 
         return super.onOptionsItemSelected(item);

@@ -220,4 +220,5 @@
     <string name="corrupt_error">Our apologies, taskapp encountered an error. %d tasks were corrupted in the process.</string>
     <string name="close">Close</string>
     <string name="open">Open</string>
+    <string name="schedule_url">http://www.evanv.com/taskapp/schedule/</string>
 </resources>

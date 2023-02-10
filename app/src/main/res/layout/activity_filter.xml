@@ -34,7 +34,7 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    app:tint="@color/text_primary"
+                    app:tint="@color/white"
                     android:background="@null"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -60,7 +60,7 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    app:tint="@color/text_primary"
+                    app:tint="@color/white"
                     android:background="@null"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -92,7 +92,7 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    app:tint="@color/text_primary"
+                    app:tint="@color/white"
                     android:background="@null"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -118,7 +118,7 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    app:tint="@color/text_primary"
+                    app:tint="@color/white"
                     android:background="@null"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

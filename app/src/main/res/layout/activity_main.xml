@@ -25,7 +25,7 @@
                     android:id="@+id/toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
-                    android:background="?attr/colorPrimary"
+                    android:background="@color/taskapp_green"
                     app:popupTheme="@style/Theme.Taskapp.PopupOverlay" />
 
             </com.google.android.material.appbar.AppBarLayout>
@@ -119,6 +119,8 @@
             android:contentDescription="@string/plus"
             app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
             app:srcCompat="@drawable/ic_baseline_add_24"
+            android:backgroundTint="@color/taskapp_secondary"
+            app:borderWidth="0dp"
             tools:ignore="ImageContrastCheck" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

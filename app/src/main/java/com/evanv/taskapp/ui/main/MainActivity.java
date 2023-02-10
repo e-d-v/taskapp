@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -25,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.compose.ui.text.android.InternalPlatformTextApi;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -33,6 +35,7 @@ import com.evanv.taskapp.databinding.ActivityMainBinding;
 import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.ui.FilterActivity;
 import com.evanv.taskapp.ui.LabelsActivity;
+import com.evanv.taskapp.ui.SettingsActivity;
 import com.evanv.taskapp.ui.TaskListActivity;
 import com.evanv.taskapp.ui.additem.EventEntry;
 import com.evanv.taskapp.ui.additem.TaskEntry;
@@ -112,6 +115,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             todayTime = sp.getInt(PREF_TIME, 0);
         }
 
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean assumeOverdueIncomplete = settings.getBoolean("assumeIncomplete", false);
+
         mEditedID = -1;
 
         // Get current timer
@@ -148,6 +154,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             ArrayList<Integer> selectedItems = new ArrayList<>();
 
             Context context = this;
+
+            // User set to assume overdue tasks are incomplete, so mark all overdue tasks as
+            // incomplete
+            if (assumeOverdueIncomplete) {
+                mLogicSubsystem.updateOverdueTasks(selectedItems, context);
+                finishProcessing(true);
+                return;
+            }
 
             // Show a dialog prompting the user to mark tasks that were completed as complete
             android.app.AlertDialog.Builder builder =
@@ -420,7 +434,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 builder.show();
                 return true;
             case (R.id.action_settings):
-                // TODO: Show settings screen
+                intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
                 return true;
         }
 

@@ -243,4 +243,8 @@
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
     <string name="import_backup">Import Backup</string>
     <string name="export_backup">Export Backup</string>
+    <string name="restore_message_success">Backup restoration was a success. Click OK to restart the app for changes to take effect.</string>
+    <string name="restore_title_success">Import Success</string>
+    <string name="restore_title_failure">Import failed.</string>
+    <string name="restore_message_failure">taskapp could not restore from this file. Make sure that you select a valid backup file.</string>
 </resources>

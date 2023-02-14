@@ -4,7 +4,7 @@
     <dimen name="chip_height">26dp</dimen>
     <dimen name="text_height">36dp</dimen>
     <dimen name="standard_45">45dp</dimen>
-    <dimen name="standard_21">21.5dp</dimen>
+    <dimen name="standard_21">24.5dp</dimen>
     <dimen name="standard_55">65dp</dimen>
     <dimen name="standard_105">125dp</dimen>
 </resources>

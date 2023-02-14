@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.ContextMenu;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -364,23 +365,21 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
     private void ttcPrompt() {
         // Prompt the user to ask how long it took to complete the task, and add this time to
         // todayTime to prevent the user from being overscheduled on today's date.
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(getString(R.string.complete_dialog_message));
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        View view = inflater.inflate(R.layout.dialog_edittext, null);
+        builder.setView(view);
+        EditText et = view.findViewById(R.id.editText);
+        builder.setTitle(R.string.complete_dialog_title)
+                .setMessage(R.string.complete_dialog_message)
+                .setPositiveButton("OK", ((dialogInterface, i) -> {
+                    if (et.getText().length() != 0) {
+                        getLogicSubsystem().addTodayTime(Integer.parseInt(et.getText().toString()));
 
-        builder.setTitle(R.string.complete_dialog_title);
-
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER);
-        builder.setView(input);
-
-        builder.setPositiveButton(R.string.complete_task, (dialogInterface, i) -> {
-            getLogicSubsystem().addTodayTime(Integer.parseInt(input.getText().toString()));
-
-            removeItem();
-        });
-
-        builder.show();
-    }
+                        removeItem();
+                    }
+                }));
+        builder.show();}
 
     /**
      * Remove the currently selected item and update the recycler

@@ -172,7 +172,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
      * @param action 0 == complete, 1 == options button
      */
     @Override
-    public void onButtonClick(int position, int day, int action) {
+    public void onButtonClick(int position, int day, int action, long id) {
         mIndex = position;
         mPosition = position;
         mID = mIDs.get(position);

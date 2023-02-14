@@ -90,7 +90,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
 
         holder.options.setOnClickListener(v -> {
             // Tell MainActivity what item to perform actions on
-            mListener.onButtonClick(position, mDay, 2);
+            mListener.onButtonClick(position, mDay, 2, -1);
 
             // Handle onClickListener
             mActivity.registerForContextMenu(holder.options);

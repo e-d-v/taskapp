@@ -221,12 +221,12 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             // completed or deleted. As the TaskViewHolder doesn't know the day index, this is -1,
             // and will be filled in by the DayViewHolder
             if (view.getId() == holder.COMPLETE_ID) {
-                holder.mListenerRef.get().onButtonClick(taskItem.getIndex(), mDay, 0);
+                holder.mListenerRef.get().onButtonClick(taskItem.getIndex(), mDay, 0, taskItem.getID());
             }
         });
         holder.options.setOnClickListener(view -> {
             // Tell MainActivity what item to perform actions on
-            mListener.onButtonClick(taskItem.getIndex(), mDay, 2);
+            mListener.onButtonClick(taskItem.getIndex(), mDay, 2, taskItem.getID());
 
             // Handle onClickListener
             mActivity.registerForContextMenu(holder.options);

@@ -75,7 +75,7 @@ public class ProjectActivity extends AppCompatActivity implements ClickListener 
      * @param action Not used.
      */
     @Override
-    public void onButtonClick(int position, int day, int action) {
+    public void onButtonClick(int position, int day, int action, long id) {
         Intent intent = new Intent(this, TaskListActivity.class);
         intent.putExtra(TaskListActivity.EXTRA_PROJECT,
                 LogicSubsystem.getInstance().getProjectID(position));

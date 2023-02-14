@@ -22,5 +22,5 @@ public interface ClickListener {
      * @param day How many days past today's date the task is scheduled for
      * @param action 0: complete task, 1: delete task, 2: delete event
      */
-    void onButtonClick(int position, @SuppressWarnings("unused") int day, int action);
+    void onButtonClick(int position, @SuppressWarnings("unused") int day, int action, long id);
 }

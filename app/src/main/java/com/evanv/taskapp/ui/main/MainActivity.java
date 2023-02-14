@@ -452,13 +452,15 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * @param day The date this task is scheduled for is day days past today's date
      */
     @Override
-    public void onButtonClick(int position, int day, int action) {
+    public void onButtonClick(int position, int day, int action, long id) {
         switch (action) {
             // Normal button press, mark task as complete
             case 0:
                 // Show optimizing... screen
-                mPosition = position;
-                mDay = day;
+                Pair<Integer, Integer> pair = mLogicSubsystem.convertDay(id);
+
+                mPosition = pair.getFirst();
+                mDay = pair.getSecond();
                 completeTask();
                 break;
             // Options button pressed, set mPosition/mDay
@@ -702,6 +704,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     private void updateRecycler() {
         List<Integer> updatedIndices = LogicSubsystem.getInstance().getUpdatedIndices();
+        if (!updatedIndices.contains(Integer.valueOf(0))) {
+            updatedIndices.add(0);
+        }
 
         for (int index : updatedIndices) {
             if (index >= mDayItemAdapter.getItemCount()) {

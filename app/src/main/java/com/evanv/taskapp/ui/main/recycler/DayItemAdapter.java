@@ -199,8 +199,8 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
          * @param day Ignored as TaskItemHolder does not know it's recycler's DayRecycler's index.
          */
         @Override
-        public void onButtonClick(int position, int day, int action) {
-            mListenerRef.get().onButtonClick(position, day, action);
+        public void onButtonClick(int position, int day, int action, long id) {
+            mListenerRef.get().onButtonClick(position, day, action, id);
         }
     }
 }

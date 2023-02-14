@@ -134,7 +134,7 @@ public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.
             diag.show();
         });
 
-        holder.mParent.setOnClickListener(v -> mListener.onButtonClick(position, -1, 0));
+        holder.mParent.setOnClickListener(v -> mListener.onButtonClick(position, -1, 0, -1));
     }
 
     /**

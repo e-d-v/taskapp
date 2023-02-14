@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.compose.ui.text.android.InternalPlatformTextApi;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceScreen;
 
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.db.TaskAppRoomDatabase;
@@ -30,9 +31,6 @@ import de.raphaelebner.roomdatabasebackup.core.RoomBackup;
 
 @InternalPlatformTextApi public class SettingsActivity extends AppCompatActivity {
     private RoomBackup mBackup;
-
-    private final int CODE_EXPORT = 100;
-    private final int CODE_IMPORT = 101;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

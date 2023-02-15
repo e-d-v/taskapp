@@ -115,7 +115,7 @@ import javax.security.auth.callback.Callback;
         toAdd.setChipBackgroundColorResource(colors[color]);
         toAdd.setTextColor(textColors[color]);
         toAdd.setEnsureMinTouchTargetSize(false);
-        toAdd.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        toAdd.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         toAdd.setOnClickListener(v -> clickChip(id, v));
         mChipGroup.addView(toAdd);
     }

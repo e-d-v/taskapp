@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.google.android.material.chip.Chip
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:id="@+id/chip"
+        app:chipCornerRadius="15dp"
+        app:chipMinTouchTargetSize="0dp"
+        app:chipMinHeight="32dp"
+        android:text="CSCI 4011"
+        android:textSize="15sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    <ImageView
+        android:id="@+id/selectIndicator"
+        android:visibility="invisible"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="5dp"
+        app:tint="@color/text_primary"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:src="@drawable/baseline_check_21"/>
+
+</LinearLayout>

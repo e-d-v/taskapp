@@ -1481,7 +1481,7 @@ public class LogicSubsystem {
      * @param context Context for resources
      */
     public void editTask(String name, LocalDate early, LocalDate due, Bundle recur,
-                         int timeToComplete, long project, long[] labelIDs, List<Long> parents,
+                         int timeToComplete, long project, Long[] labelIDs, List<Long> parents,
                          int priority, long id, Context context) {
         // Parse the recurrence information
         RecurrenceParser rp = new RecurrenceParser(context);

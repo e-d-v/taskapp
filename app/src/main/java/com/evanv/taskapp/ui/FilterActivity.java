@@ -1,6 +1,7 @@
 package com.evanv.taskapp.ui;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.compose.ui.text.android.InternalPlatformTextApi;
 import androidx.fragment.app.DialogFragment;
@@ -8,6 +9,7 @@ import androidx.fragment.app.DialogFragment;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
@@ -15,22 +17,32 @@ import android.text.SpannableString;
 import android.text.TextWatcher;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.logic.Task;
+import com.evanv.taskapp.ui.additem.LabelEntry;
+import com.evanv.taskapp.ui.additem.ProjectEntry;
+import com.evanv.taskapp.ui.additem.TaskEntry;
 import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
+import com.google.android.material.chip.Chip;
 
 import org.threeten.bp.LocalDate;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @InternalPlatformTextApi /**
  * Search field for user to lookup tasks.
@@ -39,7 +51,7 @@ public class FilterActivity extends AppCompatActivity {
     private long mStartDate;  // Holds the user selected start date
     private long mEndDate;    // Holds the user selected end date
     private long mProject;    // Holds the ID of the user selected project
-    private long[] mLabels;   // Holds the IDs of user selected labels
+    private List<Long> mLabels;   // Holds the IDs of user selected labels
     private Context mContext; // Context
 
     /**
@@ -74,6 +86,7 @@ public class FilterActivity extends AppCompatActivity {
         mStartDate = 0;
         mEndDate = 0;
         mProject = -1;
+        mLabels = new ArrayList<>();
 
         // Set up the Start Date picker UI
         EditText fakeStartET = new EditText(this);
@@ -151,8 +164,6 @@ public class FilterActivity extends AppCompatActivity {
                     minDate, null, false);
             newFragment.show(getSupportFragmentManager(), "datePicker");
         });
-
-        mLabels = null;
     }
 
     /**
@@ -179,7 +190,8 @@ public class FilterActivity extends AppCompatActivity {
         intent.putExtra(TaskListActivity.EXTRA_PROJECT, mProject);
 
         // Get Labels
-        intent.putExtra(TaskListActivity.EXTRA_LABELS, mLabels);
+        long[] labels = mLabels.size() != 0 ? convertLongListToArray(mLabels) : null;
+        intent.putExtra(TaskListActivity.EXTRA_LABELS, labels);
 
         // Get Minimum TTC
         String minTTC = ((EditText)findViewById(R.id.editTextMinTime)).getText().toString();
@@ -202,6 +214,23 @@ public class FilterActivity extends AppCompatActivity {
         intent.putExtra(TaskListActivity.EXTRA_COMPLETABLE, checkBox.isChecked());
 
         startActivity(intent);
+    }
+
+    /**
+     * Converts an ArrayList of Strings to an array of Strings.
+     *
+     * @param list The list to convert to an array
+     *
+     * @return An array with the same items as the ArrayList
+     */
+    private long[] convertLongListToArray(List<Long> list) {
+        long[] toReturn = new long[list.size()];
+        Object[] toReturnObjs = list.toArray();
+        for (int i = 0; i < toReturnObjs.length; i++) {
+            toReturn[i] = (long) toReturnObjs[i];
+        }
+
+        return toReturn;
     }
 
     private void setText(String toShow, TextView element, String formatString) {
@@ -256,41 +285,28 @@ public class FilterActivity extends AppCompatActivity {
          * @param labelNamesArr List of names of labels
          */
         private void showPickerDialog(String[] labelNamesArr) {
-            ArrayList<Integer> selectedItems = new ArrayList<>();
-            // Define the dialog used to pick parent tasks
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
             builder.setTitle(R.string.pick_labels)
-                    .setMultiChoiceItems(labelNamesArr, null,
-                            ((dialogInterface, index, isChecked) -> {
-                                // If checked, add to list of Tasks to be added as parents
-                                if (isChecked) {
-                                    selectedItems.add(index);
-                                }
-                                // If unchecked, remove form list of Tasks to be added as
-                                // parents
-                                else if (selectedItems.contains(index)) {
-                                    selectedItems.remove(Integer.valueOf(index));
-                                }
-                            })).setPositiveButton(R.string.ok,
-                            ((dialogInterface, unused) -> {
-                                // Convert selectedItems to array of label IDs
-                                mLabels = new long[selectedItems.size()];
-
-                                // For each label selected by the user, add it to the list
-                                for (int i = 0; i < mLabels.length; i++) {
-                                    mLabels[i] = LogicSubsystem.getInstance()
-                                            .getLabelID(selectedItems.get(i));
-                                }
-
-                                TextView labelsLabel = findViewById(R.id.labelsLabel);
-
-                                // Get number of selected labels
-                                int numLabels = mLabels.length;
-                                setText(Integer.toString(numLabels), labelsLabel,
-                                        getString(R.string.labels_format));
+                    .setAdapter(new LabelChipAdapter<>(mContext, R.layout.chip_item),
+                            (dialogInterface, i) -> {
+                                // Do Nothing
+                            })
+                    .setPositiveButton(R.string.ok,
+                            ((dialogInterface, unused) -> setText(Integer.toString(mLabels.size()),
+                                    findViewById(R.id.labelsLabel), getString(R.string.labels_format))))
+                    .setNeutralButton(getString(R.string.add_label),
+                            ((dialogInterface, i) -> {
+                                // Open Label Entry dialog
+                                LabelEntry labelEntry = new LabelEntry();
+                                labelEntry.show(getSupportFragmentManager(), "LABELENTRY");
                             }));
 
-            builder.create();
+
+            AlertDialog diag = builder.create();
+
+            ListView listView = diag.getListView();
+            listView.setAdapter(new LabelChipAdapter<>(mContext, R.layout.chip_item));
+
             builder.show();
         }
     }
@@ -321,20 +337,31 @@ public class FilterActivity extends AppCompatActivity {
             // Define the dialog used to pick parent tasks
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
             builder.setTitle(R.string.pick_project)
-                    .setSingleChoiceItems(projectNamesArr, -1, (dialogInterface, i) ->
-                            mProject = LogicSubsystem.getInstance().getProjectID(i))
+                    .setAdapter(new ProjectChipAdapter<>(mContext, R.layout.chip_item),
+                            (dialogInterface, i) -> {
+                                // Do Nothing
+                            })
                     .setPositiveButton(R.string.ok,
                             ((dialogInterface, unused) -> {
-                                TextView projectLabel = findViewById(R.id.projectsLabel);
-
                                 // Get name of selected project
                                 String projectName = LogicSubsystem.getInstance()
-                                        .getProjectName(mProject, getApplicationContext());
+                                        .getProjectName(mProject, mContext);
                                 String formatString = getString(R.string.project_replace);
-                                setText(projectName, projectLabel, formatString);
-                            }));
 
-            builder.create();
+                                setText(projectName, findViewById(R.id.projectsLabel), formatString);
+                            }))
+                    .setNeutralButton(getString(R.string.add_project), ((dialogInterface, i) -> {
+                        // Open Project Entry dialog
+                        ProjectEntry projectEntry = new ProjectEntry();
+                        projectEntry.show(getSupportFragmentManager(), "PROJECTENTRY");
+                    }));
+
+
+            AlertDialog diag = builder.create();
+
+            ListView listView = diag.getListView();
+            listView.setAdapter(new ProjectChipAdapter<>(mContext, R.layout.chip_item));
+
             builder.show();
         }
     }
@@ -354,5 +381,177 @@ public class FilterActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private class ProjectChipAdapter<T> extends ArrayAdapter<T> {
+        private ImageView mCurrentSelected;
+
+        public ProjectChipAdapter(@NonNull Context context, int resource, @NonNull T[] objects) {
+            super(context, resource, objects);
+        }
+
+        public ProjectChipAdapter(Context context, int chip_item) {
+            super(context, chip_item);
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+            if (convertView == null) {
+                LayoutInflater inflater = LayoutInflater.from(mContext);
+                convertView = inflater.inflate(R.layout.chip_item, parent, false);
+            }
+
+            Chip chip = convertView.findViewById(R.id.chip);
+            long projectID = LogicSubsystem.getInstance().getProjectID(position);
+
+            chip.setText(LogicSubsystem.getInstance().getProjectName(projectID, mContext));
+
+            // Set project color
+            int[] colors = {R.color.pale_blue,
+                    R.color.blue,
+                    R.color.pale_green,
+                    R.color.green,
+                    R.color.pink,
+                    R.color.red,
+                    R.color.pale_orange,
+                    R.color.orange,
+                    R.color.lavender,
+                    R.color.purple,
+                    R.color.yellow,
+                    R.color.gray};
+
+            // What color is most readable on the background
+            int[] textColors = { Color.BLACK,
+                    Color.WHITE,
+                    Color.BLACK,
+                    Color.BLACK,
+                    Color.BLACK,
+                    Color.WHITE,
+                    Color.BLACK,
+                    Color.BLACK,
+                    Color.BLACK,
+                    Color.WHITE,
+                    Color.BLACK,
+                    Color.BLACK};
+
+            // Set colors
+            int projectColor = LogicSubsystem.getInstance().getProjectColor(projectID);
+            chip.setChipBackgroundColorResource(colors[projectColor]);
+            chip.setTextColor(textColors[projectColor]);
+
+            View finalConvertView = convertView;
+            chip.setOnClickListener(v -> {
+                mProject = LogicSubsystem.getInstance().getProjectID(position);
+                if (mCurrentSelected != null) {
+                    mCurrentSelected.setVisibility(View.INVISIBLE);
+                }
+                mCurrentSelected = finalConvertView.findViewById(R.id.selectIndicator);
+                mCurrentSelected.setVisibility(View.VISIBLE);
+            });
+
+            if (mProject == LogicSubsystem.getInstance().getProjectID(position)) {
+                if (mCurrentSelected != null) {
+                    mCurrentSelected.setVisibility(View.INVISIBLE);
+                }
+                mCurrentSelected = finalConvertView.findViewById(R.id.selectIndicator);
+                mCurrentSelected.setVisibility(View.VISIBLE);
+            }
+            else {
+                ImageView view = finalConvertView.findViewById(R.id.selectIndicator);
+                view.setVisibility(View.INVISIBLE);
+            }
+
+            return convertView;
+        }
+
+        @Override
+        public int getCount() {
+            return LogicSubsystem.getInstance().getProjectNames().size();
+        }
+    }
+
+    private class LabelChipAdapter<T> extends ArrayAdapter<T> {
+        public LabelChipAdapter(@NonNull Context context, int resource, @NonNull T[] objects) {
+            super(context, resource, objects);
+        }
+
+        public LabelChipAdapter(Context context, int chip_item) {
+            super(context, chip_item);
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+            if (convertView == null) {
+                LayoutInflater inflater = LayoutInflater.from(mContext);
+                convertView = inflater.inflate(R.layout.chip_item, parent, false);
+            }
+
+            Chip chip = convertView.findViewById(R.id.chip);
+            ImageView checkmark = convertView.findViewById(R.id.selectIndicator);
+            long labelID = LogicSubsystem.getInstance().getLabelID(position);
+
+            chip.setText(LogicSubsystem.getInstance().getLabelName(labelID));
+
+            // Set project color
+            int[] colors = {R.color.pale_blue,
+                    R.color.blue,
+                    R.color.pale_green,
+                    R.color.green,
+                    R.color.pink,
+                    R.color.red,
+                    R.color.pale_orange,
+                    R.color.orange,
+                    R.color.lavender,
+                    R.color.purple,
+                    R.color.yellow,
+                    R.color.gray};
+
+            // What color is most readable on the background
+            int[] textColors = { Color.BLACK,
+                    Color.WHITE,
+                    Color.BLACK,
+                    Color.BLACK,
+                    Color.BLACK,
+                    Color.WHITE,
+                    Color.BLACK,
+                    Color.BLACK,
+                    Color.BLACK,
+                    Color.WHITE,
+                    Color.BLACK,
+                    Color.BLACK};
+
+            // Set colors
+            int labelColor = LogicSubsystem.getInstance().getLabelColor(labelID);
+            chip.setChipBackgroundColorResource(colors[labelColor]);
+            chip.setTextColor(textColors[labelColor]);
+
+            if (mLabels.contains(labelID)) {
+                checkmark.setVisibility(View.VISIBLE);
+            }
+            else {
+                checkmark.setVisibility(View.INVISIBLE);
+            }
+
+            chip.setOnClickListener(v -> {
+                if (!mLabels.contains(labelID)) {
+                    checkmark.setVisibility(View.VISIBLE);
+                    mLabels.add(labelID);
+                }
+                else {
+                    checkmark.setVisibility(View.INVISIBLE);
+                    mLabels.remove(labelID);
+                }
+            });
+
+
+            return convertView;
+        }
+
+        @Override
+        public int getCount() {
+            return LogicSubsystem.getInstance().getLabelNames().size();
+        }
     }
 }

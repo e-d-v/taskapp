@@ -9,6 +9,7 @@ import androidx.fragment.app.DialogFragment;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -37,6 +38,7 @@ import com.evanv.taskapp.ui.additem.LabelEntry;
 import com.evanv.taskapp.ui.additem.ProjectEntry;
 import com.evanv.taskapp.ui.additem.TaskEntry;
 import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
+import com.evanv.taskapp.ui.main.MainActivity;
 import com.google.android.material.chip.Chip;
 
 import org.threeten.bp.LocalDate;
@@ -553,5 +555,22 @@ public class FilterActivity extends AppCompatActivity {
         public int getCount() {
             return LogicSubsystem.getInstance().getLabelNames().size();
         }
+    }
+
+    /**
+     * Updates todayTime in SharedPreferences
+     */
+    @Override
+    protected void onPause() {
+        // Update todayTime in SharedPreferences
+        SharedPreferences sp = getSharedPreferences(MainActivity.PREF_FILE, MODE_PRIVATE);
+        SharedPreferences.Editor edit = sp.edit();
+        edit.putLong(MainActivity.PREF_DAY, LogicSubsystem.getInstance().getStartDate().toEpochDay());
+        edit.putInt(MainActivity.PREF_TIME, LogicSubsystem.getInstance().getTodayTime());
+        edit.putLong(MainActivity.PREF_TIMED_TASK, LogicSubsystem.getInstance().getTimedID());
+        edit.putLong(MainActivity.PREF_TIMER, LogicSubsystem.getInstance().getTimerStart());
+
+        edit.apply();
+        super.onPause();
     }
 }

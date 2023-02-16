@@ -6,6 +6,7 @@ import androidx.compose.ui.text.android.InternalPlatformTextApi;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import com.evanv.taskapp.databinding.ActivityLabelsBinding;
 import com.evanv.taskapp.databinding.ActivityProjectBinding;
 import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.ui.additem.LabelEntry;
+import com.evanv.taskapp.ui.main.MainActivity;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
@@ -139,5 +141,22 @@ import javax.security.auth.callback.Callback;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Updates todayTime in SharedPreferences
+     */
+    @Override
+    protected void onPause() {
+        // Update todayTime in SharedPreferences
+        SharedPreferences sp = getSharedPreferences(MainActivity.PREF_FILE, MODE_PRIVATE);
+        SharedPreferences.Editor edit = sp.edit();
+        edit.putLong(MainActivity.PREF_DAY, LogicSubsystem.getInstance().getStartDate().toEpochDay());
+        edit.putInt(MainActivity.PREF_TIME, LogicSubsystem.getInstance().getTodayTime());
+        edit.putLong(MainActivity.PREF_TIMED_TASK, LogicSubsystem.getInstance().getTimedID());
+        edit.putLong(MainActivity.PREF_TIMER, LogicSubsystem.getInstance().getTimerStart());
+
+        edit.apply();
+        super.onPause();
     }
 }

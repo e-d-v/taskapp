@@ -1,6 +1,7 @@
 package com.evanv.taskapp.ui.projects;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
@@ -9,6 +10,7 @@ import android.view.MenuItem;
 import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.ui.TaskListActivity;
 import com.evanv.taskapp.ui.main.ClickListener;
+import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.projects.recycler.ProjectItem;
 import com.evanv.taskapp.ui.projects.recycler.ProjectItemAdapter;
 
@@ -101,5 +103,22 @@ public class ProjectActivity extends AppCompatActivity implements ClickListener 
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Updates todayTime in SharedPreferences
+     */
+    @Override
+    protected void onPause() {
+        // Update todayTime in SharedPreferences
+        SharedPreferences sp = getSharedPreferences(MainActivity.PREF_FILE, MODE_PRIVATE);
+        SharedPreferences.Editor edit = sp.edit();
+        edit.putLong(MainActivity.PREF_DAY, LogicSubsystem.getInstance().getStartDate().toEpochDay());
+        edit.putInt(MainActivity.PREF_TIME, LogicSubsystem.getInstance().getTodayTime());
+        edit.putLong(MainActivity.PREF_TIMED_TASK, LogicSubsystem.getInstance().getTimedID());
+        edit.putLong(MainActivity.PREF_TIMER, LogicSubsystem.getInstance().getTimerStart());
+
+        edit.apply();
+        super.onPause();
     }
 }

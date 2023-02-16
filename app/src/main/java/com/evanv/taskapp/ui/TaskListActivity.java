@@ -74,10 +74,10 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         // Update todayTime in SharedPreferences
         SharedPreferences sp = getSharedPreferences(MainActivity.PREF_FILE, MODE_PRIVATE);
         SharedPreferences.Editor edit = sp.edit();
-        edit.putLong(MainActivity.PREF_DAY, getLogicSubsystem().getStartDate().toEpochDay());
-        edit.putInt(MainActivity.PREF_TIME, getLogicSubsystem().getTodayTime());
-        edit.putLong(MainActivity.PREF_TIMED_TASK, getLogicSubsystem().getTimedID());
-        edit.putLong(MainActivity.PREF_TIMER, getLogicSubsystem().getTimerStart());
+        edit.putLong(MainActivity.PREF_DAY, LogicSubsystem.getInstance().getStartDate().toEpochDay());
+        edit.putInt(MainActivity.PREF_TIME, LogicSubsystem.getInstance().getTodayTime());
+        edit.putLong(MainActivity.PREF_TIMED_TASK, LogicSubsystem.getInstance().getTimedID());
+        edit.putLong(MainActivity.PREF_TIMER, LogicSubsystem.getInstance().getTimerStart());
 
         edit.apply();
         super.onPause();

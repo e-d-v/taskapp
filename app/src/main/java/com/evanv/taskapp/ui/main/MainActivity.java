@@ -337,8 +337,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     @Override
     protected void onPause() {
-        super.onPause();
-
         // Update todayTime in SharedPreferences
         SharedPreferences sp = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
         SharedPreferences.Editor edit = sp.edit();
@@ -348,6 +346,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         edit.putLong(PREF_TIMER, mLogicSubsystem.getTimerStart());
 
         edit.apply();
+        super.onPause();
     }
 
     /**

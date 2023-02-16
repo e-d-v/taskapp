@@ -30,10 +30,8 @@ import java.io.File;
 import java.net.URI;
 import java.util.Objects;
 
-import de.raphaelebner.roomdatabasebackup.core.RoomBackup;
 
 @InternalPlatformTextApi public class SettingsActivity extends AppCompatActivity {
-    private RoomBackup mBackup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,39 +46,6 @@ import de.raphaelebner.roomdatabasebackup.core.RoomBackup;
         setSupportActionBar(findViewById(R.id.toolbar));
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-
-        // Create a backup system
-        mBackup = new RoomBackup(this);
-        mBackup.database(TaskAppRoomDatabase.getDatabase(this));
-
-        // Handle backup completion
-        mBackup.onCompleteListener((success, message, exitCode) -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            if (success) {
-                builder.setTitle(R.string.restore_title_success);
-                builder.setCancelable(false);
-                builder.setMessage(R.string.restore_message_success);
-                builder.setPositiveButton(R.string.ok, (d, i) -> System.exit(0));
-            }
-            else {
-                builder.setTitle(R.string.restore_title_failure);
-                builder.setMessage(R.string.restore_message_failure);
-                builder.setPositiveButton(R.string.ok, null);
-            }
-            builder.show();
-        });
-
-        // Backup the database
-        findViewById(R.id.exportButton).setOnClickListener(v -> {
-            mBackup.backupLocation(RoomBackup.BACKUP_FILE_LOCATION_CUSTOM_DIALOG);
-            mBackup.backup();
-        });
-
-        // Restore the backup
-        findViewById(R.id.importButton).setOnClickListener(v -> {
-            mBackup.backupLocation(RoomBackup.BACKUP_FILE_LOCATION_CUSTOM_DIALOG);
-            mBackup.restore();
-        });
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {

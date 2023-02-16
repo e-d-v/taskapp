@@ -16,24 +16,23 @@
         <activity
             android:name=".ui.SettingsActivity"
             android:exported="false"
-            android:label="@string/title_activity_settings" />
+            android:label="@string/title_activity_settings"
+            android:theme="@style/Theme.Taskapp.NoActionBar"/>
         <activity
             android:name=".ui.LabelsActivity"
             android:exported="false"
+            android:label="@string/labels"
             android:theme="@style/Theme.Taskapp.NoActionBar" />
         <activity
             android:name=".ui.FilterActivity"
-            android:exported="false">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.evanv.taskapp.ui.main.MainActivity" />
-        </activity>
-        <activity
-            android:name=".ui.additem.LabelEntry"
-            android:exported="false" />
+            android:label="@string/search"
+            android:exported="false"
+            android:theme="@style/Theme.Taskapp.NoActionBar"/>
         <activity
             android:name=".ui.TaskListActivity"
-            android:exported="false" />
+            android:label="@string/search_results"
+            android:exported="false"
+            android:theme="@style/Theme.Taskapp.NoActionBar"/>
         <activity
             android:name=".ui.projects.ProjectActivity"
             android:exported="false"
@@ -43,11 +42,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.evanv.taskapp.ui.main.MainActivity" />
         </activity>
-        <activity
-            android:name=".ui.additem.ProjectEntry"
-            android:exported="false"
-            android:label="@string/title_activity_project_entry"
-            android:theme="@style/Theme.Taskapp.NoActionBar" />
         <activity
             android:name=".ui.main.MainActivity"
             android:exported="true"

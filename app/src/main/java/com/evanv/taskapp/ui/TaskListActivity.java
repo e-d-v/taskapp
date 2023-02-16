@@ -95,6 +95,8 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_list);
 
+        setSupportActionBar(findViewById(R.id.toolbar));
+
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         LocalDate startDate = LocalDate.ofEpochDay

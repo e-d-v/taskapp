@@ -28,6 +28,7 @@ import com.evanv.taskapp.ui.main.MainActivity;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Objects;
 
 import de.raphaelebner.roomdatabasebackup.core.RoomBackup;
 
@@ -44,10 +45,9 @@ import de.raphaelebner.roomdatabasebackup.core.RoomBackup;
                     .replace(R.id.settings, new SettingsFragment())
                     .commit();
         }
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
+        setSupportActionBar(findViewById(R.id.toolbar));
+
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         // Create a backup system
         mBackup = new RoomBackup(this);

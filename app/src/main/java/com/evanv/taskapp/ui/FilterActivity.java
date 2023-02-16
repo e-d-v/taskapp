@@ -45,6 +45,7 @@ import org.threeten.bp.LocalDate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @InternalPlatformTextApi /**
  * Search field for user to lookup tasks.
@@ -65,6 +66,10 @@ public class FilterActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_filter);
+
+        setSupportActionBar(findViewById(R.id.toolbar));
+
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         mContext = this;
 
@@ -380,6 +385,10 @@ public class FilterActivity extends AppCompatActivity {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW,
                     Uri.parse(getString(R.string.filter_tasks_url)));
             startActivity(browserIntent);
+        }
+        else if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);

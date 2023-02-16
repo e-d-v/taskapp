@@ -49,9 +49,6 @@
             android:label="@string/title_activity_project_entry"
             android:theme="@style/Theme.Taskapp.NoActionBar" />
         <activity
-            android:name=".ui.main.OptimizingActivity"
-            android:exported="false" />
-        <activity
             android:name=".ui.main.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Taskapp.NoActionBar">

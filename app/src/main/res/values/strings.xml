@@ -247,4 +247,5 @@
     <string name="restore_title_success">Import Success</string>
     <string name="restore_title_failure">Import failed.</string>
     <string name="restore_message_failure">taskapp could not restore from this file. Make sure that you select a valid backup file.</string>
+    <string name="error_recur_infinite">Cannot recur infinitely.</string>
 </resources>

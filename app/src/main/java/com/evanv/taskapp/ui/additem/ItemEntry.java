@@ -48,6 +48,7 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
     public static final String EXTRA_UNTIL = "com.evanv.taskapp.ui.additem.recur.RecurActivity.extra.UNTIL";
     // Key for the value representing a bundle containing the user's input on recurrence
     public static final String EXTRA_RECUR = "com.evanv.taskapp.ui.additem.recur.RecurActivity.extra.RECUR";
+    private boolean mAllowEndDate; // True iff interval != 0
 
     /**
      * Function that is called when result is received from recurrence activity.
@@ -102,6 +103,8 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
                                 Bundle returned = daily.getRecurInfo();
                                 if (returned != null) {
                                     daily.dismiss();
+                                    mAllowEndDate =
+                                            returned.getInt(DailyRecurFragment.EXTRA_INTERVAL) != 0;
                                     endInfo(returned);
                                 }
                             });
@@ -114,6 +117,8 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
                                 Bundle returned = weekly.getRecurInfo();
                                 if (returned != null) {
                                     weekly.dismiss();
+                                    mAllowEndDate =
+                                            returned.getInt(WeeklyRecurFragment.EXTRA_INTERVAL) != 0;
                                     endInfo(returned);
                                 }
                             });
@@ -126,6 +131,8 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
                                 Bundle returned = monthly.getRecurInfo();
                                 if (returned != null) {
                                     monthly.dismiss();
+                                    mAllowEndDate =
+                                            returned.getInt(MonthlyRecurFragment.EXTRA_INTERVAL) != 0;
                                     endInfo(returned);
                                 }
                             });
@@ -138,6 +145,8 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
                                 Bundle returned = yearly.getRecurInfo();
                                 if (returned != null) {
                                     yearly.dismiss();
+                                    mAllowEndDate =
+                                            returned.getInt(YearlyRecurFragment.EXTRA_INTERVAL) != 0;
                                     endInfo(returned);
                                 }
                             });
@@ -160,7 +169,13 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
                             recurNumTimes(recurInfo);
                             break;
                         case 1:
-                            recurEndDate(recurInfo);
+                            if (mAllowEndDate) {
+                                recurEndDate(recurInfo);
+                            }
+                            else {
+                                Toast.makeText(getContext(), R.string.error_recur_infinite,
+                                        Toast.LENGTH_LONG).show();
+                            }
                             break;
                     }
                 }));

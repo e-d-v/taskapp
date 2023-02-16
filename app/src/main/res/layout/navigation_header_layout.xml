@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--TODO: Replace with taskapp logo-->
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:gravity="center|center_vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/taskapp_green"
     android:layout_width="match_parent"
-    android:layout_height="120dp"
-    android:gravity="center"
-    android:layout_centerInParent="true"
-    android:text="Navigation drawer"
-    android:textColor="@color/text_primary"
-    android:textSize="24sp" />
+    android:layout_height="120dp">
+
+    <ImageView
+        app:tint="@color/white"
+        android:src="@drawable/taskapp_logo"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"/>
+
+</LinearLayout>

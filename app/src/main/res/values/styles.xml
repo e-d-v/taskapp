@@ -26,4 +26,9 @@
         <item name="colorPrimary">@color/taskapp_green</item>
     </style>
 
+    <style name="actionbar_with_logo">
+        <item name="android:logo">@drawable/taskapp_logo</item>
+        <item name="android:displayOptions">useLogo|showHome</item>
+    </style>
+
 </resources>

@@ -25,4 +25,7 @@
     </style>
 
     <style name="Theme.Taskapp.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="actionButtonWidth">
+        <item name="android:width">?attr/actionBarSize</item>
+    </style>
 </resources>

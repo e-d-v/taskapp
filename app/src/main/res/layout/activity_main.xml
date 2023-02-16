@@ -23,10 +23,19 @@
 
                 <androidx.appcompat.widget.Toolbar
                     android:id="@+id/toolbar"
+                    app:title=""
+                    android:theme="@style/actionButtonWidth"
+                    app:contentInsetStartWithNavigation="0dp"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
                     android:background="@color/taskapp_green"
-                    app:popupTheme="@style/Theme.Taskapp.PopupOverlay" />
+                    app:popupTheme="@style/Theme.Taskapp.PopupOverlay">
+                    <ImageView
+                        android:src="@drawable/taskapp_logo"
+                        app:tint="@color/white"
+                        android:layout_width="match_parent"
+                        android:layout_height="25dp"/>
+                </androidx.appcompat.widget.Toolbar>
 
             </com.google.android.material.appbar.AppBarLayout>
 

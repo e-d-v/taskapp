@@ -22,8 +22,10 @@ import org.threeten.bp.LocalTime;
  */
 public class TimePickerFragment extends DialogFragment
         implements TimePickerDialog.OnTimeSetListener {
-    private final EditText mET;  // The EditText this date will be placed in.
-    private final String mTitle; // The text for the title of the dialog
+    private final EditText mET;   // The EditText this date will be placed in.
+    private final String mTitle;  // The text for the title of the dialog
+    private final int mHourOfDay; // Hour of day to default to
+    private final int mMinute;    // Minute of hour to default to
 
     /**
      * Creates a TimePickerFragment for a dialog that puts its output in the given EditText,
@@ -31,10 +33,14 @@ public class TimePickerFragment extends DialogFragment
      *
      * @param et The EditText this date will be placed in.
      * @param title The text for the title of the dialog.
+     * @param hourOfDay Hour of day to default to
+     * @param minute Minute of hour to default to
      */
-    public TimePickerFragment(EditText et, String title) {
+    public TimePickerFragment(EditText et, String title, int hourOfDay, int minute) {
         mET = et;
         mTitle = title;
+        mHourOfDay = hourOfDay;
+        mMinute = minute;
     }
 
     /**
@@ -48,7 +54,7 @@ public class TimePickerFragment extends DialogFragment
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // Create a new instance of DatePickerDialog and return it
         TimePickerDialog tp =
-                new TimePickerDialog(requireContext(), this, 0, 0,
+                new TimePickerDialog(requireContext(), this, mHourOfDay, mMinute,
                         false);
         tp.setMessage(mTitle);
         // If no max date is necessary skip this step

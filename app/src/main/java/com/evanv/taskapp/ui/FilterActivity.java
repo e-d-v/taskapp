@@ -126,9 +126,13 @@ public class FilterActivity extends AppCompatActivity {
             // Set the max date so the early date can't be set as later than the due date
             LocalDate maxDate = (mEndDate == 0) ? null : LocalDate.ofEpochDay(mEndDate);
             fakeStartET.setText("");
+
+            LocalDate defaultDate = mStartDate != 0 ? LocalDate.ofEpochDay(mStartDate) :
+                    LocalDate.now();
+
             // Generate and show the DatePicker
             DialogFragment newFragment = new DatePickerFragment(fakeStartET, getString(R.string.start_date),
-                    LocalDate.now(), maxDate, false);
+                    LocalDate.now(), maxDate, defaultDate, 0, 0, false);
             newFragment.show(getSupportFragmentManager(), "datePicker");
         });
 
@@ -166,9 +170,12 @@ public class FilterActivity extends AppCompatActivity {
             LocalDate minDate = (mStartDate == 0) ? LocalDate.now() :
                     LocalDate.ofEpochDay(mStartDate);
             fakeEndET.setText("");
+
+            LocalDate defaultDate = mEndDate == 0 ? minDate : LocalDate.ofEpochDay(mEndDate);
+
             // Generate and show the DatePicker
             DialogFragment newFragment = new DatePickerFragment(fakeEndET, getString(R.string.start_date),
-                    minDate, null, false);
+                    minDate, null, defaultDate, 0, 0,false);
             newFragment.show(getSupportFragmentManager(), "datePicker");
         });
     }

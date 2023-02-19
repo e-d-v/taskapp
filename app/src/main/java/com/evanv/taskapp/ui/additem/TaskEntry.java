@@ -173,9 +173,12 @@ public class TaskEntry extends ItemEntry {
             // Set the max date so the early date can't be set as later than the due date
             LocalDate maxDate = (mDueDate == 0) ? null : LocalDate.ofEpochDay(mDueDate);
 
+            LocalDate defaultDate = mEarlyDate == 0 ? LocalDate.now() :
+                    LocalDate.ofEpochDay(mEarlyDate);
+
             // Generate and show the DatePicker
             DialogFragment newFragment = new DatePickerFragment(fakeEcdEt, getString(R.string.ecd),
-                    LocalDate.now(), maxDate, false);
+                    LocalDate.now(), maxDate, defaultDate, 0, 0, false);
             newFragment.show(getParentFragmentManager(), "datePicker");
         });
 
@@ -205,9 +208,11 @@ public class TaskEntry extends ItemEntry {
             LocalDate minDate = (mEarlyDate == 0) ? LocalDate.now() :
                     LocalDate.ofEpochDay(mEarlyDate);
 
+            LocalDate defaultDay = mDueDate == 0 ? minDate : LocalDate.ofEpochDay(mDueDate);
+
             // Generate and show the DatePicker
             DialogFragment newFragment = new DatePickerFragment(fakeDdET, getString(R.string.due_date),
-                    minDate, null, false);
+                    minDate, null, defaultDay, 0, 0, false);
             newFragment.show(getParentFragmentManager(), "datePicker");
         });
 

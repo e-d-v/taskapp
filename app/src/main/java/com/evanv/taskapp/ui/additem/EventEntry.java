@@ -145,9 +145,15 @@ public class EventEntry extends ItemEntry {
             // Clear End Time picker
             fakeECDet.setText("");
 
+            LocalDate defaultDate = mStartTime != null ? mStartTime.toLocalDate() : LocalDate.now();
+
+            int hourOfDay = mStartTime != null ? mStartTime.getHour() : 0;
+            int minute = mStartTime != null ? mStartTime.getMinute() : 0;
+
             // Show a date picker fragment
             new DatePickerFragment(fakeECDet,
-                    getString(R.string.start_time), LocalDate.now(), null, true)
+                    getString(R.string.start_time), LocalDate.now(), null, defaultDate, hourOfDay, minute,
+                    true)
                     .show(getParentFragmentManager(), getTag());
         });
         fakeECDet.addTextChangedListener(new TextWatcher() {
@@ -176,9 +182,17 @@ public class EventEntry extends ItemEntry {
         EditText fakeDDet = new EditText(getContext());
         mEndTimeLayout.setOnClickListener(v -> {
             if (mStartTime != null) {
+                int hourOfDay = mStartTime.getHour();
+                int minute = mStartTime.getMinute();
+
+                if (mEndTime != null) {
+                    hourOfDay = mEndTime.getHour();
+                    minute = mEndTime.getMinute();
+                }
+
                 fakeDDet.setText(Task.dateFormat.format(mStartTime.toLocalDate()));
 
-                new TimePickerFragment(fakeDDet, "Choose end time")
+                new TimePickerFragment(fakeDDet, "Choose end time", hourOfDay, minute)
                         .show(getParentFragmentManager(), getTag());
             }
             else {

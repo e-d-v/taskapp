@@ -235,7 +235,7 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
 
         // Generate and show the DatePicker
         DialogFragment newFragment = new DatePickerFragment(fakeDdET, getString(R.string.recur_until),
-                minDate, null, false);
+                minDate, null, minDate, 0, 0, false);
         newFragment.show(getParentFragmentManager(), "datePicker");
     }
 

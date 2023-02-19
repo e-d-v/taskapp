@@ -26,12 +26,20 @@ import com.google.android.material.chip.ChipGroup;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Activity representing the list of labels the user has created
+ */
 @SuppressWarnings("unused")
 @InternalPlatformTextApi public class LabelsActivity extends AppCompatActivity {
 
     @SuppressWarnings("unused")
-    private ChipGroup mChipGroup;
+    private ChipGroup mChipGroup; // The ChipGroup that contains all labels
 
+    /**
+     * Ran on the creation of the label activity, displays the labels in the ChipGroup
+     *
+     * @param savedInstanceState unused
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,8 +58,14 @@ import java.util.Objects;
         }
     }
 
+    /**
+     * Handle user pressing a specific chip
+     *
+     * @param id ID of the label the clicked chip represents
+     * @param view The chip that was clicked
+     */
     @SuppressWarnings("unused")
-    private void clickChip (@SuppressWarnings("unused") long id, @SuppressWarnings("unused") View view) {
+    private void clickChip (long id, View view) {
         AlertDialog.Builder diag = new AlertDialog.Builder(this);
         diag.setItems(R.array.label_options, (dialogInterface, i) -> {
             switch (i) {
@@ -79,8 +93,15 @@ import java.util.Objects;
         diag.show();
     }
 
+    /**
+     * Add a chip representing a label with these attributes to the ChipGroup
+     *
+     * @param name Name of the label this chip represents
+     * @param color Color of the label this chip represents
+     * @param id ID of the label this chip represents
+     */
     @SuppressWarnings("unused")
-    private void addChip(String name, @SuppressWarnings("unused") int color, long id) {
+    private void addChip(String name, int color, long id) {
         // Set label color
         int[] colors = {R.color.pale_blue,
                 R.color.blue,
@@ -121,12 +142,27 @@ import java.util.Objects;
         mChipGroup.addView(toAdd);
     }
 
+    /**
+     * Add a help button to the top right corner of the screen
+     *
+     * @param menu The menu for the screen
+     *
+     * @return the inflated menu
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.help_button_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
+    /**
+     * If the user presses the help button, redirect them to the help page for labels, if they press
+     * the home button, press the back button.
+     *
+     * @param item the MenuItem the user selected
+     *
+     * @return true if handled successfully, false otherwise
+     */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_help) {

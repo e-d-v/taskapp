@@ -1607,9 +1607,15 @@ public class LogicSubsystem {
         return null;
     }
 
+    /**
+     * Postpone the task at the given position in the task schedule
+     *
+     * @param position Position of this task in the day'th entry of the task schedule
+     * @param day How many days past today the postponed task is scheduled to be completed
+     */
     @SuppressWarnings("unused")
-    public void postponeTask(int mPosition, int mDay) {
-        Task toPostpone = mTaskSchedule.get(mDay).get(mPosition);
+    public void postponeTask(int position, int day) {
+        Task toPostpone = mTaskSchedule.get(day).get(position);
 
         if (toPostpone.getEarlyDate().isEqual(toPostpone.getDueDate())) {
             toPostpone.setDueDate(toPostpone.getEarlyDate().plusDays(1));
@@ -1620,6 +1626,9 @@ public class LogicSubsystem {
         mTaskAppViewModel.update(toPostpone);
     }
 
+    /**
+     * Delete the label with the given ID, if it exists
+     */
     @SuppressWarnings("unused")
     public void deleteLabel(long id) {
         Label toRemove = null;
@@ -1645,6 +1654,13 @@ public class LogicSubsystem {
         mTaskAppViewModel.delete(toRemove);
     }
 
+    /**
+     * Get the name of the label with the given id
+     *
+     * @param id ID of the label
+     *
+     * @return the name of the label, or an empty string if no label with this id exists
+     */
     public String getLabelName(long id) {
         for (Label candidate : mLabels) {
             if (candidate.getID() == id) {
@@ -1655,6 +1671,13 @@ public class LogicSubsystem {
         return "";
     }
 
+    /**
+     * Get the color of the label with the given id
+     *
+     * @param id id of the label to lookup
+     *
+     * @return the color code of the label, or the color code for gray if the label can't be found
+     */
     public int getLabelColor(long id) {
         for (Label candidate : mLabels) {
             if (candidate.getID() == id) {
@@ -1665,6 +1688,13 @@ public class LogicSubsystem {
         return 11;
     }
 
+    /**
+     * Edit the label with the specified id.
+     *
+     * @param name the label's new name
+     * @param color the label's new color
+     * @param id the id of the label to edit
+     */
     public void editLabel(String name, int color, long id) {
         for (Label candidate : mLabels) {
             if (candidate.getID() == id) {
@@ -1676,6 +1706,11 @@ public class LogicSubsystem {
         }
     }
 
+    /**
+     * Delete the project with the given id
+     *
+     * @param id the id of the project to delete
+     */
     public void deleteProject(long id) {
         for (Project p : mProjects) {
             if (p.getID() == id) {
@@ -1691,6 +1726,13 @@ public class LogicSubsystem {
         }
     }
 
+    /**
+     * Get the color of the project with the given id
+     *
+     * @param id id of the project to lookup
+     *
+     * @return the color code of the given project, or gray if the project could not be found
+     */
     public int getProjectColor(long id) {
         for (Project p : mProjects) {
             if (id == p.getID()) {
@@ -1701,6 +1743,13 @@ public class LogicSubsystem {
         return 11;
     }
 
+    /**
+     * Get the goal of the project with the given id
+     *
+     * @param id the id of the project to lookup
+     *
+     * @return the goal of the project with the given id, or the empty string if project isn't found
+     */
     public String getProjectGoal(long id) {
         for (Project p : mProjects) {
             if (id == p.getID()) {
@@ -1711,10 +1760,26 @@ public class LogicSubsystem {
         return "";
     }
 
+    /**
+     * Get a ProjectItem for the project with the specified ID.
+     *
+     * @param id ID of the project to get the ProjectItem for
+     * @param context Context for resources
+     *
+     * @return a ProjectItem representing the given project
+     */
     public ProjectItem getProjectItem(long id, Context context) {
         return new ProjectItem(getProjectName(id, context), getProjectGoal(id), getProjectColor(id), id);
     }
 
+    /**
+     * Edit the project with the given ID
+     *
+     * @param name New name of the project
+     * @param color New color code of the project
+     * @param goal New goal of the project
+     * @param id ID of the project to edit
+     */
     public void editProject(String name, int color, String goal, long id) {
         for (Project p : mProjects) {
             if (p.getID() == id) {

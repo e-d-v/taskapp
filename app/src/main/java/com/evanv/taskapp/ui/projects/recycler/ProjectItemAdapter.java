@@ -28,8 +28,8 @@ import java.util.List;
  */
 public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.ProjectViewHolder> {
     public final List<ProjectItem> mProjectsList; // List of project information
-    private final ClickListener mListener;  // The listener to handle button presses.
-    private final AppCompatActivity mActivity;
+    private final ClickListener mListener;        // The listener to handle button presses.
+    private final AppCompatActivity mActivity;    // The Context of the ProjectAdapter
 
     /**
      * Construct a new ProjectItemAdapter

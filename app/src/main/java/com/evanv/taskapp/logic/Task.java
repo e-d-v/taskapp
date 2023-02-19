@@ -35,32 +35,30 @@ public class Task implements Comparable<Task> {
     // Database Fields
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    private long mID;                  // PrimaryKey for Task. Used as duplicate task names is allowed
+    private long mID;                         // PrimaryKey for Task
     @NonNull
     @ColumnInfo(name = "name")
-    private String mName;              // Name of the task
+    private String mName;                     // Name of the task
     @NonNull
     @ColumnInfo(name = "earlyDate")
-    private LocalDate mEarlyDate;      // Earliest date to complete
+    private LocalDate mEarlyDate;             // Earliest date to complete
     @ColumnInfo(name = "doDate")
-    private LocalDate mDoDate;         // Date to do the task
+    private LocalDate mDoDate;                // Date to do the task
     @NonNull
     @ColumnInfo(name = "dueDate")
-    private LocalDate mDueDate;        // Date the task is due
+    private LocalDate mDueDate;               // Date the task is due
     @ColumnInfo(name = "ttc")
-    private int mTimeToComplete;       // Time (in minutes) to complete the tasks
+    private int mTimeToComplete;              // Time (in minutes) to complete the tasks
     @ColumnInfo(name = "priority")
-    private int mPriority;             // Priority
+    private int mPriority;                    // Priority
     @Ignore
-    private Project mProject;          // Project for the task.
+    private Project mProject;                 // Project for the task.
     @Ignore
-    private final List<Label> mLabels;       // Label for the task.
-
+    private final List<Label> mLabels;        // Label for the task.
     @ColumnInfo(name = "project")
-    private long mProjectID;           // Project ID for the task.
+    private long mProjectID;                  // Project ID for the task.
     @ColumnInfo(name = "labels")
-    private final ArrayList<Long> mLabelIDs; // Label ID for the task.
-
+    private final ArrayList<Long> mLabelIDs;  // Label ID for the task.
     @NonNull
     @ColumnInfo(name = "parents_list")
     // Runtime fields

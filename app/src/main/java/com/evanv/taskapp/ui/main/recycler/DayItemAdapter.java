@@ -38,13 +38,11 @@ import java.util.List;
 @InternalPlatformTextApi
 public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewHolder> {
     public final List<DayItem> mDayItemList; // List of days
-
+    private final ClickListener mListener;   // Listener that allows easy completion of tasks
+    private final Activity mActivity;        // Context of current Activity
     // Used to share views between the Event/Task RecyclerViews and the Day RecyclerViews
     private final RecyclerView.RecycledViewPool mTaskViewPool = new RecyclerView.RecycledViewPool();
     private final RecyclerView.RecycledViewPool mEventViewPool = new RecyclerView.RecycledViewPool();
-    // Listener that allows easy completion of tasks (see ClickListener)
-    private final ClickListener mListener;
-    private final Activity mActivity; // Context of current Activity
 
     /**
      * Constructs an adapter for MainActivity's recyclerview

@@ -57,14 +57,14 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
     // Key for the value of the priority.
     public static final String EXTRA_PRIORITY = "com.evanv.taskapp.ui.TaskListActivity.EXTRA_PRIORITY";
 
-    private TaskItemAdapter mAdapter;           // The adapter for the recycler
+    private TaskItemAdapter mAdapter; // The adapter for the recycler
 
-    private List<Long> mIDs;
-    private int mIndex;    // Index into the recycler to update.
-    private int mPosition; // Position in the recycler of the selected task.
-    private int mDay;      // Day of the selected task.
-    private long mID;      // ID of the currently selected task.
-    private Thread mOptimizer; // Holds optimizer thread if currently available.
+    private List<Long> mIDs;          // List of IDs for each task in the task list
+    private int mIndex;               // Index into the recycler to update.
+    private int mPosition;            // Position in the recycler of the selected task.
+    private int mDay;                 // Day of the selected task.
+    private long mID;                 // ID of the currently selected task.
+    private Thread mOptimizer;        // Holds optimizer thread if currently available.
 
     /**
      * Updates todayTime in SharedPreferences

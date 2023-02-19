@@ -48,14 +48,16 @@ import java.util.Objects;
 
 /**
  * Search field for user to lookup tasks.
+ *
+ * @author Evan Voogd
  */
 @InternalPlatformTextApi
 public class FilterActivity extends AppCompatActivity {
-    private long mStartDate;  // Holds the user selected start date
-    private long mEndDate;    // Holds the user selected end date
-    private long mProject;    // Holds the ID of the user selected project
-    private List<Long> mLabels;   // Holds the IDs of user selected labels
-    private Context mContext; // Context
+    private long mStartDate;    // Holds the user selected start date
+    private long mEndDate;      // Holds the user selected end date
+    private long mProject;      // Holds the ID of the user selected project
+    private List<Long> mLabels; // Holds the IDs of user selected labels
+    private Context mContext;   // Context
 
     /**
      * Creates a FilterActivity
@@ -247,6 +249,13 @@ public class FilterActivity extends AppCompatActivity {
         return toReturn;
     }
 
+    /**
+     * Set the text for the commonly used two-line TextView with subject and body lines.
+     *
+     * @param toShow Text to display in the message line
+     * @param element TextView to show
+     * @param formatString The format string describing the contents of the TextView
+     */
     private void setText(String toShow, TextView element, String formatString) {
         // Make starting text bold
         SpannableString dateText = new SpannableString(String.format
@@ -353,12 +362,27 @@ public class FilterActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Add the help button to the top right corner of the screen
+     *
+     * @param menu the menu for this activity
+     *
+     * @return the options menu for this activity
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.help_button_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
+    /**
+     * Open the help page for projects when the help button is pressed, and press the back button if
+     * the home button is pressed.
+     *
+     * @param item the menu item the user chose
+     *
+     * @return boolean value depending on if it was successful
+     */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_help) {
@@ -374,13 +398,33 @@ public class FilterActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Handles the pick project dialog
+     *
+     * @param <T> unused
+     */
     private class ProjectChipAdapter<T> extends ArrayAdapter<T> {
         private ImageView mCurrentSelected;
 
+        /**
+         * Create a new project chip adapter
+         *
+         * @param context unused
+         * @param chip_item unused
+         */
         public ProjectChipAdapter(Context context, int chip_item) {
             super(context, chip_item);
         }
 
+        /**
+         * Renders the chip for the project.
+         *
+         * @param position Position in the project list of this chip
+         * @param convertView The chip to display
+         * @param parent root view of the list
+         *
+         * @return the chip with the project information
+         */
         @NonNull
         @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -452,18 +496,43 @@ public class FilterActivity extends AppCompatActivity {
             return convertView;
         }
 
+        /**
+         * Returns the number of project chips
+         *
+         * @return the number of project chips
+         */
         @Override
         public int getCount() {
             return LogicSubsystem.getInstance().getProjectNames().size();
         }
     }
 
+    /**
+     * Displays the label picker dialog
+     *
+     * @param <T> unused
+     */
     private class LabelChipAdapter<T> extends ArrayAdapter<T> {
 
+        /**
+         * Create the label chip dialog
+         *
+         * @param context unused
+         * @param chip_item unused
+         */
         public LabelChipAdapter(Context context, int chip_item) {
             super(context, chip_item);
         }
 
+        /**
+         * Render the chip associated with the label to be displayed.
+         *
+         * @param position the position in the label list to render
+         * @param convertView the chip to render
+         * @param parent root view of the label picker
+         *
+         * @return the chip that has been populated with information
+         */
         @NonNull
         @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -533,6 +602,11 @@ public class FilterActivity extends AppCompatActivity {
             return convertView;
         }
 
+        /**
+         * Get the number of labels in the dialog
+         *
+         * @return the number of labels in the dialog
+         */
         @Override
         public int getCount() {
             return LogicSubsystem.getInstance().getLabelNames().size();

@@ -26,12 +26,25 @@ import com.evanv.taskapp.logic.LogicSubsystem;
  * @author Evan Voogd
  */
 public class LabelEntry extends DialogFragment {
-    public int color; // User-selected label color
-    private EditText mNameET;
-    private TextView mColorLabel;
-    private long mEditedID = -1;
-    private View.OnClickListener mOnSubmit;
+    public int color;                       // User-selected label color
+    private EditText mNameET;               // The EditText representing label name
+    private TextView mColorLabel;           // The TextView representing label color
+    private long mEditedID = -1;            // The ID of the label to edit
+    private View.OnClickListener mOnSubmit; // The listener for the submit button
 
+    /**
+     * Called upon the LabelEntry's creation
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate
+     * any views in the fragment,
+     * @param container If non-null, this is the parent view that the fragment's
+     * UI should be attached to.  The fragment should not add the view itself,
+     * but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     *
+     * @return the root view of the fragment
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -82,10 +95,18 @@ public class LabelEntry extends DialogFragment {
     }
 
     @SuppressWarnings("unused")
+    /**
+     * Set the ID of the label to edit, if necessary
+     */
     public void setID(long id) {
         mEditedID = id;
     }
 
+    /**
+     * Add the submit listener that is called when the submit button is pressed
+     *
+     * @param callback listener that is called when the submit button is pressed
+     */
     @SuppressWarnings("unused")
     public void setOnSubmit(View.OnClickListener callback) {
         mOnSubmit = callback;

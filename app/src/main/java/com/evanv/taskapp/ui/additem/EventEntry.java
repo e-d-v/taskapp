@@ -38,14 +38,12 @@ import java.util.Locale;
  * @author Evan Voogd
  */
 public class EventEntry extends ItemEntry {
-    // Fields
     private EditText mEditTextEventName; // EditText containing the name of the event
     private long mID = -1;               // ID of the Event to update, -1 if adding an event
-
-    private TextView mStartTimeLabel;
-    private TextView mEndTimeLabel;
-    LocalDateTime mStartTime; // Start time for event
-    LocalDateTime mEndTime;   // End time for event
+    private TextView mStartTimeLabel;    // TextView representing the StartTime
+    private TextView mEndTimeLabel;      // TextView representing the EndTime
+    private LocalDateTime mStartTime;    // Start time for event
+    private LocalDateTime mEndTime;      // End time for event
 
     /**
      * Required empty public constructor

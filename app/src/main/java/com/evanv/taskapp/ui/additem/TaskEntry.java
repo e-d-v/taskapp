@@ -45,18 +45,18 @@ import java.util.List;
 public class TaskEntry extends ItemEntry {
     private long mDueDate;       // Holds the user selected due date
     private long mProject;       // Holds the ID of the user selected project
-    private List<Long> mLabels;      // Array of labels added to this task.
+    private List<Long> mLabels;  // Array of labels added to this task.
     private List<Long> mParents; // Array of selected parents
     private long mID = -1;       // ID of the edited task (or -1 if adding a task)
 
-    private EditText mNameET;
-    private TextView mECDLabel;
-    private TextView mDDLabel;
-    private TextView mProjectLabel;
-    private TextView mLabelsLabel;
-    private EditText mTtcET;
-    private TextView mParentsLabel;
-    private SeekBar mPrioritySeekbar;
+    private EditText mNameET;         // The TextView representing task name
+    private TextView mECDLabel;       // The TextView representing task ECD
+    private TextView mDDLabel;        // The TextView representing task DueDate
+    private TextView mProjectLabel;   // The TextView representing task projects
+    private TextView mLabelsLabel;    // The TextView representing task labels
+    private EditText mTtcET;          // The EditText representing task ttc
+    private TextView mParentsLabel;   // The TextView representing task prerequisites
+    private SeekBar mPrioritySeekbar; // The SeekBar representing task priority
 
 
     /**
@@ -482,17 +482,44 @@ public class TaskEntry extends ItemEntry {
         }
     }
 
+    /**
+     * Handles the pick project dialog
+     *
+     * @param <T> unused
+     */
     private class ProjectChipAdapter<T> extends ArrayAdapter<T> {
         private ImageView mCurrentSelected;
 
+        /**
+         * Create a new project chip adapter
+         *
+         * @param context unused
+         * @param resource unused
+         * @param objects unused
+         */
         public ProjectChipAdapter(@NonNull Context context, int resource, @NonNull T[] objects) {
             super(context, resource, objects);
         }
 
+        /**
+         * Create a new project chip adapter
+         *
+         * @param context unused
+         * @param chip_item unused
+         */
         public ProjectChipAdapter(Context context, int chip_item) {
             super(context, chip_item);
         }
 
+        /**
+         * Renders the chip for the project.
+         *
+         * @param position Position in the project list of this chip
+         * @param convertView The chip to display
+         * @param parent root view of the list
+         *
+         * @return the chip with the project information
+         */
         @NonNull
         @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -563,17 +590,42 @@ public class TaskEntry extends ItemEntry {
             return convertView;
         }
 
+        /**
+         * Returns the number of project chips
+         *
+         * @return the number of project chips
+         */
         @Override
         public int getCount() {
             return LogicSubsystem.getInstance().getProjectNames().size();
         }
     }
 
+    /**
+     * Displays the label picker dialog
+     *
+     * @param <T> unused
+     */
     private class LabelChipAdapter<T> extends ArrayAdapter<T> {
+        /**
+         * Create the label chip dialog
+         *
+         * @param context unused
+         * @param chip_item unused
+         */
         public LabelChipAdapter(Context context, int chip_item) {
             super(context, chip_item);
         }
 
+        /**
+         * Render the chip associated with the label to be displayed.
+         *
+         * @param position the position in the label list to render
+         * @param convertView the chip to render
+         * @param parent root view of the label picker
+         *
+         * @return the chip that has been populated with information
+         */
         @NonNull
         @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -643,6 +695,11 @@ public class TaskEntry extends ItemEntry {
             return convertView;
         }
 
+        /**
+         * Get the number of labels in the dialog
+         *
+         * @return the number of labels in the dialog
+         */
         @Override
         public int getCount() {
             return LogicSubsystem.getInstance().getLabelNames().size();

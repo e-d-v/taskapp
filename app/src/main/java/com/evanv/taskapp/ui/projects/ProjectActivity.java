@@ -85,12 +85,27 @@ public class ProjectActivity extends AppCompatActivity implements ClickListener 
         startActivity(intent);
     }
 
+    /**
+     * Add the help button to the top right corner of the screen
+     *
+     * @param menu the menu for this activity
+     *
+     * @return the options menu for this activity
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.help_button_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
+    /**
+     * Open the help page for projects when the help button is pressed, and press the back button if
+     * the home button is pressed.
+     *
+     * @param item the menu item the user chose
+     *
+     * @return boolean value depending on if it was successful
+     */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_help) {

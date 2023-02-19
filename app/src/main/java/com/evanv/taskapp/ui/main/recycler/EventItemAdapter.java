@@ -23,10 +23,10 @@ import java.util.List;
  */
 public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.EventViewHolder> {
     private final List<EventItem> mEventItemList; // List of events for this day
-    // Listener that allows easy deletion of events (see ClickListener)
-    private final ClickListener mListener;
-    private final int mDay; // How many days past today's date this Event list represents
-    private final Activity mActivity; // Parent Activity
+    private final ClickListener mListener;        // Listener that allows easy deletion of events
+    private final Activity mActivity;             // Parent Activity
+    // How many days past today's date this Event list represents
+    private final int mDay;
 
     /**
      * Constructs an adapter for a given DayItem's event recyclerview
@@ -88,7 +88,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
 
         holder.options.setOnClickListener(v -> {
             // Tell MainActivity what item to perform actions on
-            mListener.onButtonClick(position, mDay, 2, -1);
+            mListener.onButtonClick(position, mDay, 3, -1);
 
             // Handle onClickListener
             mActivity.registerForContextMenu(holder.options);

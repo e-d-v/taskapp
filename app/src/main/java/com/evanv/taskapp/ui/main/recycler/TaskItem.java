@@ -8,14 +8,14 @@ import java.util.List;
  * @author Evan Voogd
  */
 public class TaskItem {
-    private final String mName; // Name of the task (e.g. "Read Ch. 3")
-    private int mIndex;   // Index into taskSchedule.get(day) for this event
-    private final boolean mHasTimer;    // Task has active timer.
-    private final int mPriority;        // Priority of task
-    private final String mProject;      // Name of the Project associated with the Task
-    private final int mProjectColor;    // Color of the Project associated with the Task
-    private final long mID;             // The ID of the Task
-    private final List<String> mLabels; // Names of Labels associated with the Task
+    private final String mName;               // Name of the task (e.g. "Read Ch. 3")
+    private int mIndex;                       // Index into taskSchedule.get(day) for this event
+    private final boolean mHasTimer;          // Task has active timer.
+    private final int mPriority;              // Priority of task
+    private final String mProject;            // Name of the Project associated with the Task
+    private final int mProjectColor;          // Color of the Project associated with the Task
+    private final long mID;                   // The ID of the Task
+    private final List<String> mLabels;       // Names of Labels associated with the Task
     private final List<Integer> mLabelColors; // Colors of the Labels associated with the Task
 
     /**

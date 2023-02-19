@@ -26,13 +26,26 @@ import com.evanv.taskapp.logic.LogicSubsystem;
  * @author Evan Voogd
  */
 public class ProjectEntry extends DialogFragment {
-    public int color; // User-selected project color
-    private TextView mColorLabel;
-    private EditText mNameET;
-    private EditText mGoalET;
-    private long mEditedID = -1;
-    private View.OnClickListener mOnSubmit;
+    public int color;                       // User-selected project color
+    private TextView mColorLabel;           // The TextView representing the project color
+    private EditText mNameET;               // The EditText representing the project name
+    private EditText mGoalET;               // The EditText representing the project goal
+    private long mEditedID = -1;            // The ID of the project to edit
+    private View.OnClickListener mOnSubmit; // The listener for the submit button
 
+    /**
+     * Called upon creation of the project entry fragment
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate
+     * any views in the fragment,
+     * @param container If non-null, this is the parent view that the fragment's
+     * UI should be attached to.  The fragment should not add the view itself,
+     * but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     *
+     * @return root view of the fragment
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -85,10 +98,20 @@ public class ProjectEntry extends DialogFragment {
         return view;
     }
 
+    /**
+     * Set the ID of the project to be edited
+     *
+     * @param id ID of the project to be edited
+     */
     public void setID(long id) {
         mEditedID = id;
     }
 
+    /**
+     * Set the listener that is called when the submit button is pressed
+     *
+     * @param callback the listener that is called when the submit button is pressed
+     */
     public void setOnSubmit(View.OnClickListener callback) {
         mOnSubmit = callback;
     }

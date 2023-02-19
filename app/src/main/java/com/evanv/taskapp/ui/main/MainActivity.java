@@ -64,18 +64,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     // Fields
     @SuppressWarnings("unused")
     private ActivityMainBinding mBinding;          // Binding for the MainActivity
-    public static final int ITEM_REQUEST = 1;      // requestCode for task/item entry
     private DayItemAdapter mDayItemAdapter;        // Adapter for recycler showing user commitments
     private ViewFlipper mVF;                       // Swaps between loading screen and recycler
-    // Allows data to be pulled from activity
-    private ActivityResultLauncher<Intent> mUpdateUILauncher;
-    // Allows us to manually show FAB when task/event completed/deleted.
     LogicSubsystem mLogicSubsystem;                // Subsystem that handles logic for taskapp
     private LocalDate mStartDate;                  // The current date
     private long mEditedID;                        // ID of the currently edited task
     private int mPosition;                         // Position of button press
     private int mDay;                              // Day of button press
     private boolean isFABOpen;                     // Is the fab vertically expanded
+    // Allows data to be pulled from activity
+    private ActivityResultLauncher<Intent> mUpdateUILauncher;
 
     // Key for the extra that stores the type of edit
     public static final String EXTRA_TYPE = "com.evanv.taskapp.ui.main.extras.TYPE";
@@ -468,14 +466,20 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                 mPosition = pair.getFirst();
                 mDay = pair.getSecond();
-                mEditedID = id;
                 completeTask();
                 break;
             // Options button pressed, set mPosition/mDay
             case 1:
-            case 2:
+            case 3:
                 mPosition = position;
                 mDay = day;
+                break;
+            case 2:
+                Pair<Integer, Integer> pair2 = mLogicSubsystem.convertDay(id);
+
+                mPosition = pair2.getFirst();
+                mDay = pair2.getSecond();
+                mEditedID = id;
                 break;
         }
     }
@@ -730,7 +734,13 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
     }
 
+    /**
+     * Optimize on a separate thread while updating the UI on the UI thread
+     */
     private class OptimizeRunnable implements Runnable {
+        /**
+         * Run the optimizer and update the UI
+         */
         @Override
         public void run() {
             runOnUiThread(() ->mVF.setDisplayedChild(0));
@@ -738,7 +748,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
             runOnUiThread(() -> {
                 updateRecycler();
-
 
                 // If there are any tasks/events scheduled, show the recycler
                 if (!mLogicSubsystem.isEmpty()) {

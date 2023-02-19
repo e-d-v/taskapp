@@ -19,8 +19,8 @@ import java.util.Objects;
  * @author Evan Voogd
  */
 public class DailyRecurFragment extends DialogFragment {
-    private EditText mIntervalET; // Edit text containing the interval value
-    private View.OnClickListener mSubmitListener;
+    private EditText mIntervalET;                 // Edit text containing the interval value
+    private View.OnClickListener mSubmitListener; // Listener that is called when submit is pressed
 
     // Value for a Bundle extra that represents daily recurrence happening.
     public static final String EXTRA_VAL_TYPE = "com.evanv.taskapp.ui.additem.recur.DailyRecurFragment.extra.val.TYPE";
@@ -33,6 +33,11 @@ public class DailyRecurFragment extends DialogFragment {
     public DailyRecurFragment() {
     }
 
+    /**
+     * Add a listener that is called when the submit button is pressed.
+     *
+     * @param listener listener that will be called when the submit button is pressed.
+     */
     public void addSubmitListener(View.OnClickListener listener) {
         mSubmitListener = listener;
     }

@@ -53,6 +53,11 @@ public class ProjectItem {
         return mColor;
     }
 
+    /**
+     * Get the ID of this ProjectItem
+     *
+     * @return the ID of the project this ProjectItem represents
+     */
     public long getID() {
         return mID;
     }

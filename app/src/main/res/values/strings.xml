@@ -7,7 +7,7 @@
     <string name="task_name">Task Name</string>
     <string name="ecd">Earliest Completion Date</string>
     <string name="due_date">Due Date</string>
-    <string name="ttc">Time to Complete (in minutes)</string>
+    <string name="ttc">Completion Time (min.)</string>
     <string name="length">Length (in minutes)</string>
     <string name="start_time">Start Time</string>
     <string name="event_name">Event Name</string>
@@ -17,7 +17,7 @@
     <string name="optimizing">Optimizing…</string>
     <string name="complete_dialog_message">How long (in minutes) did the task take to complete?</string>
     <string name="complete_dialog_title">Complete Task</string>
-    <string name="parents_button">Choose prerequisite tasks</string>
+    <string name="parents_button">Complete After</string>
     <string name="ecd_help_text_format">Start times are formatted as MM/DD/YY HH:MM AM/PM.</string>
     <string name="ttc_error_empty">Make sure to enter an estimated completion time for the event.</string>
     <string name="ttc_error_empty_task">Make sure to enter an estimated completion time for the task.</string>
@@ -29,8 +29,8 @@
     <string name="ttc_format_event">Make sure to enter a whole number (in minutes) for completion time.</string>
     <string name="recur_format_event">Make sure to enter a whole number for the number of %s between recurrences.</string>
     <string name="complete_task">Complete Task</string>
-    <string name="schedule_for">Schedule for %s (%d minutes):</string>
-    <string name="minutes_to_complete">(%d minutes to complete)</string>
+    <string name="schedule_for">%s\n%d minutes</string>
+    <string name="minutes_to_complete">%d Minutes</string>
     <string name="ok">OK</string>
     <string name="name_empty_task">Make sure to enter a name for the task.</string>
     <string name="ecd_empty_task">Make sure to enter an earliest completion date for the task.</string>
@@ -86,13 +86,13 @@
     <string name="oct">Oct</string>
     <string name="nov">Nov</string>
     <string name="dec">Dec</string>
-    <string name="monthly_recur_prompt">Recur every _ months:</string>
+    <string name="monthly_recur_prompt">Months between recurrences:</string>
     <string name="recur_days_hint">1,2,3</string>
-    <string name="years_recur_prompt">Recur every _ years:</string>
+    <string name="years_recur_prompt">Years between recurrences:</string>
     <string name="months_recur_prompt">Months to recur on:</string>
     <string name="recur_months_hint">Jan,Feb,Mar</string>
     <string name="weekly_recur_prompt">Recur every _ weeks:</string>
-    <string name="recur_button">Choose how often this event recurs</string>
+    <string name="recur_button">Recur</string>
     <string name="recur_on_the">Recur on the %s</string>
     <string name="recur_specific">Recur Specific Days</string>
     <string name="recur_specific_days_months">Recur specific months on specific days</string>
@@ -179,6 +179,7 @@
     <string name="project_replace">Project:\n%s</string>
     <string name="label_label">Labels:\nNone Chosen</string>
     <string name="label_replace">Labels:\n%d Chosen</string>
+    <string name="label_format">Labels:\n%s Chosen</string>
     <string name="min_priority">Minimum Priority</string>
     <string name="start_date">Start Date</string>
     <string name="pick_project">Pick Project</string>
@@ -186,8 +187,66 @@
     <string name="options">Options</string>
     <string name="delete">Delete</string>
     <string name="edit">Edit</string>
-    <string name="start_timer">Start/Stop Timer</string>
+    <string name="start_timer">Start Timer</string>
+    <string name="stop_timer">Stop Timer</string>
     <string name="edit_event">Edit Event</string>
     <string name="edit_task">Edit Task</string>
     <string name="enter_start_time">Please enter a start time first.</string>
+    <string name="early_date_default">Early Date:\nNone Chosen</string>
+    <string name="due_date_default">Due Date:\nNone Chosen</string>
+    <string name="early_date_format">Early Date:\n%s</string>
+    <string name="due_date_format">Due Date:\n%s</string>
+    <string name="parent_tasks_default">Prereq Tasks:\nNone Chosen</string>
+    <string name="parent_tasks_format">Prereq Tasks:\n%s Chosen</string>
+    <string name="recur">Recur</string>
+    <string name="labels_format">Labels:\n%s Added</string>
+    <string name="start_time_format">Start Time:\n%s</string>
+    <string name="end_time_format">End Time:\n%s</string>
+    <string name="start_time_default">Start Time:\nNone Chosen</string>
+    <string name="end_time_default">End Time:\nNone Chosen</string>
+    <string name="add_project">Add Project</string>
+    <string name="add_label">Add Label</string>
+    <string name="days_between_recur">Days between recurrences</string>
+    <string name="how_many_days_between_recurrences">How many days between recurrences?</string>
+    <string name="postpone_task">Postpone Task</string>
+    <string name="help">Help</string>
+    <string name="filter_tasks_url">http://www.evanv.com/taskapp/filter-tasks/</string>
+    <string name="add_task_url">http://www.evanv.com/taskapp/add-task/</string>
+    <string name="add_event_url">http://www.evanv.com/taskapp/add-event/</string>
+    <string name="label_url">http://www.evanv.com/taskapp/labels/</string>
+    <string name="project_url">http://www.evanv.com/taskapp/projects/</string>
+    <string name="labels">Labels</string>
+    <string name="three_dots">Three Dots</string>
+    <string name="corrupt_error">Our apologies, taskapp encountered an error. %d tasks were corrupted in the process.</string>
+    <string name="close">Close</string>
+    <string name="open">Open</string>
+    <string name="schedule_url">http://www.evanv.com/taskapp/schedule/</string>
+    <string name="settings">Settings</string>
+    <string name="about">About taskapp</string>
+    <string name="about_message">taskapp was created by Evan Voogd, a CS student at the University of Minnesota over the course of a year from Spring 2022 to February 2023.</string>
+    <string name="labels_url">http://www.evanv.com/taskapp/labels/</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="import_backup">Import Backup</string>
+    <string name="export_backup">Export Backup</string>
+    <string name="restore_message_success">Backup restoration was a success. Click OK to restart the app for changes to take effect.</string>
+    <string name="restore_title_success">Import Success</string>
+    <string name="restore_title_failure">Import failed.</string>
+    <string name="restore_message_failure">taskapp could not restore from this file. Make sure that you select a valid backup file.</string>
+    <string name="error_recur_infinite">Cannot recur infinitely.</string>
+    <string name="search_results">Search Results</string>
 </resources>

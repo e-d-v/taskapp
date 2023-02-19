@@ -1,14 +1,17 @@
 package com.evanv.taskapp.ui.additem;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -22,20 +25,69 @@ import com.evanv.taskapp.logic.LogicSubsystem;
  *
  * @author Evan Voogd
  */
-public class ProjectEntry extends AppCompatActivity {
+public class ProjectEntry extends DialogFragment {
     public int color; // User-selected project color
+    private TextView mColorLabel;
+    private EditText mNameET;
+    private EditText mGoalET;
+    private long mEditedID = -1;
+    private View.OnClickListener mOnSubmit;
 
-    /**
-     * On creation of the project entry screen.
-     *
-     * @param savedInstanceState not used
-     */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_project_entry);
-
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.activity_project_entry, container, false);
+        mColorLabel = view.findViewById(R.id.colorSelectTextView);
+        mNameET = view.findViewById(R.id.editTextProjectName);
+        mGoalET = view.findViewById(R.id.editTextGoal);
+        view.findViewById(R.id.colorSelectTextView).setOnClickListener(this::handleColorPress);
+        view.findViewById(R.id.submitButton).setOnClickListener(this::submit);
         color = 11;
+        view.findViewById(R.id.helpButton).setOnClickListener(v -> {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse(getString(R.string.project_url)));
+            startActivity(browserIntent);
+        });
+
+        if (mEditedID != -1) {
+            mNameET.setText(LogicSubsystem.getInstance().getProjectName(mEditedID, requireContext()));
+            color = LogicSubsystem.getInstance().getProjectColor(mEditedID);
+            mGoalET.setText(LogicSubsystem.getInstance().getProjectGoal(mEditedID));
+
+            // Change the color of the label to the chosen color.
+            String labelStart = getString(R.string.colorLabel);
+            SpannableString colorText = new SpannableString(labelStart +
+                    getResources().getStringArray(R.array.colors)[color]);
+
+            int[] colors = {getResources().getColor(R.color.pale_blue),
+                    getResources().getColor(R.color.blue),
+                    getResources().getColor(R.color.pale_green),
+                    getResources().getColor(R.color.green),
+                    getResources().getColor(R.color.pink),
+                    getResources().getColor(R.color.red),
+                    getResources().getColor(R.color.pale_orange),
+                    getResources().getColor(R.color.orange),
+                    getResources().getColor(R.color.lavender),
+                    getResources().getColor(R.color.purple),
+                    getResources().getColor(R.color.yellow),
+                    getResources().getColor(R.color.gray)};
+
+            int colorResource = colors[color];
+
+            colorText.setSpan(
+                    new ForegroundColorSpan(colorResource), labelStart.length(), colorText.length(), 0);
+
+            mColorLabel.setText(colorText);
+        }
+        return view;
+    }
+
+    public void setID(long id) {
+        mEditedID = id;
+    }
+
+    public void setOnSubmit(View.OnClickListener callback) {
+        mOnSubmit = callback;
     }
 
     /**
@@ -44,7 +96,7 @@ public class ProjectEntry extends AppCompatActivity {
      * @param view not used
      */
     public void handleColorPress(View view) {
-        final Dialog dialog = new Dialog(this);
+        final Dialog dialog = new Dialog(requireContext());
         dialog.setContentView(R.layout.color_picker);
         dialog.setTitle("Pick Project Color");
 
@@ -69,12 +121,12 @@ public class ProjectEntry extends AppCompatActivity {
                 for (ImageButton button : buttons) {
                     button.setSelected(false);
                     button.setImageDrawable(
-                            ContextCompat.getDrawable(this, R.drawable.ic_baseline_circle_24));
+                            ContextCompat.getDrawable(requireContext(), R.drawable.ic_baseline_circle_24));
                 }
 
                 v.setSelected(true);
                 ((ImageButton) v).setImageDrawable(
-                        ContextCompat.getDrawable(this, R.drawable.ic_select_color_24));
+                        ContextCompat.getDrawable(requireContext(), R.drawable.ic_select_color_24));
             });
         }
 
@@ -89,7 +141,6 @@ public class ProjectEntry extends AppCompatActivity {
             }
 
             // Change the color of the label to the chosen color.
-            TextView colorLabel = findViewById(R.id.colorSelectTextView);
             String labelStart = getString(R.string.colorLabel);
             SpannableString colorText = new SpannableString(labelStart +
                     getResources().getStringArray(R.array.colors)[color]);
@@ -112,7 +163,7 @@ public class ProjectEntry extends AppCompatActivity {
             colorText.setSpan(
                     new ForegroundColorSpan(colorResource), labelStart.length(), colorText.length(), 0);
 
-            colorLabel.setText(colorText);
+            mColorLabel.setText(colorText);
 
             dialog.dismiss();
         });
@@ -126,24 +177,31 @@ public class ProjectEntry extends AppCompatActivity {
      * @param view not used
      */
     public void submit(View view) {
-        String name = String.valueOf(((EditText)findViewById(R.id.editTextProjectName)).getText());
-        String goal = String.valueOf(((EditText)findViewById(R.id.editTextGoal)).getText());
+        String name = String.valueOf((mNameET).getText());
+        String goal = String.valueOf((mGoalET).getText());
 
         if (name.equals("")) {
-            Toast.makeText(this, R.string.name_reminder, Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), R.string.name_reminder, Toast.LENGTH_LONG).show();
             return;
         }
         if (goal.equals("")) {
-            Toast.makeText(this, R.string.goal_reminder, Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), R.string.goal_reminder, Toast.LENGTH_LONG).show();
             return;
         }
 
         // Add Project to LogicSubsystem
-        LogicSubsystem.getInstance().addProject(name, color, goal);
+        if (mEditedID != -1) {
+            LogicSubsystem.getInstance().editProject(name, color, goal, mEditedID);
+        }
+        else {
+            LogicSubsystem.getInstance().addProject(name, color, goal);
+        }
+
+        if (mOnSubmit != null) {
+            mOnSubmit.onClick(null);
+        }
 
         // Return control
-        Intent replyIntent = new Intent();
-        setResult(RESULT_OK, replyIntent);
-        finish();
+        dismiss();
     }
 }

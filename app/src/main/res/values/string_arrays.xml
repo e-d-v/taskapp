@@ -7,6 +7,10 @@
         <item>@string/monthly_recur</item>
         <item>@string/yearly_recur</item>
     </string-array>
+    <string-array name="recur_types">
+        <item>Number of Times</item>
+        <item>Until End Date</item>
+    </string-array>
     <string-array name="weekdays">
         <item>@string/sunday</item>
         <item>@string/monday</item>
@@ -48,5 +52,16 @@
         <item>Purple</item>
         <item>Yellow</item>
         <item>Gray</item>
+    </string-array>
+
+    <string-array name="label_options">
+        <item>View Tasks with Label</item>
+        <item>Edit Label</item>
+        <item>Delete Label</item>
+    </string-array>
+
+    <string-array name="project_options">
+        <item>Edit Project</item>
+        <item>Delete Project</item>
     </string-array>
 </resources>

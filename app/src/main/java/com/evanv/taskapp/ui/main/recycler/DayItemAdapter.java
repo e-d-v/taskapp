@@ -2,12 +2,27 @@ package com.evanv.taskapp.ui.main.recycler;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.text.Layout;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.AlignmentSpan;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.OptIn;
+import androidx.compose.ui.text.android.InternalPlatformTextApi;
+import androidx.compose.ui.text.android.style.LineHeightSpan;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,7 +33,7 @@ import com.evanv.taskapp.ui.main.ClickListener;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-/**
+@InternalPlatformTextApi /**
  * Adapter to interface between data in DayItems and recyclerview in MainActivity
  *
  * @author Evan Voogd
@@ -74,7 +89,35 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         DayItem dayItem = mDayItemList.get(position);
 
         // Set the day header to the string inside DayItem
-        holder.mDayItemDate.setText(dayItem.getDayString());
+        SpannableString dateText = new SpannableString(dayItem.getDayString());
+        dateText.setSpan(new LineHeightSpan(0), dateText.toString().indexOf('\n'), dateText.length(),
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        dateText.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_OPPOSITE),
+                dateText.toString().indexOf('\n'), dateText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        dateText.setSpan(new StyleSpan(Typeface.BOLD),
+                0, dateText.toString().indexOf('\n'), 0);
+        dateText.setSpan(new RelativeSizeSpan((float)0.75), dateText.toString().indexOf('\n'),
+                dateText.length(), 0);
+        ForegroundColorSpan span3;
+
+        int nightModeFlags =
+                mActivity.getResources().getConfiguration().uiMode &
+                        Configuration.UI_MODE_NIGHT_MASK;
+        switch (nightModeFlags) {
+            case Configuration.UI_MODE_NIGHT_YES:
+                span3 = new ForegroundColorSpan(Color.parseColor("#B8B8B8"));
+                break;
+
+            case Configuration.UI_MODE_NIGHT_NO:
+                span3 = new ForegroundColorSpan(Color.parseColor("#707070"));
+                break;
+
+            default:
+                span3 = new ForegroundColorSpan(Color.parseColor("#949494"));
+                break;
+        }
+        dateText.setSpan(span3, dateText.toString().indexOf('\n'), dateText.length(), 0);
+        holder.mDayItemDate.setText(dateText);
 
         // Initialize the LinearLayoutManagers for the child RecyclerViews
         LinearLayoutManager eventLayoutManager = new LinearLayoutManager(
@@ -92,7 +135,7 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
         EventItemAdapter eventItemAdapter = new EventItemAdapter(dayItem.getEvents(), holder,
                 dayItem.getIndex(), holder.mEventHeader, mActivity);
         TaskItemAdapter taskItemAdapter = new TaskItemAdapter(dayItem.getTasks(), holder,
-                dayItem.getIndex(), holder.mTaskHeader, dayItem.isWorkAhead(), mActivity);
+                dayItem.getIndex(), holder.mTaskHeader, mActivity);
         holder.mEventRecyclerView.setLayoutManager(eventLayoutManager);
         holder.mTaskRecyclerView.setLayoutManager(taskLayoutManager);
         holder.mEventRecyclerView.setAdapter(eventItemAdapter);
@@ -156,8 +199,8 @@ public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewH
          * @param day Ignored as TaskItemHolder does not know it's recycler's DayRecycler's index.
          */
         @Override
-        public void onButtonClick(int position, int day, int action) {
-            mListenerRef.get().onButtonClick(position, day, action);
+        public void onButtonClick(int position, int day, int action, long id) {
+            mListenerRef.get().onButtonClick(position, day, action, id);
         }
     }
 }

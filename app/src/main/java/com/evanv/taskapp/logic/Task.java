@@ -17,7 +17,11 @@ import org.threeten.bp.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Represents a single task. Conceptually a Task is a node on a large task dependency graph that
@@ -82,6 +86,8 @@ public class Task implements Comparable<Task> {
 
     // Static field
     public static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("M/d/yy");
+    // Type value representing Task
+    public static final String EXTRA_VAL_TASK = "com.evanv.taskapp.extra.val.TASK";
 
     /**
      * Initializes an object representing a task
@@ -131,7 +137,16 @@ public class Task implements Comparable<Task> {
         mParents = new ArrayList<>();
         mChildren = new ArrayList<>();
         mLabels = new ArrayList<>();
-        mParentArr = parentArr;
+        mParentArr = new ArrayList<>();
+
+        // Remove duplicate entries
+        for (long id : parentArr) {
+            if (!mParentArr.contains(id)) {
+                mParentArr.add(id);
+            }
+        }
+
+
         mPriority = priority;
         mProjectID = projectID;
         mLabelIDs = labelIDs;
@@ -260,8 +275,13 @@ public class Task implements Comparable<Task> {
      * @param parent The task that whose completion is required for the completion of the task
      */
     public void addParent(Task parent) {
-        this.mParents.add(parent);
-        this.mParentArr.add(parent.getID());
+        if (!mParents.contains(parent) && !mChildren.contains(parent) && parent != this) {
+            this.mParents.add(parent);
+
+            if (!mParentArr.contains(parent.getID())) {
+                this.mParentArr.add(parent.getID());
+            }
+        }
     }
 
     /**
@@ -289,7 +309,9 @@ public class Task implements Comparable<Task> {
      * @param child The dependent task to add
      */
     public void addChild(Task child) {
-        this.mChildren.add(child);
+        if (!mChildren.contains(child) && !mParents.contains(child) && child != this) {
+            this.mChildren.add(child);
+        }
     }
 
     /**
@@ -616,5 +638,9 @@ public class Task implements Comparable<Task> {
      */
     public static int getDiff(LocalDateTime endDate, LocalDate startDate) {
         return (int) ChronoUnit.DAYS.between(startDate, endDate.toLocalDate());
+    }
+
+    public void removeProject() {
+        mProject = null;
     }
 }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:gravity="center|center_vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/taskapp_green"
+    android:layout_width="match_parent"
+    android:layout_height="120dp">
+
+    <ImageView
+        app:tint="@color/white"
+        android:src="@drawable/taskapp_logo"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"/>
+
+</LinearLayout>

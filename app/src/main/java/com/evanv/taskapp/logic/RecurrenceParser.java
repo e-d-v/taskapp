@@ -4,10 +4,10 @@ import android.content.Context;
 import android.os.Bundle;
 
 import com.evanv.taskapp.R;
+import com.evanv.taskapp.ui.additem.ItemEntry;
 import com.evanv.taskapp.ui.additem.recur.DailyRecurFragment;
 import com.evanv.taskapp.ui.additem.recur.MonthlyRecurFragment;
 import com.evanv.taskapp.ui.additem.recur.NoRecurFragment;
-import com.evanv.taskapp.ui.additem.recur.RecurActivity;
 import com.evanv.taskapp.ui.additem.recur.RecurInput;
 import com.evanv.taskapp.ui.additem.recur.WeeklyRecurFragment;
 import com.evanv.taskapp.ui.additem.recur.YearlyRecurFragment;
@@ -46,7 +46,7 @@ public class RecurrenceParser {
     /**
      * Convert a bundle into a list of dates that the user has chosen to recur on.
      *
-     * @param recurrenceBundle A bundle containing recurrence information from RecurActivity
+     * @param recurrenceBundle A bundle containing recurrence information from ItemEntry
      * @param itemStart Start day for item
      *
      * @return A list of dates, starting at itemStart, that follow the bundle's recurrence pattern
@@ -64,8 +64,8 @@ public class RecurrenceParser {
         }
 
         // Check if user chose to recur until date or number of times
-        boolean until = recurrenceBundle.get(RecurActivity.EXTRA_UNTIL_TYPE)
-                .equals(RecurActivity.EXTRA_VAL_UNTIL);
+        boolean until = recurrenceBundle.get(ItemEntry.EXTRA_UNTIL_TYPE)
+                .equals(ItemEntry.EXTRA_VAL_UNTIL);
 
         // Initialize until holders. Only the one associated with the user's choice
         // of recurrence is used.
@@ -74,13 +74,13 @@ public class RecurrenceParser {
 
         // Recur until end date
         if (until) {
-            endDate = LocalDate.parse(recurrenceBundle.getString(RecurActivity.EXTRA_UNTIL),
+            endDate = LocalDate.parse(recurrenceBundle.getString(ItemEntry.EXTRA_UNTIL),
                     Task.dateFormat);
             numTimes = Integer.MAX_VALUE; // Set unused to max value
         }
         // Recur set number of times
         else {
-            numTimes = Integer.parseInt(recurrenceBundle.getString(RecurActivity.EXTRA_UNTIL));
+            numTimes = Integer.parseInt(recurrenceBundle.getString(ItemEntry.EXTRA_UNTIL));
             endDate = LocalDate.MAX; // Set unused to max value
         }
 
@@ -136,7 +136,7 @@ public class RecurrenceParser {
      * Parse the MonthlyRecur case. Pulled from normal dispatcher as it's not one iterator like
      * No/Daily/Weekly
      *
-     * @param recurrenceBundle Bundle describing recurrence from RecurActivity
+     * @param recurrenceBundle Bundle describing recurrence from ItemEntry
      * @param itemStart Date of first occurrence
      *
      * @return An iterator describing the given recurrence logic
@@ -170,7 +170,7 @@ public class RecurrenceParser {
      * Parse the Yearly case. Pulled from normal dispatcher as it's not one iterator like
      * No/Daily/Weekly
      *
-     * @param recurrenceBundle Bundle describing recurrence from RecurActivity
+     * @param recurrenceBundle Bundle describing recurrence from ItemEntry
      * @param itemStart Date of first occurrence
      *
      * @return An iterator describing the given recurrence logic

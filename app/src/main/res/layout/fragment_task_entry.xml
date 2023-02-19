@@ -4,195 +4,236 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_margin="6dp"
+    android:padding="10dp"
     tools:context=".ui.additem.TaskEntry"
     android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/editTextTaskName"
+
+    <LinearLayout
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="@string/task_name"
-        android:inputType="textShortMessage"
-        android:minHeight="48dp"
-        android:textColorHint="#757575"
-        android:importantForAutofill="no"/>
-
-    <LinearLayout
-        android:gravity="center_vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
+        android:orientation="vertical">
         <EditText
-            android:id="@+id/editTextECD"
+            android:id="@+id/editTextTaskName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:cursorVisible="false"
             android:ems="10"
-            android:focusable="false"
-            android:hint="@string/ecd"
-            android:inputType="none"
+            android:hint="@string/task_name"
+            android:inputType="textShortMessage"
             android:minHeight="48dp"
             android:textColorHint="#757575"
-            android:importantForAutofill="no" />
+            android:importantForAutofill="no"/>
 
-        <ImageButton
-            app:tint="@color/text_primary"
-            android:background="@null"
-            android:id="@+id/ecdInfoButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_weight="0"
-            android:backgroundTint="@color/white"
-            android:contentDescription="@string/info_button"
-            android:src="@drawable/ic_outline_info_24"
-            tools:ignore="DuplicateSpeakableTextCheck" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:gravity="center_vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <EditText
-            android:id="@+id/editTextDueDate"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:cursorVisible="false"
-            android:ems="10"
-            android:focusable="false"
-            android:hint="@string/due_date"
-            android:inputType="none"
-            android:textColorHint="#757575"
-            android:minHeight="48dp"
-            tools:ignore="TextFields"
-            android:importantForAutofill="no" />
-        <ImageButton
-            app:tint="@color/text_primary"
-            android:background="@null"
-            android:backgroundTint="@color/white"
-            android:src="@drawable/ic_outline_info_24"
-            android:id="@+id/ddInfoButton"
-            android:layout_weight="0"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/info_button"/>
-    </LinearLayout>
+            android:orientation="horizontal">
+            <LinearLayout
+                android:id="@+id/startDateLayout"
+                android:gravity="center_vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal">
 
-    <LinearLayout
-        android:gravity="center_vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+                <ImageView
+                    app:tint="@color/white"
+                    android:background="@null"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="0"
+                    app:srcCompat="@drawable/ic_baseline_edit_calendar_48" />
 
-        <EditText
-            android:id="@+id/editTextTTC"
+                <TextView
+                    android:id="@+id/startDateLabel"
+                    android:layout_width="match_parent"
+                    android:textSize="18sp"
+                    android:lineSpacingExtra="4dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/early_date_default"/>
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/endDateLayout"
+                android:gravity="center_vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <ImageView
+                    app:tint="@color/white"
+                    android:background="@null"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="0"
+                    app:srcCompat="@drawable/ic_baseline_edit_calendar_48" />
+
+                <TextView
+                    android:id="@+id/endDateLabel"
+                    android:layout_width="match_parent"
+                    android:textSize="18sp"
+                    android:lineSpacingExtra="4dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/due_date_default" />
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_marginTop="6dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ems="10"
-            android:hint="@string/ttc"
-            android:inputType="number"
-            android:textColorHint="#757575"
-            android:minHeight="48dp"
-            android:importantForAutofill="no" />
-        <ImageButton
-            app:tint="@color/text_primary"
-            android:background="@null"
-            android:backgroundTint="@color/white"
-            android:src="@drawable/ic_outline_info_24"
-            android:id="@+id/ttcInfoButton"
-            android:layout_weight="0"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/info_button"/>
-    </LinearLayout>
+            android:orientation="horizontal">
+            <LinearLayout
+                android:id="@+id/projectLayout"
+                android:layout_width="match_parent"
+                android:gravity="center_vertical"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal">
 
-    <LinearLayout
-        android:gravity="center_vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:textSize="18sp"
-            android:text="@string/priority"/>
-        <SeekBar
-            android:id="@+id/seekBar"
-            style="@style/Widget.AppCompat.SeekBar.Discrete"
+                <ImageView
+                    app:tint="@color/white"
+                    android:background="@null"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="0"
+                    app:srcCompat="@drawable/ic_baseline_inventory_24" />
+
+                <TextView
+                    android:id="@+id/projectsLabel"
+                    android:layout_width="match_parent"
+                    android:textSize="18sp"
+                    android:lineSpacingExtra="4dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/project_label" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/labelsLayout"
+                android:gravity="center_vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <ImageView
+                    app:tint="@color/white"
+                    android:background="@null"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="0"
+                    app:srcCompat="@drawable/ic_baseline_label_24" />
+
+                <TextView
+                    android:id="@+id/labelsLabel"
+                    android:layout_width="match_parent"
+                    android:textSize="18sp"
+                    android:lineSpacingExtra="4dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/label_label" />
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_marginTop="6dp"
             android:layout_width="match_parent"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:max="3"
-            android:progress="0" />
-        <ImageButton
-            app:tint="@color/text_primary"
-            android:background="@null"
-            android:backgroundTint="@color/white"
-            android:src="@drawable/ic_outline_info_24"
-            android:id="@+id/priorityInfoButton"
-            android:layout_weight="0"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/info_button"/>
-    </LinearLayout>
+            android:orientation="horizontal">
+            <EditText
+                android:id="@+id/editTextTTC"
+                android:inputType="number"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp"
+                android:layout_marginEnd="5dp"
+                android:hint="@string/ttc"/>
+            <LinearLayout
+                android:id="@+id/parentsLayout"
+                android:gravity="center_vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal">
 
-    <LinearLayout
-        android:gravity="center_vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <Spinner
-            android:id="@+id/projectSpinner"
-            android:layout_weight="1"
+                <ImageView
+                    app:tint="@color/white"
+                    android:background="@null"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="0"
+                    app:srcCompat="@drawable/baseline_arrow_forward_32" />
+
+                <TextView
+                    android:id="@+id/parentsLabel"
+                    android:layout_width="match_parent"
+                    android:textSize="18sp"
+                    android:lineSpacingExtra="4dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/parent_tasks_default" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:gravity="center_vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:textSize="18sp"
+                android:text="@string/priority"/>
+            <SeekBar
+                android:id="@+id/seekBar"
+                style="@style/Widget.AppCompat.SeekBar.Discrete"
+                android:layout_width="match_parent"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:max="3"
+                android:progress="0" />
+        </LinearLayout>
 
-        <ImageButton
-            app:tint="@color/text_primary"
-            android:background="@null"
-            android:backgroundTint="@color/white"
-            android:src="@drawable/ic_baseline_add_24"
-            android:id="@+id/addProject"
-            android:layout_weight="0"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/info_button"/>
+
     </LinearLayout>
 
     <LinearLayout
-        android:gravity="center_vertical"
+        android:layout_marginTop="6dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
         <Button
-            android:id="@+id/buttonAddLabels"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/add_labels"/>
-        <ImageButton
-            app:tint="@color/text_primary"
-            android:background="@null"
-            android:backgroundTint="@color/white"
-            android:src="@drawable/ic_baseline_add_24"
-            android:id="@+id/addLabel"
-            android:layout_weight="0"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/info_button"/>
+            android:layout_marginEnd="6dp"
+            android:text="@string/submit"
+            android:id="@+id/submitButton"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/recur"
+            android:id="@+id/recurButton"/>
+        <LinearLayout
+            android:gravity="end|center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <ImageButton
+                android:id="@+id/helpButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/baseline_help_24"
+                android:background="@null"
+                app:tint="@color/text_primary"/>
+        </LinearLayout>
     </LinearLayout>
-
-    <Button
-        android:id="@+id/buttonAddParents"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/parents_button"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/task_recur_button"
-        android:id="@+id/recurButton"/>
-
 </LinearLayout>

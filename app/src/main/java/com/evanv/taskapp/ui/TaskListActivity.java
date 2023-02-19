@@ -1,24 +1,23 @@
 package com.evanv.taskapp.ui;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.compose.ui.text.android.InternalPlatformTextApi;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.Activity;
-import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.ContextMenu;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.logic.LogicSubsystem;
-import com.evanv.taskapp.ui.additem.AddItem;
+import com.evanv.taskapp.ui.additem.TaskEntry;
 import com.evanv.taskapp.ui.main.ClickListener;
 import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.main.recycler.TaskItem;
@@ -32,7 +31,7 @@ import java.util.Objects;
 
 import kotlin.Pair;
 
-/**
+@InternalPlatformTextApi /**
  * Activity that displays a list of Tasks. Can be created by various screens that need to show
  * a list of tasks, such as a Filter Screen or the Projects Screen.
  *
@@ -61,11 +60,28 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
     private TaskItemAdapter mAdapter;           // The adapter for the recycler
 
     private List<Long> mIDs;
+    private int mIndex;    // Index into the recycler to update.
     private int mPosition; // Position in the recycler of the selected task.
     private int mDay;      // Day of the selected task.
     private long mID;      // ID of the currently selected task.
+    private Thread mOptimizer; // Holds optimizer thread if currently available.
 
-    private ActivityResultLauncher<Intent> mStartForResult; // Launches an activity
+    /**
+     * Updates todayTime in SharedPreferences
+     */
+    @Override
+    protected void onPause() {
+        // Update todayTime in SharedPreferences
+        SharedPreferences sp = getSharedPreferences(MainActivity.PREF_FILE, MODE_PRIVATE);
+        SharedPreferences.Editor edit = sp.edit();
+        edit.putLong(MainActivity.PREF_DAY, LogicSubsystem.getInstance().getStartDate().toEpochDay());
+        edit.putInt(MainActivity.PREF_TIME, LogicSubsystem.getInstance().getTodayTime());
+        edit.putLong(MainActivity.PREF_TIMED_TASK, LogicSubsystem.getInstance().getTimedID());
+        edit.putLong(MainActivity.PREF_TIMER, LogicSubsystem.getInstance().getTimerStart());
+
+        edit.apply();
+        super.onPause();
+    }
 
     /**
      * Creates a TaskListActivity. Bundle requires information including a list of taskNames,
@@ -79,6 +95,8 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_list);
 
+        setSupportActionBar(findViewById(R.id.toolbar));
+
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         LocalDate startDate = LocalDate.ofEpochDay
@@ -87,7 +105,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         LocalDate endDate = LocalDate.ofEpochDay
                 (getIntent().getLongExtra(EXTRA_END_DATE, 0));
         endDate = endDate.toEpochDay() == 0 ? null : endDate;
-        long project = getIntent().getLongExtra(EXTRA_PROJECT, 0);
+        long project = getIntent().getLongExtra(EXTRA_PROJECT, -1);
         String name = getIntent().getStringExtra(EXTRA_NAME);
         int minTime = getIntent().getIntExtra(EXTRA_MIN_TIME, -1);
         int maxTime = getIntent().getIntExtra(EXTRA_MAX_TIME, -1);
@@ -95,7 +113,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         List<Long> labels = convertArrayToList(getIntent().getLongArrayExtra(EXTRA_LABELS));
         int priority = getIntent().getIntExtra(EXTRA_PRIORITY, -1);
 
-        List<TaskItem> taskItemList = LogicSubsystem.getInstance().filter(startDate, endDate,
+        List<TaskItem> taskItemList = getLogicSubsystem().filter(startDate, endDate,
                 project, name, minTime, maxTime, completable, labels, priority, this);
 
         mIDs = new ArrayList<>();
@@ -106,31 +124,25 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         RecyclerView recycler = findViewById(R.id.projects_recyclerview);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         mAdapter = new TaskItemAdapter
-                (taskItemList, this, -1, null, false, this);
+                (taskItemList, this, -1, null, this);
         recycler.setAdapter(mAdapter);
         recycler.setLayoutManager(layoutManager);
 
         mPosition = -1;
         mID = -1;
+        mOptimizer = null;
 
-        // Create activity result handler for AddItem
-        mStartForResult = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> onActivityResult(result.getResultCode()
-                ));
     }
 
     /**
      * On activity result update recycler
-     *
-     * @param resultCode Activity.RESULT_OK if everything went well
      */
-    private void onActivityResult(int resultCode) {
-        if (resultCode == Activity.RESULT_OK) {
-            mAdapter.mTaskItemList.set(mPosition,
-                    LogicSubsystem.getInstance().TaskItemHelper(mID, mPosition, this));
-            mAdapter.notifyItemChanged(mPosition);
-        }
+    private void onActivityResult() {
+        mAdapter.mTaskItemList.set(mIndex,
+                getLogicSubsystem().TaskItemHelper(mID, mIndex, this));
+        mAdapter.notifyItemChanged(mIndex);
+
+        optimize();
     }
 
     /**
@@ -162,7 +174,8 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
      * @param action 0 == complete, 1 == options button
      */
     @Override
-    public void onButtonClick(int position, int day, int action) {
+    public void onButtonClick(int position, int day, int action, long id) {
+        mIndex = position;
         mPosition = position;
         mID = mIDs.get(position);
 
@@ -178,15 +191,15 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
 
-        boolean isTimed = LogicSubsystem.getInstance().isTimed(mPosition, mDay);
+        boolean isTimed = getLogicSubsystem().isTimed(mPosition, mDay);
         int timerVal = -1;
 
         if (isTimed) {
-            timerVal = LogicSubsystem.getInstance().getTimer();
+            timerVal = getLogicSubsystem().getTimer();
         }
 
-        LogicSubsystem.getInstance().onButtonClick(mID, 0, this);
-        LogicSubsystem.getInstance().getNumDays();
+        getLogicSubsystem().onButtonClick(mID, 0, this);
+        getLogicSubsystem().getNumDays();
 
         if (isTimed) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -197,7 +210,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
             // continue.
             int finalTimerVal = timerVal;
             builder.setPositiveButton("OK", (dialogInterface, i) -> {
-                LogicSubsystem.getInstance().addTodayTime(finalTimerVal);
+                getLogicSubsystem().addTodayTime(finalTimerVal);
 
                 removeItem();
             });
@@ -212,6 +225,8 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
 
         // User did not have a timer set, so use the normal time to complete dialog.
         ttcPrompt();
+
+
     }
 
     /**
@@ -273,43 +288,28 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
     }
 
     /**
-     * Launches the AddItem activity. Must be separate function so FAB handler can call it.
-     *
-     * @param id ID of the task/event if editing, unused if not
-     */
-    private void intentAddItem(long id) {
-        Intent intent = new Intent(this, AddItem.class);
-
-        // Handles Editing case
-        intent.putExtra(MainActivity.EXTRA_TYPE, AddItem.EXTRA_VAL_TASK);
-        intent.putExtra(MainActivity.EXTRA_ID, id);
-
-        mStartForResult.launch(intent);
-    }
-
-    /**
      * Handles the user choosing to start a timer on a task.
      */
     private void timeTask() {
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
 
-        long oldTimer = LogicSubsystem.getInstance().getTimedID();
+        long oldTimer = getLogicSubsystem().getTimedID();
 
         int index = mIDs.indexOf(mID);
 
-        LogicSubsystem.getInstance().timer(mPosition, mDay);
+        getLogicSubsystem().timer(mPosition, mDay);
 
         // Update the recycler at the mPosition
         mAdapter.mTaskItemList.set(index,
-                LogicSubsystem.getInstance().TaskItemHelper(mID, index, this));
+                getLogicSubsystem().TaskItemHelper(mID, index, this));
         mAdapter.notifyItemChanged(index);
 
         // Update the recycler at the oldTimer location
         if (oldTimer != -1) {
             int oldPosition = mIDs.indexOf(oldTimer);
             mAdapter.mTaskItemList.set(oldPosition,
-                    LogicSubsystem.getInstance().TaskItemHelper(oldTimer, oldPosition, this));
+                    getLogicSubsystem().TaskItemHelper(oldTimer, oldPosition, this));
             mAdapter.notifyItemChanged(oldPosition);
         }
     }
@@ -321,8 +321,18 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
 
-        // Launch an edit intent
-        intentAddItem(mID);
+        long editedID = getLogicSubsystem().getTaskID(mPosition, mDay);
+
+        // Launch an edit dialog
+        TaskEntry frag = new TaskEntry();
+        frag.setID(editedID);
+        frag.addSubmitListener(v -> {
+            if (frag.addItem()) {
+                frag.dismiss();
+                onActivityResult();
+            }
+        });
+        frag.show(getSupportFragmentManager(), "TASK");
     }
 
     /**
@@ -332,7 +342,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
 
-        LogicSubsystem.getInstance().onButtonClick(mID, 1, this);
+        getLogicSubsystem().onButtonClick(mID, 1, this);
 
         removeItem();
     }
@@ -342,7 +352,7 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
      * uses the right indices.
      */
     private void convertDay() {
-        Pair<Integer, Integer> convertedDates = LogicSubsystem.getInstance().convertDay(mID);
+        Pair<Integer, Integer> convertedDates = getLogicSubsystem().convertDay(mID);
 
         if (convertedDates != null) {
             mPosition = convertedDates.getFirst();
@@ -357,23 +367,21 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
     private void ttcPrompt() {
         // Prompt the user to ask how long it took to complete the task, and add this time to
         // todayTime to prevent the user from being overscheduled on today's date.
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(getString(R.string.complete_dialog_message));
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        View view = inflater.inflate(R.layout.dialog_edittext, null);
+        builder.setView(view);
+        EditText et = view.findViewById(R.id.editText);
+        builder.setTitle(R.string.complete_dialog_title)
+                .setMessage(R.string.complete_dialog_message)
+                .setPositiveButton("OK", ((dialogInterface, i) -> {
+                    if (et.getText().length() != 0) {
+                        getLogicSubsystem().addTodayTime(Integer.parseInt(et.getText().toString()));
 
-        builder.setTitle(R.string.complete_dialog_title);
-
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER);
-        builder.setView(input);
-
-        builder.setPositiveButton(R.string.complete_task, (dialogInterface, i) -> {
-            LogicSubsystem.getInstance().addTodayTime(Integer.parseInt(input.getText().toString()));
-
-            removeItem();
-        });
-
-        builder.show();
-    }
+                        removeItem();
+                    }
+                }));
+        builder.show();}
 
     /**
      * Remove the currently selected item and update the recycler
@@ -385,11 +393,57 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         mAdapter.notifyItemRemoved(index);
         mIDs.remove(index);
 
+        // Update the indices of the recycler so all items know their new positions.
         for (int i = index; i < mAdapter.mTaskItemList.size(); i++) {
-            mAdapter.mTaskItemList.set(index,
-                    LogicSubsystem.getInstance().TaskItemHelper(mIDs.get(i), i, this));
+            TaskItem curr = mAdapter.mTaskItemList.get(i);
+            curr.setIndex(curr.getIndex() - 1);
         }
 
-        mAdapter.notifyItemRangeChanged(index, mAdapter.getItemCount() - index + 1);
+        optimize();
+    }
+
+    /**
+     * Optimizes the task list asynchronously
+     */
+    private void optimize() {
+        // Variable is here to ensure that we wait properly for mOptimizer to be null.
+        //noinspection UnnecessaryLocalVariable
+        Thread newThread = new Thread(() -> {
+            getLogicSubsystem().Optimize();
+            mOptimizer = null;
+        });
+
+        mOptimizer = newThread;
+
+        mOptimizer.start();
+    }
+
+    /**
+     * Ensures that we don't accidentally leave this activity until we're done optimizing.
+     */
+    @Override
+    public void onBackPressed() {
+        if (mOptimizer != null) {
+            try {
+                mOptimizer.wait();
+            } catch (Exception ignored) { }
+        }
+
+        super.onBackPressed();
+    }
+
+    /**
+     * Ensures that we wait to use the LogicSubsystem until we're done optimizing.
+     *
+     * @return The logic subsystem
+     */
+    private LogicSubsystem getLogicSubsystem() {
+        if (mOptimizer != null) {
+            try {
+                mOptimizer.wait();
+            } catch (Exception ignored) { }
+        }
+
+        return LogicSubsystem.getInstance();
     }
 }

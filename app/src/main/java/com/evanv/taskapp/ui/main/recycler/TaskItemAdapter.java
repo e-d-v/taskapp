@@ -2,13 +2,18 @@ package com.evanv.taskapp.ui.main.recycler;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -44,10 +49,9 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
      * @param listener ClickListener to handle button clicks
      * @param day Index into taskSchedule representing this day
      * @param header Header for task list for this day
-     * @param workAhead true if "Work Ahead" should be displayed in header.
      */
     public TaskItemAdapter(List<TaskItem> taskItemList, ClickListener listener, int day,
-                           TextView header, boolean workAhead, Activity activity) {
+                           TextView header, Activity activity) {
         mTaskItemList = taskItemList;
         mListener = listener;
         mDay = day;
@@ -66,14 +70,6 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         }
         else {
             header.setVisibility(View.VISIBLE);
-
-            // Change header to work ahead if necessary.
-            if (workAhead) {
-                header.setText(R.string.work_ahead);
-            }
-            else {
-                header.setText(R.string.tasks);
-            }
 
             header.setLayoutParams(new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -134,6 +130,31 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
                 break;
         }
 
+        int start = name.toString().indexOf('\n');
+        StyleSpan span = new StyleSpan(android.graphics.Typeface.BOLD);
+        name.setSpan(span, start, name.length(), 0);
+        RelativeSizeSpan span2 = new RelativeSizeSpan((float)(7.0/9.0));
+        name.setSpan(span2, start, name.length(), 0);
+        ForegroundColorSpan span3;
+
+        int nightModeFlags =
+                mContext.getResources().getConfiguration().uiMode &
+                        Configuration.UI_MODE_NIGHT_MASK;
+        switch (nightModeFlags) {
+            case Configuration.UI_MODE_NIGHT_YES:
+                span3 = new ForegroundColorSpan(Color.parseColor("#B8B8B8"));
+                break;
+
+            case Configuration.UI_MODE_NIGHT_NO:
+                span3 = new ForegroundColorSpan(Color.parseColor("#707070"));
+                break;
+
+            default:
+                span3 = new ForegroundColorSpan(Color.parseColor("#949494"));
+                break;
+        }
+        name.setSpan(span3, start, name.length(), 0);
+
         // Set project color
         int[] colors = {R.color.pale_blue,
                 R.color.blue,
@@ -165,16 +186,19 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         // Show/hide the bar
         if (taskItem.getProject() == null && taskItem.getLabels().size() == 0) {
             holder.bar.setVisibility(View.INVISIBLE);
+            holder.labels.setMinimumHeight(0);
+            holder.hsv.setLayoutParams(new LinearLayout.LayoutParams(0, 0));
         }
         else {
             holder.bar.setVisibility(View.VISIBLE);
+            holder.hsv.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 80));
         }
 
         // Set project chip
         if (taskItem.getProject() != null) {
             // Show chip
             holder.project.setChipMinHeightResource(R.dimen.chip_height);
-            holder.project.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+            holder.project.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
             holder.project.setVisibility(View.VISIBLE);
 
             // Set project name
@@ -197,12 +221,12 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             // completed or deleted. As the TaskViewHolder doesn't know the day index, this is -1,
             // and will be filled in by the DayViewHolder
             if (view.getId() == holder.COMPLETE_ID) {
-                holder.mListenerRef.get().onButtonClick(holder.mIndex, mDay, 0);
+                holder.mListenerRef.get().onButtonClick(taskItem.getIndex(), mDay, 0, taskItem.getID());
             }
         });
         holder.options.setOnClickListener(view -> {
             // Tell MainActivity what item to perform actions on
-            mListener.onButtonClick(position, mDay, 2);
+            mListener.onButtonClick(taskItem.getIndex(), mDay, 2, taskItem.getID());
 
             // Handle onClickListener
             mActivity.registerForContextMenu(holder.options);
@@ -216,14 +240,13 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         for (int i = 0; i < taskItem.getLabels().size(); i++) {
             Chip toAdd = new Chip(mContext);
             toAdd.setText(taskItem.getLabels().get(i).trim());
-            toAdd.setChipStartPadding(10);
-            toAdd.setChipEndPadding(20);
+            toAdd.setChipMinHeightResource(R.dimen.text_height);
             toAdd.setClickable(false);
             toAdd.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
             toAdd.setChipBackgroundColorResource(colors[taskItem.getLabelColors().get(i)]);
             toAdd.setTextColor(textColors[taskItem.getLabelColors().get(i)]);
             toAdd.setEnsureMinTouchTargetSize(false);
-            toAdd.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+            toAdd.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
             holder.labels.addView(toAdd);
         }
     }
@@ -252,6 +275,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
         final Chip project;
         final ChipGroup labels;
         final View bar;
+        final HorizontalScrollView hsv;
         int mIndex; // Index into taskSchedule.get(day) for this event
 
         /**
@@ -274,6 +298,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             project = itemView.findViewById(R.id.projectChip);
             labels = itemView.findViewById(R.id.labelChipGroup);
             bar = itemView.findViewById(R.id.bar);
+            hsv = itemView.findViewById(R.id.hsvChips);
         }
     }
 }

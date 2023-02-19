@@ -2,6 +2,8 @@ package com.evanv.taskapp.logic;
 
 import static com.evanv.taskapp.logic.Task.getDiff;
 
+import android.util.Log;
+
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.temporal.ChronoField;
 import org.threeten.bp.temporal.ChronoUnit;
@@ -441,8 +443,20 @@ public class Optimizer {
         thisTime = thisTime + t1.getTimeToComplete() - t2.getTimeToComplete();
         int newDiff = Math.abs(currTime - thisTime);
 
+        // True if the swap "preserves order", essentially makes sure that if task swapping doesn't
+        // change time in minutes, it will instead make sure to prioritize tasks by compareTo.
+        boolean preservesOrder = (t1.compareTo(t2) < 0) ? doDateIndex > otherDateIndex :
+                doDateIndex < otherDateIndex;
+
+        // True if the swap makes less changes to today's schedule than the current scheduling
+        int currSame = (doDateIndex == getDiff(t1.getDoDate(), startDate) && doDateIndex == 0 ? 1 : 0) +
+                (otherDateIndex == getDiff(t2.getDoDate(), startDate) && otherDateIndex == 0 ? 1 : 0);
+        int newSame = (otherDateIndex == getDiff(t1.getDoDate(), startDate) && otherDateIndex == 0 ? 1 : 0) +
+                (doDateIndex == getDiff(t2.getDoDate(), startDate) && doDateIndex == 0 ? 1 : 0);
+        preservesOrder |= newSame > currSame;
+
         // Swaps the tasks if it creates a more optimal schedule
-        if (newDiff < currDiff) {
+        if (newDiff < currDiff || (newDiff == currDiff && preservesOrder)) {
             changed = true;
             schedule(t1, otherDateIndex, startDate, taskSchedule, time);
             schedule(t2, doDateIndex, startDate, taskSchedule, time);

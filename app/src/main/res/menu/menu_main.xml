@@ -1,15 +1,37 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.evanv.taskapp.ui.main.MainActivity">
+    tools:context="com.evanv.taskapp.ui.main.mainactivity">
     <item
         android:id="@+id/action_projects"
         android:orderInCategory="100"
-        android:title="@string/projects"
-        app:showAsAction="never" />
+        android:icon="@drawable/ic_baseline_inventory_24"
+        android:title="@string/projects"/>
+    <item
+        android:id="@+id/action_labels"
+        android:orderInCategory="101"
+        android:icon="@drawable/ic_baseline_label_24"
+        android:title="@string/labels"/>
     <item
         android:id="@+id/action_search"
-        android:orderInCategory="101"
-        android:title="@string/search"
-        app:showAsAction="never" />
+        android:orderInCategory="102"
+        android:icon="@drawable/baseline_search_24"
+        android:title="@string/search"/>
+    <item
+        android:id="@+id/action_work_ahead"
+        android:orderInCategory="103"
+        android:icon="@drawable/baseline_fast_forward_24"
+        android:title="@string/work_ahead"/>
+
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="104"
+        android:icon="@drawable/baseline_settings_24"
+        android:title="@string/settings"/>
+
+    <item
+        android:id="@+id/action_about"
+        android:orderInCategory="104"
+        android:icon="@drawable/ic_outline_info_24"
+        android:title="@string/about"/>
 </menu>

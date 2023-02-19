@@ -29,7 +29,10 @@ public class DatePickerFragment extends DialogFragment
     private final String mTitle;      // The text for the title of the dialog
     private final LocalDate mMinDate; // The earliest date user can choose
     private final LocalDate mMaxDate; // The latest date user can choose
+    private final LocalDate mDefaultDate; // Date to default the picker to
     private final boolean mTP;        // True if time is needed, false if not.
+    private final int mHourOfDay;
+    private final int mMinute;
 
     /**
      * Creates a DatePickerFragment for a dialog that puts its output in the given EditText,
@@ -38,15 +41,21 @@ public class DatePickerFragment extends DialogFragment
      * @param title The text for the title of the dialog.
      * @param minDate The minimum date to allow user to select
      * @param maxDate The latest date to allow user to select, null if not needed
+     * @param defaultDate Default day to show on picker
+     * @param hourOfDay Hour of day to show in the picker
+     * @param minute Minute of hour to show in the picker
      * @param tp true if timepicker should be shown
      */
     public DatePickerFragment(EditText et, String title, LocalDate minDate, LocalDate maxDate,
-                              boolean tp) {
+                              LocalDate defaultDate, int hourOfDay, int minute, boolean tp) {
         mET = et;
         mTitle = title;
         mMinDate = minDate;
         mMaxDate = maxDate;
         mTP = tp;
+        mDefaultDate = defaultDate;
+        mHourOfDay = hourOfDay;
+        mMinute = minute;
     }
 
     /**
@@ -59,10 +68,9 @@ public class DatePickerFragment extends DialogFragment
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // Use the current date as the default date in the picker
-        final Calendar c = Calendar.getInstance();
-        int year = c.get(Calendar.YEAR);
-        int month = c.get(Calendar.MONTH);
-        int day = c.get(Calendar.DAY_OF_MONTH);
+        int year = mDefaultDate.getYear();
+        int month = mDefaultDate.getMonthValue() - 1;
+        int day = mDefaultDate.getDayOfMonth();
 
         // Create a new instance of DatePickerDialog and return it
         DatePickerDialog dp =
@@ -94,8 +102,8 @@ public class DatePickerFragment extends DialogFragment
         mET.setText(String.format(getString(R.string.generic_date), month + 1, day, year - 2000));
 
         if (mTP) {
-            new TimePickerFragment(mET, "Choose start time").show(getParentFragmentManager(),
-                    getTag());
+            new TimePickerFragment(mET, "Choose start time", mHourOfDay, mMinute)
+                    .show(getParentFragmentManager(), getTag());
         }
     }
 }

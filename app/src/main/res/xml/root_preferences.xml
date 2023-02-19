@@ -1,0 +1,9 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <SwitchPreferenceCompat
+        app:iconSpaceReserved="false"
+        app:key="assumeIncomplete"
+        app:singleLineTitle="false"
+        app:title="Assume overdue tasks are incomplete" />
+
+</PreferenceScreen>

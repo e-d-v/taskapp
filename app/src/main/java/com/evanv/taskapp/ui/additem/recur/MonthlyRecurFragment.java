@@ -11,6 +11,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import com.evanv.taskapp.R;
@@ -23,7 +24,7 @@ import java.util.Objects;
  *
  * @author Evan Voogd
  */
-public class MonthlyRecurFragment extends Fragment implements RecurInput {
+public class MonthlyRecurFragment extends DialogFragment {
     // Extras for storing monthly recurrence information
     // Value for a Bundle extra that represents monthly recurrence happening.
     public static final String EXTRA_VAL_TYPE = "com.evanv.taskapp.ui.additem.recur.MonthlyRecurFragment.extra.val.TYPE";
@@ -40,29 +41,20 @@ public class MonthlyRecurFragment extends Fragment implements RecurInput {
     public static final String EXTRA_VAL_SPECIFIC = "com.evanv.taskapp.ui.additem.recur.MonthlyRecurFragment.extra.val.SPECIFIC";
     // Extra key for a value containing what days to recur on if specific is selected.
     public static final String EXTRA_DAYS = "com.evanv.taskapp.ui.additem.recur.MonthlyRecurFragment.extra.DAYS";
+    private View.OnClickListener mSubmitListener;
 
     private EditText mIntervalET;   // Edit text containing the interval value
     private EditText mDaysET;       // EditText containing what days to increment on
     private int currSelection;      // Representing the index of the currently selected radio item
+    private String mDay;
+    private String mDesc;
 
     /**
-     * Required empty public constructor
+     * Sets day information for UI.
      */
-    public MonthlyRecurFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Creates a new fragment representing monthly recurrences
-     *
-     * @return A new instance of fragment MonthlyRecurFragment.
-     */
-    @SuppressWarnings("unused")
-    public static MonthlyRecurFragment newInstance(String param1, String param2) {
-        MonthlyRecurFragment fragment = new MonthlyRecurFragment();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
+    public MonthlyRecurFragment(String day, String desc) {
+        mDay = day;
+        mDesc = desc;
     }
 
     /**
@@ -94,16 +86,11 @@ public class MonthlyRecurFragment extends Fragment implements RecurInput {
         mIntervalET = Objects.requireNonNull(toReturn).findViewById(R.id.monthsBetween);
         mDaysET = Objects.requireNonNull(toReturn).findViewById(R.id.recurDaysEditText);
 
-        // Get information packed in intent
-        Intent intent = requireActivity().getIntent();
-
         // Set the text for this layout's RadioButtons based on user input in AddEvent screen
         ((RadioButton) toReturn.findViewById(R.id.radioButtonStatic))
-                .setText(String.format(getString(R.string.recur_on_the),
-                        intent.getStringExtra(EventEntry.EXTRA_DAY)));
+                .setText(String.format(getString(R.string.recur_on_the), mDay));
         ((RadioButton) toReturn.findViewById(R.id.radioButtonDynamic))
-                .setText(String.format(getString(R.string.recur_on_the),
-                        intent.getStringExtra(EventEntry.EXTRA_DESC)));
+                .setText(String.format(getString(R.string.recur_on_the), mDesc));
 
         // The initially selected radiobutton is index 0
         currSelection = 0;
@@ -124,6 +111,10 @@ public class MonthlyRecurFragment extends Fragment implements RecurInput {
                     currSelection = radioGroup.indexOfChild(toReturn.findViewById(id));
         });
 
+        if (mSubmitListener != null) {
+            toReturn.findViewById(R.id.submitButton).setOnClickListener(mSubmitListener);
+        }
+
         return toReturn;
     }
 
@@ -132,7 +123,6 @@ public class MonthlyRecurFragment extends Fragment implements RecurInput {
      *
      * @return a bundle containing extras defining the user's recurrence choices.
      */
-    @Override
     public Bundle getRecurInfo() {
         // Create a bundle and set it's type to this
         Bundle toReturn = new Bundle();
@@ -189,4 +179,9 @@ public class MonthlyRecurFragment extends Fragment implements RecurInput {
 
         return toReturn;
     }
+
+    public void addSubmitListener(View.OnClickListener listener) {
+        mSubmitListener = listener;
+    }
+
 }

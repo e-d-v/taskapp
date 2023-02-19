@@ -5,24 +5,32 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 
-import android.util.Log;
 import android.view.ContextMenu;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.compose.ui.text.android.InternalPlatformTextApi;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,21 +38,27 @@ import com.evanv.taskapp.R;
 import com.evanv.taskapp.databinding.ActivityMainBinding;
 import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.ui.FilterActivity;
-import com.evanv.taskapp.ui.additem.AddItem;
+import com.evanv.taskapp.ui.LabelsActivity;
+import com.evanv.taskapp.ui.SettingsActivity;
+import com.evanv.taskapp.ui.TaskListActivity;
+import com.evanv.taskapp.ui.additem.EventEntry;
+import com.evanv.taskapp.ui.additem.TaskEntry;
 import com.evanv.taskapp.ui.main.recycler.DayItem;
 import com.evanv.taskapp.ui.main.recycler.DayItemAdapter;
 import com.evanv.taskapp.ui.projects.ProjectActivity;
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 
 import org.threeten.bp.LocalDate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import kotlin.Pair;
 
-/**
+@InternalPlatformTextApi /**
  * Main Activity for the app. Display's the user's schedule of Tasks/Events, while allowing for
  * Task completion/addition (with the latter done through the use of a separate AddItem activity).
  *
@@ -59,7 +73,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     private DayItemAdapter mDayItemAdapter;        // Adapter for recycler showing user commitments
     private ViewFlipper mVF;                       // Swaps between loading screen and recycler
     // Allows data to be pulled from activity
-    private ActivityResultLauncher<Intent> mStartForResult;
     private ActivityResultLauncher<Intent> mUpdateUILauncher;
     // Allows us to manually show FAB when task/event completed/deleted.
     LogicSubsystem mLogicSubsystem;                // Subsystem that handles logic for taskapp
@@ -67,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     private long mEditedID;                        // ID of the currently edited task
     private int mPosition;                         // Position of button press
     private int mDay;                              // Day of button press
+    private boolean isFABOpen;                     // Is the fab vertically expanded
 
     // Key for the extra that stores the type of edit
     public static final String EXTRA_TYPE = "com.evanv.taskapp.ui.main.extras.TYPE";
@@ -79,49 +93,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     public static final String PREF_TIME = "taskappTime";  // Time for todayTime
     public static final String PREF_TIMED_TASK = "taskappTimerTask"; // TaskID for timer
     public static final String PREF_TIMER = "taskappTimerStart"; // Start Date for the timer
-
-    /**
-     * Handles activities started for a result, in this case when the AddItem activity returns with
-     * a new Event/Task to be added. Parses the data in the BundleExtra AddItem.EXTRA_ITEM into a
-     * Task/Event depending on their AddItem.EXTRA_TYPE.
-     *
-     * @param resultCode RESULT_OK if there were no issues with user input
-     * @param data Contains the BundleExtra AddItem.EXTRA_ITEM, with all the data needed to build
-     *             the item.
-     */
-    protected void onActivityResult(int resultCode, @Nullable Intent data) {
-        // Show loading screen
-        if (resultCode != RESULT_OK) {
-            mVF.setDisplayedChild(0);
-
-            if (!mLogicSubsystem.isEmpty()) {
-                mVF.setDisplayedChild(1);
-            }
-            else {
-                mVF.setDisplayedChild(2);
-            }
-
-            // As the task dependency graph has been updated, we must reoptimize it
-            Optimize();
-
-            // Update the recycler
-            updateRecycler();
-
-            // Show recycler as Optimize is finished
-            mVF.setDisplayedChild(1);
-        }
-    }
-
-    /**
-     * Calls the Optimizer to find an optimal schedule for the user's tasks, given the user's
-     * scheduled events.
-     */
-    private void Optimize() {
-        mLogicSubsystem.Optimize();
-
-        updateRecycler();
-    }
-
 
     /**
      * Runs on the start of the app. Most importantly it loads the user data from the file.
@@ -148,6 +119,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             todayTime = sp.getInt(PREF_TIME, 0);
         }
 
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean assumeOverdueIncomplete = settings.getBoolean("assumeIncomplete", false);
+
         mEditedID = -1;
 
         // Get current timer
@@ -160,18 +134,22 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             mLogicSubsystem = new LogicSubsystem(this, todayTime, timedTaskID, timerStart);
         }
 
-        // Create activity result handler for AddItem
-        mStartForResult = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> MainActivity.this.onActivityResult(result.getResultCode(),
-                        result.getData()));
-
         // Will eventually return info from projects
         mUpdateUILauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> updateRecycler());
 
-        String[] overdueNames = mLogicSubsystem.getOverdueTasks(this);
+        String[] overdueNames;
+        try {
+            overdueNames = mLogicSubsystem.getOverdueTasks(this);
+        } catch (Exception e) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(
+                    String.format(getString(R.string.corrupt_error), mLogicSubsystem.getNumFailures()));
+            builder.setPositiveButton(R.string.ok, null);
+            builder.show();
+            overdueNames = mLogicSubsystem.getOverdueTasks(this);
+        }
 
         // Prompt the user with a dialog containing overdue tasks so they can mark overdue tasks
         // so taskapp can reoptimize the schedule if some tasks are overdue.
@@ -180,6 +158,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             ArrayList<Integer> selectedItems = new ArrayList<>();
 
             Context context = this;
+
+            // User set to assume overdue tasks are incomplete, so mark all overdue tasks as
+            // incomplete
+            if (assumeOverdueIncomplete) {
+                mLogicSubsystem.updateOverdueTasks(selectedItems, context);
+                finishProcessing(true);
+                return;
+            }
 
             // Show a dialog prompting the user to mark tasks that were completed as complete
             android.app.AlertDialog.Builder builder =
@@ -256,8 +242,45 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // Adds the action bar at the top of the screen
         setSupportActionBar(mBinding.toolbar);
 
-        // When the FAB is clicked, run intentAddItem to open the AddItem Activity
-        mBinding.fab.setOnClickListener(view -> intentAddItem(null, -1));
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+
+        DrawerLayout drawerLayout = findViewById(R.id.drawerLayout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, mBinding.toolbar, R.string.open, R.string.close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navView = findViewById(R.id.nav_view);
+        navView.setNavigationItemSelectedListener(this::onOptionsItemSelected);
+
+        // When fab is clicked, show the two smaller FABs
+        mBinding.fab.setOnClickListener(view1 -> {
+            mEditedID = -1;
+            if (!isFABOpen) {
+                isFABOpen = true;
+                findViewById(R.id.addEventLayout).animate().translationY(-getResources().getDimension(R.dimen.standard_55));
+                findViewById(R.id.addTaskLayout).animate().translationY(-getResources().getDimension(R.dimen.standard_105));
+                findViewById(R.id.addTaskLabel).animate().alpha(1);
+                findViewById(R.id.addEventLabel).animate().alpha(1);
+                findViewById(R.id.addTaskFab).animate().alpha(1);
+                findViewById(R.id.addEventFab).animate().alpha(1);
+            }
+            else {
+                closeFAB();
+            }
+        });
+
+        findViewById(R.id.addEventFab).setOnClickListener(v -> {
+            if (isFABOpen) {
+                closeFAB();
+                addEvent();
+            }
+        });
+        findViewById(R.id.addTaskFab).setOnClickListener(v -> {
+            if (isFABOpen) {
+                closeFAB();
+                addTask();
+            }
+        });
 
         // Make visible the main content
         mVF = findViewById(R.id.vf);
@@ -269,6 +292,45 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             mVF.setDisplayedChild(2);
         }
 
+        HideBottomViewOnScrollBehavior<FloatingActionButton> fabBehaviorTask =
+                (HideBottomViewOnScrollBehavior<FloatingActionButton>)
+                        ((CoordinatorLayout.LayoutParams) mBinding.addTaskLayout.getLayoutParams())
+                                .getBehavior();
+        if (fabBehaviorTask != null) {
+            fabBehaviorTask.addOnScrollStateChangedListener((bottomView, newState) -> closeFAB());
+        }
+    }
+
+    /**
+     * Close FAB from user view
+     */
+    private void closeFAB() {
+        isFABOpen = false;
+        findViewById(R.id.addEventLayout).animate().translationY(0);
+        findViewById(R.id.addTaskLayout).animate().translationY(0);
+        findViewById(R.id.addTaskLabel).animate().alpha(0);
+        findViewById(R.id.addEventLabel).animate().alpha(0);
+        findViewById(R.id.addTaskFab).animate().alpha(0);
+        findViewById(R.id.addEventFab).animate().alpha(0);
+    }
+
+    /**
+     * Handles the back button being pressed. Allows FAB to be closed on back press.
+     */
+    @Override
+    public void onBackPressed() {
+        if (!isFABOpen) {
+            super.onBackPressed();
+        }
+        else {
+            closeFAB();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.help_button_menu, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     /**
@@ -276,8 +338,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     @Override
     protected void onPause() {
-        super.onPause();
-
         // Update todayTime in SharedPreferences
         SharedPreferences sp = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
         SharedPreferences.Editor edit = sp.edit();
@@ -287,40 +347,50 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         edit.putLong(PREF_TIMER, mLogicSubsystem.getTimerStart());
 
         edit.apply();
+        super.onPause();
     }
 
     /**
-     * Launches the AddItem activity. Must be separate function so FAB handler can call it.
-     *
-     * @param type Null if adding an item, one of EXTRA_TASK or EXTRA_EVENT if editing
-     * @param id ID of the task/event if editing, unused if not
+     * Launch the TaskEntry Bottom Sheet
      */
-    private void intentAddItem(String type, long id) {
-        Intent intent = new Intent(this, AddItem.class);
-
-        // Handles Editing case
-        if (type != null) {
-            intent.putExtra(EXTRA_TYPE, type);
-            intent.putExtra(EXTRA_ID, id);
-        }
-        else {
-            mEditedID = -1;
-        }
-
-        mStartForResult.launch(intent);
+    private void addEvent() {
+        EventEntry frag = new EventEntry();
+        frag.setID(mEditedID);
+        frag.addSubmitListener(v -> {
+            if (frag.addItem()) {
+                mEditedID = -1;
+                frag.dismiss();
+                onActivityResult();
+            }
+        });
+        frag.show(getSupportFragmentManager(), "EVENT");
     }
 
     /**
-     * Adds the items to the three dot menu in the ActionBar. Left to defaults for now.
-     *
-     * @param menu The menu in the top right of the screen
-     * @return always true
+     * Launch the EventEntry Bottom Sheet
      */
-    @Override
-    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+    private void addTask() {
+        TaskEntry frag = new TaskEntry();
+        frag.setID(mEditedID);
+        frag.addSubmitListener(v -> {
+            if (frag.addItem()) {
+                mEditedID = -1;
+                frag.dismiss();
+                onActivityResult();
+            }
+        });
+        frag.show(getSupportFragmentManager(), "TASK");
+    }
+
+    /**
+     * Optimizes and updates UI after TaskEntry/EventEntry has been called.
+     */
+    protected void onActivityResult() {
+        // As the task dependency graph has been updated, we must reoptimize it
+        Runnable toRun = new OptimizeRunnable();
+
+        Thread thread = new Thread(toRun);
+        thread.start();
     }
 
     /**
@@ -335,17 +405,51 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         // the Home/Up button, so long as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        // Handles the settings menu item being chosen
-        if (id == R.id.action_projects) {
-            Intent intent = new Intent(this, ProjectActivity.class);
+        Intent intent;
 
-            mUpdateUILauncher.launch(intent);
+        switch (item.getItemId()) {
+            case (R.id.action_projects):
+                intent = new Intent(this, ProjectActivity.class);
+                mUpdateUILauncher.launch(intent);
+                return true;
+            case (R.id.action_search):
+                intent = new Intent(this, FilterActivity.class);
+                mUpdateUILauncher.launch(intent);
+                return true;
+            case (R.id.action_labels):
+                intent = new Intent(this, LabelsActivity.class);
+                mUpdateUILauncher.launch(intent);
+                return true;
+            case (R.id.action_work_ahead):
+                intent = new Intent(this, TaskListActivity.class);
+                intent.putExtra(TaskListActivity.EXTRA_COMPLETABLE, true);
+                startActivity(intent);
+                return true;
+            case (R.id.action_help):
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW,
+                        Uri.parse(getString(R.string.schedule_url)));
+                startActivity(browserIntent);
+                return true;
+            case (R.id.action_about):
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                LayoutInflater inflater = getLayoutInflater();
+                builder.setTitle(R.string.about);
+                builder.setMessage(R.string.about_message);
+                builder.setNeutralButton("Send Feedback", (d, i) -> {
+                    Intent mailIntent = new Intent(Intent.ACTION_SENDTO);
+                    mailIntent.setData(Uri.parse("mailto:"));
+                    mailIntent.putExtra(Intent.EXTRA_EMAIL,
+                            new String[]{"taskapptvc+feedback@gmail.com"});
+                    mailIntent.putExtra(Intent.EXTRA_SUBJECT, "Feedback");
+                    startActivity(mailIntent);
+                });
 
-            return true;
-        }
-        else if (id == R.id.action_search) {
-            Intent intent = new Intent(this, FilterActivity.class);
-            mUpdateUILauncher.launch(intent);
+                builder.show();
+                return true;
+            case (R.id.action_settings):
+                intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -360,14 +464,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * @param day The date this task is scheduled for is day days past today's date
      */
     @Override
-    public void onButtonClick(int position, int day, int action) {
+    public void onButtonClick(int position, int day, int action, long id) {
         switch (action) {
             // Normal button press, mark task as complete
             case 0:
                 // Show optimizing... screen
-                mVF.setDisplayedChild(0);
-                mPosition = position;
-                mDay = day;
+                Pair<Integer, Integer> pair = mLogicSubsystem.convertDay(id);
+
+                mPosition = pair.getFirst();
+                mDay = pair.getSecond();
+                mEditedID = id;
                 completeTask();
                 break;
             // Options button pressed, set mPosition/mDay
@@ -384,25 +490,22 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * to todayTime.
      */
     private void ttcPrompt(int newDays, int oldDays) {
-        int completionTime = -1;
-
         // Prompt the user to ask how long it took to complete the task, and add this time to
         // todayTime to prevent the user from being overscheduled on today's date.
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(getString(R.string.complete_dialog_message));
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        View view = inflater.inflate(R.layout.dialog_edittext, null);
+        builder.setView(view);
+        EditText et = view.findViewById(R.id.editText);
+        builder.setTitle(R.string.complete_dialog_title)
+                .setMessage(R.string.complete_dialog_message)
+                .setPositiveButton("OK", ((dialogInterface, i) -> {
+                    if (et.getText().length() != 0) {
+                        mLogicSubsystem.addTodayTime(Integer.parseInt(et.getText().toString()));
 
-        builder.setTitle(R.string.complete_dialog_title);
-
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER);
-        builder.setView(input);
-
-        builder.setPositiveButton(R.string.complete_task, (dialogInterface, i) -> {
-            mLogicSubsystem.addTodayTime(Integer.parseInt(input.getText().toString()));
-
-            finishButtonPress(newDays, oldDays);
-        });
-
+                        finishButtonPress(newDays);
+                    }
+                }));
         builder.show();
     }
 
@@ -421,7 +524,22 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             getMenuInflater().inflate(R.menu.event_options, menu);
         }
         else if (v.getId() == R.id.buttonTaskOptions) {
-            getMenuInflater().inflate(R.menu.task_options, menu);
+            if (mLogicSubsystem.isTimed(mPosition, mDay)) {
+                if (mDay != 0) {
+                    getMenuInflater().inflate(R.menu.task_options_timed, menu);
+                }
+                else {
+                    getMenuInflater().inflate(R.menu.task_options_timed_today, menu);
+                }
+            }
+            else {
+                if (mDay != 0) {
+                    getMenuInflater().inflate(R.menu.task_options, menu);
+                }
+                else {
+                    getMenuInflater().inflate(R.menu.task_options_today, menu);
+                }
+            }
         }
     }
 
@@ -436,12 +554,10 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         switch (item.getItemId()) {
             case (R.id.action_delete_task):
                 // Show optimizing... screen
-                mVF.setDisplayedChild(0);
                 deleteTask();
                 break;
             case (R.id.action_edit_task):
                 // Show optimizing... screen
-                mVF.setDisplayedChild(0);
                 editTask();
                 break;
             case (R.id.action_time_task):
@@ -449,13 +565,14 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 break;
             case (R.id.action_delete_event):
                 // Show optimizing... screen
-                mVF.setDisplayedChild(0);
                 deleteEvent();
                 break;
             case (R.id.action_edit_event):
                 // Show optimizing... screen
-                mVF.setDisplayedChild(0);
                 editEvent();
+                break;
+            case (R.id.action_postpone_task):
+                postponeTask();
                 break;
         }
 
@@ -469,7 +586,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         mEditedID = mLogicSubsystem.getEventID(mPosition, mDay);
 
         // Launch an edit intent
-        intentAddItem(AddItem.EXTRA_VAL_EVENT, mEditedID);
+        addEvent();
     }
 
     /**
@@ -480,16 +597,13 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         mLogicSubsystem.onButtonClick(mPosition, mDay, 2, this);
         int newDays = mLogicSubsystem.getNumDays();
 
-        finishButtonPress(newDays, oldDays);
+        finishButtonPress(newDays);
     }
 
     /**
      * Handles the user choosing to start a timer on a task.
      */
     private void timeTask() {
-        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
-        convertDay();
-
         int oldTimer = mLogicSubsystem.getTimerDay();
 
         mLogicSubsystem.timer(mPosition, mDay);
@@ -509,36 +623,34 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * Handles the user choosing to edit a task.
      */
     private void editTask() {
-        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
-        convertDay();
-
-        mEditedID = mLogicSubsystem.getTaskID(mPosition, mDay);
-
         // Launch an edit intent
-        intentAddItem(AddItem.EXTRA_VAL_TASK, mEditedID);
+        addTask();
     }
 
     /**
      * Handles the user choosing to delete a task.
      */
     private void deleteTask() {
-        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
-        convertDay();
-
-        int oldDays = mLogicSubsystem.getNumDays();
         mLogicSubsystem.onButtonClick(mPosition, mDay, 1, this);
         int newDays = mLogicSubsystem.getNumDays();
 
-        finishButtonPress(newDays, oldDays);
+        finishButtonPress(newDays);
+    }
+
+    /**
+     * Handles the user choosing to postpone a task.
+     */
+    private void postponeTask() {
+        mLogicSubsystem.postponeTask(mPosition, mDay);
+        int newDays = mLogicSubsystem.getNumDays();
+
+        finishButtonPress(newDays);
     }
 
     /**
      * Handles a user choosing to complete a task
      */
     private void completeTask() {
-        // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
-        convertDay();
-
         boolean isTimed = mLogicSubsystem.isTimed(mPosition, mDay);
         int timerVal = -1;
 
@@ -551,6 +663,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         int newDays = mLogicSubsystem.getNumDays();
 
         if (isTimed) {
+
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
             builder.setMessage(String.format(getString(R.string.timer_prompt), timerVal));
@@ -561,7 +674,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             builder.setPositiveButton("OK", (dialogInterface, i) -> {
                 mLogicSubsystem.addTodayTime(finalTimerVal);
 
-                finishButtonPress(newDays, oldDays);
+                finishButtonPress(newDays);
             });
 
             // If user chooses to use a different time, show the normal time to complete
@@ -578,59 +691,23 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     }
 
     /**
-     * Ensures that if the user selected a task that was on the work ahead screen that the activity
-     * uses the right indices.
-     */
-    private void convertDay() {
-        if (mDay == 0) {
-            Pair<Integer, Integer> convertedDates = mLogicSubsystem.convertDay(mPosition);
-
-            if (convertedDates != null) {
-                mPosition = convertedDates.getFirst();
-                mDay = convertedDates.getSecond();
-            }
-        }
-    }
-
-    /**
      * Updates the recycler after a button press has been handled.
      *
      * @param newDays How many days are in the recycler now
-     * @param oldDays How many days used to be in the recycler.
      */
-    private void finishButtonPress(int newDays, int oldDays) {
+    private void finishButtonPress(int newDays) {
+        int oldDays = mDayItemAdapter.mDayItemList.size();
         while (mDayItemAdapter.mDayItemList.size() > newDays) {
             mDayItemAdapter.mDayItemList.remove(newDays);
         }
 
-        Optimize();
-        updateRecycler();
-
-        if (oldDays != newDays) {
+        if (oldDays > newDays) {
             mDayItemAdapter.notifyItemRangeRemoved(newDays, oldDays - newDays);
         }
 
-        // If there are any tasks/events scheduled, show the recycler
-        if (!mLogicSubsystem.isEmpty()) {
-            mVF.setDisplayedChild(1);
-        }
-        // If there aren't any, show the "add a task" fragment
-        else {
-            mVF.setDisplayedChild(2);
-        }
-
-        // If the FAB is currently hidden, show the FAB again, to prevent it from being lost as the
-        // FAB hides if you scroll down currently, and if we don't do this and the recycler doesn't
-        // have enough content to scroll, the FAB will be lost until a restart.
-        HideBottomViewOnScrollBehavior<FloatingActionButton> fabBehavior =
-                (HideBottomViewOnScrollBehavior<FloatingActionButton>)
-                        ((CoordinatorLayout.LayoutParams) mBinding.fab.getLayoutParams())
-                                .getBehavior();
-        if (fabBehavior != null) {
-            fabBehavior.slideUp(mBinding.fab);
-        }
-
-        mPosition = mDay = -1;
+        Runnable toRun = new OptimizeRunnable();
+        Thread thread = new Thread(toRun);
+        thread.start();
     }
 
     /**
@@ -638,6 +715,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     private void updateRecycler() {
         List<Integer> updatedIndices = LogicSubsystem.getInstance().getUpdatedIndices();
+        if (!updatedIndices.contains(Integer.valueOf(0))) {
+            updatedIndices.add(0);
+        }
 
         for (int index : updatedIndices) {
             if (index >= mDayItemAdapter.getItemCount()) {
@@ -652,6 +732,42 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                         LogicSubsystem.getInstance().DayItemHelper(index, this));
                 mDayItemAdapter.notifyItemChanged(index);
             }
+        }
+    }
+
+    private class OptimizeRunnable implements Runnable {
+        @Override
+        public void run() {
+            runOnUiThread(() ->mVF.setDisplayedChild(0));
+            mLogicSubsystem.Optimize();
+
+            runOnUiThread(() -> {
+                updateRecycler();
+
+
+                // If there are any tasks/events scheduled, show the recycler
+                if (!mLogicSubsystem.isEmpty()) {
+                    mVF.setDisplayedChild(1);
+                }
+                // If there aren't any, show the "add a task" fragment
+                else {
+                    mVF.setDisplayedChild(2);
+                }
+
+                // If the FAB is currently hidden, show the FAB again, to prevent it from being lost
+                // as the FAB hides if you scroll down currently, and if we don't do this and the
+                // recycler doesn't have enough content to scroll, the FAB will be lost until a
+                // restart.
+                HideBottomViewOnScrollBehavior<FloatingActionButton> fabBehavior =
+                        (HideBottomViewOnScrollBehavior<FloatingActionButton>)
+                                ((CoordinatorLayout.LayoutParams) mBinding.fab.getLayoutParams())
+                                        .getBehavior();
+                if (fabBehavior != null) {
+                    fabBehavior.slideUp(mBinding.fab);
+                }
+
+                mPosition = mDay = -1;
+            });
         }
     }
 }

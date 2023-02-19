@@ -4,22 +4,24 @@ import static com.evanv.taskapp.logic.Task.getDiff;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 
-import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.db.TaskAppViewModel;
+import com.evanv.taskapp.ui.additem.EventEntry;
 import com.evanv.taskapp.ui.main.MainActivity;
 import com.evanv.taskapp.ui.main.recycler.DayItem;
 import com.evanv.taskapp.ui.main.recycler.EventItem;
 import com.evanv.taskapp.ui.main.recycler.TaskItem;
+import com.evanv.taskapp.ui.projects.recycler.ProjectItem;
 
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.ZoneOffset;
+import org.threeten.bp.format.FormatStyle;
 import org.threeten.bp.temporal.ChronoUnit;
+import org.threeten.bp.format.DateTimeFormatter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,10 +48,11 @@ public class LogicSubsystem {
     private List<Task> overdueTasks;              // Overdue tasks
     private Task mTimerTask;                      // Task currently being timed.
     private LocalDateTime mTimer;                 // Start time of current timer
-    @Nullable private List<Task> mWorkAheadTasks; // List of tasks currently work ahead.
     private final List<Project> mProjects;        // List of current projects.
     private final List<Label> mLabels;            // List of current labels.
     private List<Integer> mUpdatedIndices;        // List of updated indices.
+    private boolean mCorruptionDetected;          // Did we find corruption?
+    private int mFailures;                        // Number of corrupted tasks
 
     private static volatile LogicSubsystem INSTANCE; // The singleton of the LogicSubsystem
 
@@ -69,6 +72,7 @@ public class LogicSubsystem {
         }
 
         this.mTodayTime = todayTime;
+        mFailures = 0;
 
         // startDate is our representation for the current date upon the launch of TaskApp.
         mStartDate = LocalDate.now();
@@ -129,6 +133,13 @@ public class LogicSubsystem {
                 // Add to taskSchedule
                 mTaskSchedule.get(index).add(t);
             } else {
+                if (index < -20000 || t.getName().isEmpty()) {
+                    mCorruptionDetected = true;
+                    mFailures++;
+                    mTaskAppViewModel.delete(t);
+                    continue;
+                }
+
                 overdueTasks.add(t);
             }
 
@@ -174,9 +185,14 @@ public class LogicSubsystem {
      *
      * @return Return list of currently unhandled overdue tasks.
      */
-    public String[] getOverdueTasks(Context context) {
+    public String[] getOverdueTasks(Context context) throws IllegalStateException {
         if (overdueTasks == null) {
             return null;
+        }
+
+        if (mCorruptionDetected) {
+            mCorruptionDetected = false;
+            throw new IllegalStateException();
         }
 
         String[] overdueNames = new String[overdueTasks.size()];
@@ -197,6 +213,15 @@ public class LogicSubsystem {
         }
 
         return overdueNames;
+    }
+
+    /**
+     * Get the number of tasks that were corrupted.
+     *
+     * @return number of corrupted tasks
+     */
+    public int getNumFailures() {
+        return mFailures;
     }
 
     /**
@@ -304,6 +329,7 @@ public class LogicSubsystem {
         // If the task is in the internal data structure, remove it.
         if (diff >= 0) {
             mTaskSchedule.get(diff).remove(task);
+
             mUpdatedIndices.add(diff);
         }
 
@@ -407,6 +433,15 @@ public class LogicSubsystem {
         if (eventScheduleSize > eventLowIndex) {
             mEventSchedule.subList(eventLowIndex, eventScheduleSize).clear();
         }
+
+        int bothLowIndex = Math.max(taskLowIndex, eventLowIndex);
+
+        for (int i = 0; i < mUpdatedIndices.size(); i++) {
+            if (mUpdatedIndices.get(i) >= bothLowIndex) {
+                mUpdatedIndices.remove(i);
+                i--;
+            }
+        }
     }
 
     /**
@@ -451,39 +486,41 @@ public class LogicSubsystem {
         int totalTime = getTotalTime(i);
 
         // Set the fields
+        String day = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).format(curr);
+        String[] toks = day.split(" ");
+
+        // Incredibly stupid, but ensures that the string is formatted as an ordinal day.
+        for (int j = 0; j < toks.length; j++) {
+            try {
+                Integer.parseInt(toks[j].split(",")[0]);
+
+                String ordinal = EventEntry.getOrdinalDayInMonth(curr);
+                ordinal += ",";
+
+                StringBuilder sb = new StringBuilder();
+
+                for (int k = 0; k < toks.length; k++) {
+                    if (k == j) {
+                        sb.append(ordinal).append(" ");
+                        continue;
+                    }
+                    sb.append(toks[k]).append(' ');
+                }
+                day = sb.toString();
+                break;
+            } catch (Exception ignored) {}
+        }
+
+        if (curr.getYear() == mStartDate.getYear()) {
+            day = day.split(", ")[0];
+        }
         dayString = String.format(context.getString(R.string.schedule_for),
-                Task.dateFormat.format(curr), totalTime);
+                day, totalTime);
         events = EventItemList(i);
         tasks = i < mTaskSchedule.size() ? TaskItemList(mTaskSchedule.get(i), context) :
                 new ArrayList<>();
 
-        // If it is today's date and there are currently no tasks scheduled today, add a
-        // "Work Ahead" page to today.
-        boolean workAhead = i == 0 && tasks.size() == 0;
-        if (workAhead) {
-            tasks = new ArrayList<>();
-
-            int numTasks = 0;
-
-            mWorkAheadTasks = new ArrayList<>();
-
-            // For each task, check if it can be completed today. If it can, then add it.
-            for (Task t : mTasks) {
-                TaskItem temp = TaskItemHelper(t, numTasks, context);
-
-                if (temp.isCompletable()) {
-                    tasks.add(temp);
-                    mWorkAheadTasks.add(t);
-                    numTasks++;
-                }
-            }
-        }
-        // If Work Ahead is not displayed, do not keep a list.
-        else if (i == 0) {
-            mWorkAheadTasks = null;
-        }
-
-        return new DayItem(dayString, events, tasks, i, workAhead);
+        return new DayItem(dayString, events, tasks, i);
     }
 
     /**
@@ -705,6 +742,8 @@ public class LogicSubsystem {
 
             mTaskAppViewModel.delete(toRemove);
             mUpdatedIndices.addAll(Complete(mTaskSchedule.get(day).get(position), context));
+
+            pareDownSchedules();
         }
         // Remove the given event from the schedule and re-optimize.
         if (action == 2) {
@@ -776,6 +815,8 @@ public class LogicSubsystem {
 
         mTimer = LocalDateTime.now();
         mTimerTask = toTime;
+
+        mUpdatedIndices.add(day);
     }
 
     /**
@@ -836,29 +877,12 @@ public class LogicSubsystem {
     }
 
     /**
-     * Must be for today's date. If today's date is currently displaying work ahead, then it returns
-     * the position of the task on it's normal date.
+     * Get today's date.
      *
-     * @param position Position in the work ahead list.
-     *
-     * @return <Position, Day> pair if Work Ahead is displayed, null otherwise.
+     * @return LocalDate representing today's date.
      */
-    public Pair<Integer, Integer> convertDay(int position) {
-        if (mWorkAheadTasks == null) {
-            return null;
-        }
-
-        Task toRemove = mWorkAheadTasks.get(position);
-
-        int day = getDiff(toRemove.getDoDate(), mStartDate);
-
-        position = mTaskSchedule.get(day).indexOf(toRemove);
-
-        if (position == -1) {
-            return null;
-        }
-
-        return new Pair<>(position, day);
+    public LocalDate getStartDate() {
+        return mStartDate;
     }
 
     /**
@@ -969,8 +993,6 @@ public class LogicSubsystem {
         if (endDate != null) {
             for (int i = 0; i < toReturn.size(); i++) {
                 if (toReturn.get(i).getDueDate().isAfter(endDate)) {
-                    Log.d("date1", Event.dateFormat.format(endDate));
-                    Log.d("date2", Event.dateFormat.format(toReturn.get(i).getDueDate()));
                     toReturn.remove(i);
                     i--;
                 }
@@ -1125,7 +1147,6 @@ public class LogicSubsystem {
      * Get the name of a specific project by ID
      *
      * @param ID ID of the project
-     * @param context Context for resources
      * @return the Name of the project with the given ID
      */
     public String getProjectName(long ID, Context context) {
@@ -1421,9 +1442,13 @@ public class LogicSubsystem {
             if (first) {
                 toAdd.setID(id);
 
-                for (int i = 0; i < mEventSchedule.get(index).size(); i++) {
-                    if (mEventSchedule.get(index).get(i).getID() == id) {
-                        mEventSchedule.get(index).set(i, toAdd);
+                for (int i = 0; i < mEventSchedule.size(); i++) {
+                    for (int j = 0; j < mEventSchedule.get(i).size(); j++) {
+                        if (mEventSchedule.get(i).get(j).getID() == id) {
+                            mEventSchedule.get(i).remove(j);
+                            mUpdatedIndices.add(i);
+                            break;
+                        }
                     }
                 }
 
@@ -1433,9 +1458,10 @@ public class LogicSubsystem {
             }
             // If not necessary, insert a new event
             else {
-                mEventSchedule.get(index).add(toAdd);
                 mTaskAppViewModel.insert(toAdd);
             }
+
+            mEventSchedule.get(index).add(toAdd);
 
             mUpdatedIndices.add(index);
         }
@@ -1457,7 +1483,7 @@ public class LogicSubsystem {
      * @param context Context for resources
      */
     public void editTask(String name, LocalDate early, LocalDate due, Bundle recur,
-                         int timeToComplete, int project, long[] labelIDs, List<Long> parents,
+                         int timeToComplete, long project, Long[] labelIDs, List<Long> parents,
                          int priority, long id, Context context) {
         // Parse the recurrence information
         RecurrenceParser rp = new RecurrenceParser(context);
@@ -1486,8 +1512,13 @@ public class LogicSubsystem {
             // Add the given project
             if (project != 0) {
                 // Add task to selected project
-                toAdd.setProject(mProjects.get(project - 1));
-                mProjects.get(project - 1).addTask(toAdd);
+                for (Project p : mProjects) {
+                    if (p.getID() == project) {
+                        toAdd.setProject(p);
+                        p.addTask(toAdd);
+                        break;
+                    }
+                }
             }
 
             // Add all selected labels to task.
@@ -1520,6 +1551,10 @@ public class LogicSubsystem {
                 for (int i = 0; i < mTasks.size(); i++) {
                     if (mTasks.get(i).getID() == id) {
                         Task oldTask = mTasks.get(i);
+
+                        // Schedule the task for it's previously scheduled do date. This will
+                        // eventually be replaced by the Optimizer.
+                        toAdd.setDoDate(oldTask.getDoDate());
 
                         // Replace oldTask with toAdd in the data structures
                         mTasks.set(i, toAdd);
@@ -1589,5 +1624,126 @@ public class LogicSubsystem {
         }
 
         return null;
+    }
+
+    public void postponeTask(int mPosition, int mDay) {
+        Task toPostpone = mTaskSchedule.get(mDay).get(mPosition);
+
+        if (toPostpone.getEarlyDate().isEqual(toPostpone.getDueDate())) {
+            toPostpone.setDueDate(toPostpone.getEarlyDate().plusDays(1));
+        }
+
+        toPostpone.setEarlyDate(toPostpone.getEarlyDate().plusDays(1));
+
+        mTaskAppViewModel.update(toPostpone);
+    }
+
+    public void deleteLabel(long id) {
+        Label toRemove = null;
+        
+        for (Label candidate : mLabels) {
+            if (candidate.getID() == id) {
+                toRemove = candidate;
+                break;
+            }
+        }
+        
+        if (toRemove == null) {
+            return;
+        }
+
+        for (Task t : toRemove.getTasks()) {
+            t.removeLabel(toRemove);
+            mTaskAppViewModel.update(t);
+            mUpdatedIndices.add(getDiff(t.getDoDate(), mStartDate));
+        }
+
+        mLabels.remove(toRemove);
+        mTaskAppViewModel.delete(toRemove);
+    }
+
+    public String getLabelName(long id) {
+        for (Label candidate : mLabels) {
+            if (candidate.getID() == id) {
+                return candidate.getName();
+            }
+        }
+
+        return "";
+    }
+
+    public int getLabelColor(long id) {
+        for (Label candidate : mLabels) {
+            if (candidate.getID() == id) {
+                return candidate.getColor();
+            }
+        }
+
+        return 11;
+    }
+
+    public void editLabel(String name, int color, long id) {
+        for (Label candidate : mLabels) {
+            if (candidate.getID() == id) {
+                candidate.setName(name);
+                candidate.setColor(color);
+                mTaskAppViewModel.update(candidate);
+                return;
+            }
+        }
+    }
+
+    public void deleteProject(long id) {
+        for (Project p : mProjects) {
+            if (p.getID() == id) {
+                for (Task t : p.getTasks()) {
+                    t.removeProject();
+                    mTaskAppViewModel.update(t);
+                    mUpdatedIndices.add(getDiff(t.getDoDate(), mStartDate));
+                }
+                mProjects.remove(p);
+                mTaskAppViewModel.delete(p);
+                return;
+            }
+        }
+    }
+
+    public int getProjectColor(long id) {
+        for (Project p : mProjects) {
+            if (id == p.getID()) {
+                return p.getColor();
+            }
+        }
+
+        return 11;
+    }
+
+    public String getProjectGoal(long id) {
+        for (Project p : mProjects) {
+            if (id == p.getID()) {
+                return p.getGoal();
+            }
+        }
+
+        return "";
+    }
+
+    public ProjectItem getProjectItem(long id, Context context) {
+        return new ProjectItem(getProjectName(id, context), getProjectGoal(id), getProjectColor(id), id);
+    }
+
+    public void editProject(String name, int color, String goal, long id) {
+        for (Project p : mProjects) {
+            if (p.getID() == id) {
+                p.setName(name);
+                p.setColor(color);
+                p.setGoal(goal);
+                mTaskAppViewModel.update(p);
+
+                for (Task t : p.getTasks()) {
+                    mUpdatedIndices.add(getDiff(t.getDoDate(), mStartDate));
+                }
+            }
+        }
     }
 }

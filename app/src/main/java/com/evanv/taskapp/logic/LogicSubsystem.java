@@ -815,6 +815,8 @@ public class LogicSubsystem {
 
         mTimer = LocalDateTime.now();
         mTimerTask = toTime;
+
+        mUpdatedIndices.add(day);
     }
 
     /**

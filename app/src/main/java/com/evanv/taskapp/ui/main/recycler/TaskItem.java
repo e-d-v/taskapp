@@ -10,7 +10,6 @@ import java.util.List;
 public class TaskItem {
     private final String mName; // Name of the task (e.g. "Read Ch. 3")
     private int mIndex;   // Index into taskSchedule.get(day) for this event
-    private final boolean mCompletable; // Can be completed today
     private final boolean mHasTimer;    // Task has active timer.
     private final int mPriority;        // Priority of task
     private final String mProject;      // Name of the Project associated with the Task
@@ -39,7 +38,7 @@ public class TaskItem {
                     long ID) {
         mName = name;
         mIndex = index;
-        mCompletable = completable;
+        // Can be completed today
         mHasTimer = hasTimer;
         mPriority = priority;
         mProject = project;
@@ -60,7 +59,7 @@ public class TaskItem {
 
     /**
      * Changes the index of the TaskItem to reflect it's new state in the recycler
-     * @param index The new index in the tasklist
+     * @param index The new index in the task list
      */
     public void setIndex(int index) {
         mIndex = index;
@@ -73,15 +72,6 @@ public class TaskItem {
      */
     public String getName() {
         return mName;
-    }
-
-    /**
-     * Returns boolean that represents, if true, that the task can be completed today
-     *
-     * @return a boolean that represents if thask can be completed today
-     */
-    public boolean isCompletable() {
-        return mCompletable;
     }
 
     /**

@@ -1,7 +1,6 @@
 package com.evanv.taskapp.ui.main.recycler;
 
 import android.app.Activity;
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.ui.main.ClickListener;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 
 /**
@@ -72,7 +70,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.event_item, parent, false);
 
-        return new EventViewHolder(view, mListener);
+        return new EventViewHolder(view);
     }
 
     /**
@@ -122,9 +120,8 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
          * Constructs a new EventViewHolder, setting its values to the views in the event_item
          *
          * @param itemView View containing the views in the event_item
-         * @param listener ClickListener to handle button clicks
          */
-        public EventViewHolder(@NonNull View itemView, ClickListener listener) {
+        public EventViewHolder(@NonNull View itemView) {
             super(itemView);
             mEventItemName = itemView.findViewById(R.id.eventName);
             mEventItemTimespan = itemView.findViewById(R.id.timespan);

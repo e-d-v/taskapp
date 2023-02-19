@@ -2,14 +2,12 @@ package com.evanv.taskapp.ui.additem;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,14 +15,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
@@ -54,21 +49,14 @@ public class TaskEntry extends ItemEntry {
     private List<Long> mParents; // Array of selected parents
     private long mID = -1;       // ID of the edited task (or -1 if adding a task)
 
-    private ActivityResultLauncher<Intent> mLaunchRecur;   // Launcher for the recurrence activity
     private EditText mNameET;
-    private LinearLayout mECDLayout;
     private TextView mECDLabel;
-    private LinearLayout mDDLayout;
-    private LinearLayout mProjectLayout;
     private TextView mDDLabel;
     private TextView mProjectLabel;
-    private LinearLayout mLabelsLayout;
     private TextView mLabelsLabel;
     private EditText mTtcET;
-    private LinearLayout mPrereqLayout;
     private TextView mParentsLabel;
     private SeekBar mPrioritySeekbar;
-    private Button mRecurButton;
 
 
     /**
@@ -87,11 +75,6 @@ public class TaskEntry extends ItemEntry {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setStyle(DialogFragment.STYLE_NORMAL, R.style.DialogStyle);
-
-        mLaunchRecur = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> handleRecurInput(result.getResultCode(),
-                        result.getData()));
 
         // null signifies that no parents are added.
         mParents = null;
@@ -119,23 +102,18 @@ public class TaskEntry extends ItemEntry {
         mRecur.putString(RecurInput.EXTRA_TYPE, NoRecurFragment.EXTRA_VAL_TYPE);
 
         mNameET = view.findViewById(R.id.editTextTaskName);
-        mECDLayout = view.findViewById(R.id.startDateLayout);
         mECDLabel = view.findViewById(R.id.startDateLabel);
-        mDDLayout = view.findViewById(R.id.endDateLayout);
         mDDLabel = view.findViewById(R.id.endDateLabel);
-        mProjectLayout = view.findViewById(R.id.projectLayout);
         mProjectLabel = view.findViewById(R.id.projectsLabel);
-        mLabelsLayout = view.findViewById(R.id.labelsLayout);
         mLabelsLabel = view.findViewById(R.id.labelsLabel);
         mTtcET = view.findViewById(R.id.editTextTTC);
-        mPrereqLayout = view.findViewById(R.id.parentsLayout);
         mParentsLabel = view.findViewById(R.id.parentsLabel);
         mPrioritySeekbar = view.findViewById(R.id.seekBar);
-        mRecurButton = view.findViewById(R.id.recurButton);
+        Button mRecurButton = view.findViewById(R.id.recurButton);
 
         // Sets the onClick behavior to the button to creating a dialog asking what parents the user
         // wants to give the new task
-        mPrereqLayout.setOnClickListener(new AddParentsListener());
+        mParentsLabel.setOnClickListener(new AddParentsListener());
 
         // Make starting text bold
         setText("None Chosen", mECDLabel, getString(R.string.early_date_format));
@@ -169,7 +147,7 @@ public class TaskEntry extends ItemEntry {
                 // Do Nothing
             }
         });
-        mECDLayout.setOnClickListener(view1 -> {
+        mECDLabel.setOnClickListener(view1 -> {
             // Set the max date so the early date can't be set as later than the due date
             LocalDate maxDate = (mDueDate == 0) ? null : LocalDate.ofEpochDay(mDueDate);
 
@@ -203,7 +181,7 @@ public class TaskEntry extends ItemEntry {
                 // Do Nothing
             }
         });
-        mDDLayout.setOnClickListener(view1 -> {
+        mDDLabel.setOnClickListener(view1 -> {
             // Set the max date so the early date can't be set as later than the due date
             LocalDate minDate = (mEarlyDate == 0) ? LocalDate.now() :
                     LocalDate.ofEpochDay(mEarlyDate);
@@ -219,10 +197,10 @@ public class TaskEntry extends ItemEntry {
         mRecurButton.setOnClickListener(v -> intentRecur());
 
         // Add the AddLabelsListener
-        mLabelsLayout.setOnClickListener(new AddLabelsListener());
+        mLabelsLabel.setOnClickListener(new AddLabelsListener());
 
         // Add the PickProjectListener
-        mProjectLayout.setOnClickListener(new PickProjectListener());
+        mProjectLabel.setOnClickListener(new PickProjectListener());
 
         // Load data about task onto screen
         if (mID != -1) {
@@ -239,7 +217,8 @@ public class TaskEntry extends ItemEntry {
                     mProjectLabel, getString(R.string.project_replace));
             mLabels = LogicSubsystem.getInstance().getTaskLabels(mID);
             setText(Integer.toString(mLabels.size()), mLabelsLabel, getString(R.string.label_format));
-            mTtcET.setText(Integer.toString(LogicSubsystem.getInstance().getTaskTTC(mID)));
+            mTtcET.setText(String.format(getResources().getConfiguration().locale, "%d",
+                    LogicSubsystem.getInstance().getTaskTTC(mID)));
             mParents = LogicSubsystem.getInstance().getTaskParents(mID);
             setText(Integer.toString(mParents.size()), mParentsLabel,
                     getString(R.string.parent_tasks_format));
@@ -417,18 +396,13 @@ public class TaskEntry extends ItemEntry {
          */
         @Override
         public void onClick(View view) {
-            // Get the list of labels for the dialog
-            ArrayList<String> labelNames = LogicSubsystem.getInstance().getLabelNames();
-
-            showPickerDialog(convertListToArray(labelNames));
+            showPickerDialog();
         }
 
         /**
          * Builds and shows a picker dialog based on a list of label names.
-         *
-         * @param labelNamesArr List of names of labels
          */
-        private void showPickerDialog(String[] labelNamesArr) {
+        private void showPickerDialog() {
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
             builder.setTitle(R.string.pick_labels)
                     .setAdapter(new LabelChipAdapter<>(requireContext(), R.layout.chip_item),
@@ -436,14 +410,12 @@ public class TaskEntry extends ItemEntry {
                                 // Do Nothing
                             })
                             .setPositiveButton(R.string.ok,
-                            ((dialogInterface, unused) -> {
-                                setText(Integer.toString(mLabels.size()), mLabelsLabel,
-                                        getString(R.string.labels_format));
-                            })).setNeutralButton(getString(R.string.add_label),
+                            ((dialogInterface, unused) -> setText(Integer.toString(mLabels.size()), mLabelsLabel,
+                                    getString(R.string.labels_format)))).setNeutralButton(getString(R.string.add_label),
                             ((dialogInterface, i) -> {
                                 // Open Label Entry dialog
                                 LabelEntry labelEntry = new LabelEntry();
-                                labelEntry.show(getParentFragmentManager(), "LABELENTRY");
+                                labelEntry.show(getParentFragmentManager(), "LABEL ENTRY");
                             }));
 
 
@@ -496,7 +468,7 @@ public class TaskEntry extends ItemEntry {
                     .setNeutralButton(getString(R.string.add_project), ((dialogInterface, i) -> {
                         // Open Project Entry dialog
                         ProjectEntry projectEntry = new ProjectEntry();
-                        projectEntry.show(getParentFragmentManager(), "PROJECTENTRY");
+                        projectEntry.show(getParentFragmentManager(), "PROJECT ENTRY");
                     }));
 
 
@@ -567,13 +539,13 @@ public class TaskEntry extends ItemEntry {
             chip.setChipBackgroundColorResource(colors[projectColor]);
             chip.setTextColor(textColors[projectColor]);
 
-            View finalConvertView = convertView;
+            ImageView finalSelectIndicator = convertView.findViewById(R.id.selectIndicator);
             chip.setOnClickListener(v -> {
                 mProject = LogicSubsystem.getInstance().getProjectID(position);
                 if (mCurrentSelected != null) {
                     mCurrentSelected.setVisibility(View.INVISIBLE);
                 }
-                mCurrentSelected = finalConvertView.findViewById(R.id.selectIndicator);
+                mCurrentSelected = finalSelectIndicator;
                 mCurrentSelected.setVisibility(View.VISIBLE);
             });
 
@@ -581,12 +553,11 @@ public class TaskEntry extends ItemEntry {
                 if (mCurrentSelected != null) {
                     mCurrentSelected.setVisibility(View.INVISIBLE);
                 }
-                mCurrentSelected = finalConvertView.findViewById(R.id.selectIndicator);
+                mCurrentSelected = finalSelectIndicator;
                 mCurrentSelected.setVisibility(View.VISIBLE);
             }
             else {
-                ImageView view = finalConvertView.findViewById(R.id.selectIndicator);
-                view.setVisibility(View.INVISIBLE);
+                finalSelectIndicator.setVisibility(View.INVISIBLE);
             }
 
             return convertView;
@@ -599,10 +570,6 @@ public class TaskEntry extends ItemEntry {
     }
 
     private class LabelChipAdapter<T> extends ArrayAdapter<T> {
-        public LabelChipAdapter(@NonNull Context context, int resource, @NonNull T[] objects) {
-            super(context, resource, objects);
-        }
-
         public LabelChipAdapter(Context context, int chip_item) {
             super(context, chip_item);
         }

@@ -15,8 +15,6 @@ import com.evanv.taskapp.ui.additem.TimePickerFragment;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.ZoneId;
 
-import java.util.Calendar;
-
 /**
  * Class that creates a DatePicker to launch when setting a date for easier Date entering
  * for the user.

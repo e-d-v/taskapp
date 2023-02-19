@@ -22,7 +22,7 @@ import java.util.Date;
 @SuppressWarnings("unused")
 @Entity(tableName = "event_table")
 @TypeConverters(Converters.class)
-public class Event implements Comparable {
+public class Event implements Comparable<Event> {
     // Fields
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
@@ -65,7 +65,7 @@ public class Event implements Comparable {
      * @param start The start time for the event
      * @param length The time to complete for the event
      */
-    public Event(int id, @NonNull String event, LocalDateTime start, int length) {
+    public Event(int id, @NonNull String event, @NonNull LocalDateTime start, int length) {
         this.mID = id;
         this.mName = event;
         this.mDoDate = start;
@@ -164,14 +164,12 @@ public class Event implements Comparable {
      * Returns a positive value if this event is after the other event, negative if it's before and
      * 0 if they occur at the same time.
      *
-     * @param o The other event
+     * @param other The other event
      * @return a positive value if this event is after the other event, negative if it's before and
      *           0 if they occur at the same time
      */
     @Override
-    public int compareTo(Object o) {
-        Event other = (Event) o;
-
+    public int compareTo(Event other) {
         return mDoDate.compareTo(other.getDoDate());
     }
 }

@@ -1,16 +1,12 @@
 package com.evanv.taskapp.ui.additem;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.TextWatcher;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -46,21 +42,7 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
     public static final String EXTRA_VAL_NUM = "com.evanv.taskapp.ui.additem.recur.RecurActivity.extra.val.NUM";
     // Key for the value representing the date the event stops recurring on / number of recurrences
     public static final String EXTRA_UNTIL = "com.evanv.taskapp.ui.additem.recur.RecurActivity.extra.UNTIL";
-    // Key for the value representing a bundle containing the user's input on recurrence
-    public static final String EXTRA_RECUR = "com.evanv.taskapp.ui.additem.recur.RecurActivity.extra.RECUR";
     private boolean mAllowEndDate; // True iff interval != 0
-
-    /**
-     * Function that is called when result is received from recurrence activity.
-     *
-     * @param resultCode Is Activity.RESULT_OK if ran successfully
-     * @param data A bundle of data that describes the recurrence chosen
-     */
-    protected void handleRecurInput(int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK) {
-            mRecur = data.getBundleExtra(EXTRA_RECUR);
-        }
-    }
 
     /**
      * Launch a new intent to the RecurActivity, and give it the needed information
@@ -86,9 +68,6 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
         String month = getResources().getStringArray(R.array.months)
                 [ecd.get(ChronoField.MONTH_OF_YEAR) - 1];
 
-        // Get the time
-        long time = mEarlyDate;
-
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Choose Recurrence Interval")
                 .setItems(R.array.reoccur_names, ((dialogInterface, i) -> {
@@ -99,7 +78,7 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
                         case 1:
                             // Daily recurrence
                             DailyRecurFragment daily = new DailyRecurFragment();
-                            daily.addSubmitListener((View.OnClickListener) view -> {
+                            daily.addSubmitListener(view -> {
                                 Bundle returned = daily.getRecurInfo();
                                 if (returned != null) {
                                     daily.dismiss();
@@ -113,7 +92,7 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
                         case 2:
                             // Weekly recurrence
                             WeeklyRecurFragment weekly = new WeeklyRecurFragment();
-                            weekly.addSubmitListener((View.OnClickListener) view -> {
+                            weekly.addSubmitListener(view -> {
                                 Bundle returned = weekly.getRecurInfo();
                                 if (returned != null) {
                                     weekly.dismiss();
@@ -127,7 +106,7 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
                         case 3:
                             // Monthly recurrence
                             MonthlyRecurFragment monthly = new MonthlyRecurFragment(day, desc);
-                            monthly.addSubmitListener((View.OnClickListener) view -> {
+                            monthly.addSubmitListener(view -> {
                                 Bundle returned = monthly.getRecurInfo();
                                 if (returned != null) {
                                     monthly.dismiss();
@@ -141,7 +120,7 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
                         case 4:
                             // Yearly recurrence
                             YearlyRecurFragment yearly = new YearlyRecurFragment(day, desc, month);
-                            yearly.addSubmitListener((View.OnClickListener) view -> {
+                            yearly.addSubmitListener(view -> {
                                 Bundle returned = yearly.getRecurInfo();
                                 if (returned != null) {
                                     yearly.dismiss();
@@ -197,17 +176,6 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
                     }
                 }));
         builder.show();
-    }
-
-    /**
-     * This method converts dp unit to equivalent pixels, depending on device density.
-     *
-     * @param dp A value in dp (density independent pixels) unit. Which we need to convert into pixels
-     * @param context Context to get resources and device specific display metrics
-     * @return A float value to represent px equivalent to dp depending on device density
-     */
-    public static float convertDpToPixel(float dp, Context context){
-        return dp * ((float) context.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }
 
     private void recurEndDate(Bundle recurInfo) {

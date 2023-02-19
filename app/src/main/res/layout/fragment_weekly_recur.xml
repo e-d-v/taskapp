@@ -14,10 +14,9 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/weeklySubheader"
             android:labelFor="@id/weeksBetween"
             style="@style/subheader"
-            android:text="Weeks between recurrences:"/>
+            android:text="@string/weeks_between_recurrences"/>
         <EditText
             android:id="@+id/weeksBetween"
             android:layout_width="wrap_content"

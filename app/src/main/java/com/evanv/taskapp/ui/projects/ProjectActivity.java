@@ -29,11 +29,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@InternalPlatformTextApi /**
+/**
  * Activity showing a list of Projects.
  *
  * @author Evan Voogd
  */
+@InternalPlatformTextApi
 public class ProjectActivity extends AppCompatActivity implements ClickListener {
 
     /**

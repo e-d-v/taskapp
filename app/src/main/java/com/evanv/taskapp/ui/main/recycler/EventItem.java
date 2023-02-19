@@ -8,7 +8,6 @@ package com.evanv.taskapp.ui.main.recycler;
 public class EventItem {
     private final String mName;     // Name of the event (e.g. "Staff Meeting")
     private final String mTimespan; // Timespan of the event (e.g. "2-4pm")
-    private final int mIndex;       // Index into eventSchedule.get(day) for this event
 
     /**
      * Creates an item representing an Event
@@ -21,16 +20,7 @@ public class EventItem {
     public EventItem(String name, String timespan, int index) {
         mName = name;
         mTimespan = timespan;
-        mIndex = index;
-    }
-
-    /**
-     * Returns index of eventSchedule.get(day) this event is stored at.
-     *
-     * @return index of eventSchedule.get(day) this event is stored at.
-     */
-    public int getIndex() {
-        return mIndex;
+        // Index into eventSchedule.get(day) for this event
     }
 
     /**

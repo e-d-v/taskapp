@@ -185,6 +185,7 @@ public class LogicSubsystem {
      *
      * @return Return list of currently unhandled overdue tasks.
      */
+    @SuppressWarnings("unused")
     public String[] getOverdueTasks(Context context) throws IllegalStateException {
         if (overdueTasks == null) {
             return null;
@@ -220,6 +221,7 @@ public class LogicSubsystem {
      *
      * @return number of corrupted tasks
      */
+    @SuppressWarnings("unused")
     public int getNumFailures() {
         return mFailures;
     }
@@ -232,6 +234,7 @@ public class LogicSubsystem {
      *                       completed.
      * @param context Context for resources
      */
+    @SuppressWarnings("unused")
     public void updateOverdueTasks(List<Integer> completedItems, Context context) {
         // As the user has marked these tasks as completed, remove them.
         for (int i = 0; i < completedItems.size(); i++) {
@@ -266,6 +269,7 @@ public class LogicSubsystem {
      *
      * @return A list of DayItems to be used by MainActivity's recycler.
      */
+    @SuppressWarnings("unused")
     public List<DayItem> prepForDisplay(boolean reoptimize, Context context) {
         // Get the event list.
         List<Event> events = mTaskAppViewModel.getAllEvents();
@@ -364,6 +368,7 @@ public class LogicSubsystem {
      *
      * @return true if app's internal data structures are empty.
      */
+    @SuppressWarnings("unused")
     public boolean isEmpty() {
         return mTaskSchedule.size() == 0 && mEventSchedule.size() == 0;
     }
@@ -791,8 +796,9 @@ public class LogicSubsystem {
     /**
      * Get the number of days currently scheduled in the app's internal data structures
      *
-     * @return The number of days tracked in the system
+     * @return the number of days currently scheduled in the app's internal data structures
      */
+    @SuppressWarnings("UnusedReturnValue")
     public int getNumDays() {
         return Integer.max(mEventSchedule.size(), mTaskSchedule.size());
     }
@@ -872,6 +878,7 @@ public class LogicSubsystem {
      *
      * @return the do date of the currently timed task, or -1 if no task is currently being timed.
      */
+    @SuppressWarnings("unused")
     public int getTimerDay() {
         return (mTimerTask == null) ? -1 : getDiff(mTimerTask.getDoDate(), mStartDate);
     }
@@ -905,6 +912,7 @@ public class LogicSubsystem {
      *
      * @return a list of colors for Projects.
      */
+    @SuppressWarnings("unused")
     public ArrayList<Integer> getProjectColors() {
         ArrayList<Integer> toReturn = new ArrayList<>();
 
@@ -920,6 +928,7 @@ public class LogicSubsystem {
      *
      * @return The goal of each project.
      */
+    @SuppressWarnings("unused")
     public ArrayList<String> getProjectGoals() {
         ArrayList<String> toReturn = new ArrayList<>();
 
@@ -950,6 +959,7 @@ public class LogicSubsystem {
      *
      * @return a list of colors for Label.
      */
+    @SuppressWarnings("unused")
     public ArrayList<Integer> getLabelColors() {
         ArrayList<Integer> toReturn = new ArrayList<>();
 
@@ -1102,22 +1112,6 @@ public class LogicSubsystem {
      */
     public long getProjectID(int index) {
         return mProjects.get(index).getID();
-    }
-
-    /**
-     * Get the index of the ID'th project in the project list
-     *
-     * @param ID ID to lookup
-     * @return the index of the project with this ID
-     */
-    public int getProjectIndex(long ID) {
-        for (int i = 0; i < mProjects.size(); i++) {
-            if (mProjects.get(i).getID() == ID) {
-                return i;
-            }
-        }
-
-        return -1;
     }
 
     /**
@@ -1292,21 +1286,6 @@ public class LogicSubsystem {
     }
 
     /**
-     * Get the index in the mTasks list of a specific task by ID
-     *
-     * @param id ID of the task
-     * @return the index in the mTasks list of the Task with the given ID
-     */
-    public int getTaskIndex(long id) {
-        for (int i = 0; i < mTasks.size(); i++) {
-            if (mTasks.get(i).getID() == id) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    /**
      * Get the ID of a Task in a specific position in the recycler
      *
      * @param mPosition The position in the mDay'th dayViewHolder of the task
@@ -1389,6 +1368,7 @@ public class LogicSubsystem {
      * @param mDay How many days past today's date this event occurs
      * @return The ID of the event in this specific position in the recycler.
      */
+    @SuppressWarnings("unused")
     public long getEventID(int mPosition, int mDay) {
         return mEventSchedule.get(mDay).get(mPosition).getID();
     }
@@ -1398,6 +1378,7 @@ public class LogicSubsystem {
      *
      * @return a list of indices for the recycler to update.
      */
+    @SuppressWarnings("unused")
     public List<Integer> getUpdatedIndices() {
         List<Integer> toReturn = mUpdatedIndices;
         mUpdatedIndices = new ArrayList<>();
@@ -1626,6 +1607,7 @@ public class LogicSubsystem {
         return null;
     }
 
+    @SuppressWarnings("unused")
     public void postponeTask(int mPosition, int mDay) {
         Task toPostpone = mTaskSchedule.get(mDay).get(mPosition);
 
@@ -1638,6 +1620,7 @@ public class LogicSubsystem {
         mTaskAppViewModel.update(toPostpone);
     }
 
+    @SuppressWarnings("unused")
     public void deleteLabel(long id) {
         Label toRemove = null;
         

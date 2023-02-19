@@ -7,26 +7,20 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.InputType;
 
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.compose.ui.text.android.InternalPlatformTextApi;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -58,12 +52,13 @@ import java.util.Objects;
 
 import kotlin.Pair;
 
-@InternalPlatformTextApi /**
+/**
  * Main Activity for the app. Display's the user's schedule of Tasks/Events, while allowing for
  * Task completion/addition (with the latter done through the use of a separate AddItem activity).
  *
  * @author Evan Voogd
  */
+@InternalPlatformTextApi
 @SuppressWarnings("unused")
 public class MainActivity extends AppCompatActivity implements ClickListener {
     // Fields
@@ -715,7 +710,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     private void updateRecycler() {
         List<Integer> updatedIndices = LogicSubsystem.getInstance().getUpdatedIndices();
-        if (!updatedIndices.contains(Integer.valueOf(0))) {
+        if (!updatedIndices.contains(0)) {
             updatedIndices.add(0);
         }
 

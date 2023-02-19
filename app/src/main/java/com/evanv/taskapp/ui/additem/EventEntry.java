@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,9 +42,7 @@ public class EventEntry extends ItemEntry {
     private EditText mEditTextEventName; // EditText containing the name of the event
     private long mID = -1;               // ID of the Event to update, -1 if adding an event
 
-    private LinearLayout mStartTimeLayout;
     private TextView mStartTimeLabel;
-    private LinearLayout mEndTimeLayout;
     private TextView mEndTimeLabel;
     LocalDateTime mStartTime; // Start time for event
     LocalDateTime mEndTime;   // End time for event
@@ -123,9 +120,7 @@ public class EventEntry extends ItemEntry {
 
         // Get needed views
         mEditTextEventName = view.findViewById(R.id.editTextEventName);
-        mStartTimeLayout = view.findViewById(R.id.startDateLayout);
         mStartTimeLabel = view.findViewById(R.id.startDateLabel);
-        mEndTimeLayout = view.findViewById(R.id.endDateLayout);
         mEndTimeLabel = view.findViewById(R.id.endDateLabel);
 
         // Make starting text bold
@@ -141,7 +136,7 @@ public class EventEntry extends ItemEntry {
         button.setOnClickListener(v -> intentRecur());
 
         EditText fakeECDet = new EditText(getContext());
-        mStartTimeLayout.setOnClickListener(v -> {
+        mStartTimeLabel.setOnClickListener(v -> {
             // Clear End Time picker
             fakeECDet.setText("");
 
@@ -180,7 +175,7 @@ public class EventEntry extends ItemEntry {
             }
         });
         EditText fakeDDet = new EditText(getContext());
-        mEndTimeLayout.setOnClickListener(v -> {
+        mEndTimeLabel.setOnClickListener(v -> {
             if (mStartTime != null) {
                 int hourOfDay = mStartTime.getHour();
                 int minute = mStartTime.getMinute();
@@ -256,6 +251,7 @@ public class EventEntry extends ItemEntry {
      *
      * @param id the ID to edit.
      */
+    @SuppressWarnings("unused")
     public void setID(long id) {
         mID = id;
     }

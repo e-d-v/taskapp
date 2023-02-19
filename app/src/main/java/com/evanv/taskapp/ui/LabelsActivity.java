@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,21 +17,19 @@ import android.view.View;
 
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.databinding.ActivityLabelsBinding;
-import com.evanv.taskapp.databinding.ActivityProjectBinding;
 import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.ui.additem.LabelEntry;
 import com.evanv.taskapp.ui.main.MainActivity;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import javax.security.auth.callback.Callback;
-
+@SuppressWarnings("unused")
 @InternalPlatformTextApi public class LabelsActivity extends AppCompatActivity {
 
+    @SuppressWarnings("unused")
     private ChipGroup mChipGroup;
 
     @Override
@@ -53,7 +50,8 @@ import javax.security.auth.callback.Callback;
         }
     }
 
-    private void clickChip (long id, View view) {
+    @SuppressWarnings("unused")
+    private void clickChip (@SuppressWarnings("unused") long id, @SuppressWarnings("unused") View view) {
         AlertDialog.Builder diag = new AlertDialog.Builder(this);
         diag.setItems(R.array.label_options, (dialogInterface, i) -> {
             switch (i) {
@@ -70,7 +68,7 @@ import javax.security.auth.callback.Callback;
                         addChip(LogicSubsystem.getInstance().getLabelName(id),
                                 LogicSubsystem.getInstance().getLabelColor(id), id);
                     });
-                    labelEntry.show(getSupportFragmentManager(), "LABELENTRY");
+                    labelEntry.show(getSupportFragmentManager(), "LABEL ENTRY");
                     break;
                 case 2:
                     LogicSubsystem.getInstance().deleteLabel(id);
@@ -81,7 +79,8 @@ import javax.security.auth.callback.Callback;
         diag.show();
     }
 
-    private void addChip(String name, int color, long id) {
+    @SuppressWarnings("unused")
+    private void addChip(String name, @SuppressWarnings("unused") int color, long id) {
         // Set label color
         int[] colors = {R.color.pale_blue,
                 R.color.blue,

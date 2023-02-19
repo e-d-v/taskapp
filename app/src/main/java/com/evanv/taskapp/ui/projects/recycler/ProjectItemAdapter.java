@@ -30,8 +30,6 @@ public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.
     public final List<ProjectItem> mProjectsList; // List of project information
     private final ClickListener mListener;  // The listener to handle button presses.
     private final AppCompatActivity mActivity;
-    private long mEditedID = -1;
-    private View.OnClickListener mOnSubmit;
 
     /**
      * Construct a new ProjectItemAdapter
@@ -39,6 +37,7 @@ public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.
      * @param list The list of projects to display
      * @param clickListener The listener to handle button presses
      */
+    @SuppressWarnings("unused")
     public ProjectItemAdapter(List<ProjectItem> list, ClickListener clickListener, AppCompatActivity activity) {
         mProjectsList = list;
         mListener = clickListener;
@@ -122,7 +121,7 @@ public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.
                                     .getProjectItem(curr.getID(), mActivity));
                             notifyItemChanged(position);
                         });
-                        projectEntry.show(mActivity.getSupportFragmentManager(), "PROJECTENTRY");
+                        projectEntry.show(mActivity.getSupportFragmentManager(), "PROJECT ENTRY");
                         break;
                     case 1:
                         LogicSubsystem.getInstance().deleteProject(curr.getID());
@@ -162,6 +161,7 @@ public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.
          *
          * @param view The view of the ViewHolder
          */
+        @SuppressWarnings("unused")
         public ProjectViewHolder(View view) {
             super(view);
             mProjectChip = view.findViewById(R.id.projectChip);

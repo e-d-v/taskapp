@@ -36,7 +36,6 @@ import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.logic.Task;
 import com.evanv.taskapp.ui.additem.LabelEntry;
 import com.evanv.taskapp.ui.additem.ProjectEntry;
-import com.evanv.taskapp.ui.additem.TaskEntry;
 import com.evanv.taskapp.ui.additem.recur.DatePickerFragment;
 import com.evanv.taskapp.ui.main.MainActivity;
 import com.google.android.material.chip.Chip;
@@ -47,9 +46,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@InternalPlatformTextApi /**
+/**
  * Search field for user to lookup tasks.
  */
+@InternalPlatformTextApi
 public class FilterActivity extends AppCompatActivity {
     private long mStartDate;  // Holds the user selected start date
     private long mEndDate;    // Holds the user selected end date
@@ -74,12 +74,14 @@ public class FilterActivity extends AppCompatActivity {
         mContext = this;
 
         // Add the AddLabelsListener
-        findViewById(R.id.labelsLayout).setOnClickListener
+        findViewById(R.id.labelsLabel).setOnClickListener
                 (new AddLabelsListener());
 
         // Add the PickProjectListener
-        findViewById(R.id.projectLayout).setOnClickListener
+        findViewById(R.id.projectsLabel).setOnClickListener
                 (new PickProjectListener());
+
+        findViewById(R.id.searchButton).setOnClickListener(this::search);
 
         // Make starting text bold
         setText("None Chosen", findViewById(R.id.startDateLabel),
@@ -122,7 +124,7 @@ public class FilterActivity extends AppCompatActivity {
                 // Do Nothing
             }
         });
-        findViewById(R.id.startDateLayout).setOnClickListener(view1 -> {
+        findViewById(R.id.startDateLabel).setOnClickListener(view1 -> {
             // Set the max date so the early date can't be set as later than the due date
             LocalDate maxDate = (mEndDate == 0) ? null : LocalDate.ofEpochDay(mEndDate);
             fakeStartET.setText("");
@@ -165,7 +167,7 @@ public class FilterActivity extends AppCompatActivity {
                 // Do Nothing
             }
         });
-        findViewById(R.id.endDateLayout).setOnClickListener(view1 -> {
+        findViewById(R.id.endDateLabel).setOnClickListener(view1 -> {
             // Set the max date so the early date can't be set as later than the due date
             LocalDate minDate = (mStartDate == 0) ? LocalDate.now() :
                     LocalDate.ofEpochDay(mStartDate);
@@ -182,10 +184,8 @@ public class FilterActivity extends AppCompatActivity {
 
     /**
      * Search for a given task and pull up the TaskListActivity displaying the results
-     *
-     * @param view Not used
      */
-    public void search(View view) {
+    public void search(@SuppressWarnings("unused") View view) {
         Intent intent = new Intent(this, TaskListActivity.class);
 
         // Get name
@@ -260,23 +260,6 @@ public class FilterActivity extends AppCompatActivity {
     }
 
     /**
-     * Converts an ArrayList of Strings to an array of Strings.
-     *
-     * @param list The list to convert to an array
-     *
-     * @return An array with the same items as the ArrayList
-     */
-    private String[] convertListToArray(ArrayList<String> list) {
-        String[] toReturn = new String[list.size()];
-        Object[] toReturnObjs = list.toArray();
-        for (int i = 0; i < toReturnObjs.length; i++) {
-            toReturn[i] = (String) toReturnObjs[i];
-        }
-
-        return toReturn;
-    }
-
-    /**
      * Handles the pick labels dialog
      */
     private class AddLabelsListener implements View.OnClickListener {
@@ -287,18 +270,13 @@ public class FilterActivity extends AppCompatActivity {
          */
         @Override
         public void onClick(View view) {
-            // Get the list of labels for the dialog
-            ArrayList<String> labelNames = LogicSubsystem.getInstance().getLabelNames();
-
-            showPickerDialog(convertListToArray(labelNames));
+            showPickerDialog();
         }
 
         /**
          * Builds and shows a picker dialog based on a list of label names.
-         *
-         * @param labelNamesArr List of names of labels
          */
-        private void showPickerDialog(String[] labelNamesArr) {
+        private void showPickerDialog() {
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
             builder.setTitle(R.string.pick_labels)
                     .setAdapter(new LabelChipAdapter<>(mContext, R.layout.chip_item),
@@ -312,7 +290,7 @@ public class FilterActivity extends AppCompatActivity {
                             ((dialogInterface, i) -> {
                                 // Open Label Entry dialog
                                 LabelEntry labelEntry = new LabelEntry();
-                                labelEntry.show(getSupportFragmentManager(), "LABELENTRY");
+                                labelEntry.show(getSupportFragmentManager(), "LABEL ENTRY");
                             }));
 
 
@@ -336,18 +314,13 @@ public class FilterActivity extends AppCompatActivity {
          */
         @Override
         public void onClick(View view) {
-            // Get the list of labels for the dialog
-            ArrayList<String> projectNames = LogicSubsystem.getInstance().getProjectNames();
-
-            showPickerDialog(convertListToArray(projectNames));
+            showPickerDialog();
         }
 
         /**
          * Builds and shows a picker dialog based on a list of label names.
-         *
-         * @param projectNamesArr List of names of labels
          */
-        private void showPickerDialog(String[] projectNamesArr) {
+        private void showPickerDialog() {
             // Define the dialog used to pick parent tasks
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
             builder.setTitle(R.string.pick_project)
@@ -367,7 +340,7 @@ public class FilterActivity extends AppCompatActivity {
                     .setNeutralButton(getString(R.string.add_project), ((dialogInterface, i) -> {
                         // Open Project Entry dialog
                         ProjectEntry projectEntry = new ProjectEntry();
-                        projectEntry.show(getSupportFragmentManager(), "PROJECTENTRY");
+                        projectEntry.show(getSupportFragmentManager(), "PROJECT ENTRY");
                     }));
 
 
@@ -403,10 +376,6 @@ public class FilterActivity extends AppCompatActivity {
 
     private class ProjectChipAdapter<T> extends ArrayAdapter<T> {
         private ImageView mCurrentSelected;
-
-        public ProjectChipAdapter(@NonNull Context context, int resource, @NonNull T[] objects) {
-            super(context, resource, objects);
-        }
 
         public ProjectChipAdapter(Context context, int chip_item) {
             super(context, chip_item);
@@ -459,12 +428,13 @@ public class FilterActivity extends AppCompatActivity {
             chip.setTextColor(textColors[projectColor]);
 
             View finalConvertView = convertView;
+            ImageView finalSelectIndicator = finalConvertView.findViewById(R.id.selectIndicator);
             chip.setOnClickListener(v -> {
                 mProject = LogicSubsystem.getInstance().getProjectID(position);
                 if (mCurrentSelected != null) {
                     mCurrentSelected.setVisibility(View.INVISIBLE);
                 }
-                mCurrentSelected = finalConvertView.findViewById(R.id.selectIndicator);
+                mCurrentSelected = finalSelectIndicator;
                 mCurrentSelected.setVisibility(View.VISIBLE);
             });
 
@@ -472,12 +442,11 @@ public class FilterActivity extends AppCompatActivity {
                 if (mCurrentSelected != null) {
                     mCurrentSelected.setVisibility(View.INVISIBLE);
                 }
-                mCurrentSelected = finalConvertView.findViewById(R.id.selectIndicator);
+                mCurrentSelected = finalSelectIndicator;
                 mCurrentSelected.setVisibility(View.VISIBLE);
             }
             else {
-                ImageView view = finalConvertView.findViewById(R.id.selectIndicator);
-                view.setVisibility(View.INVISIBLE);
+                finalSelectIndicator.setVisibility(View.INVISIBLE);
             }
 
             return convertView;
@@ -490,9 +459,6 @@ public class FilterActivity extends AppCompatActivity {
     }
 
     private class LabelChipAdapter<T> extends ArrayAdapter<T> {
-        public LabelChipAdapter(@NonNull Context context, int resource, @NonNull T[] objects) {
-            super(context, resource, objects);
-        }
 
         public LabelChipAdapter(Context context, int chip_item) {
             super(context, chip_item);

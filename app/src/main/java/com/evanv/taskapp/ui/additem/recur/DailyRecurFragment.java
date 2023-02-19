@@ -8,10 +8,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 
 import com.evanv.taskapp.R;
-import com.evanv.taskapp.ui.main.ClickListener;
 
 import java.util.Objects;
 
@@ -73,7 +71,7 @@ public class DailyRecurFragment extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        getDialog().setTitle("How many days between recurrences?");
+        Objects.requireNonNull(getDialog()).setTitle("How many days between recurrences?");
         // Inflate the layout for this fragment
         View toReturn = inflater.inflate(R.layout.fragment_daily_recur, container, false);
 

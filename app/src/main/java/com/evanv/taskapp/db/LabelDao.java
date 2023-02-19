@@ -7,7 +7,6 @@ import androidx.room.Query;
 import androidx.room.Update;
 
 import com.evanv.taskapp.logic.Label;
-import com.evanv.taskapp.logic.Project;
 
 import java.util.List;
 

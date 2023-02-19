@@ -18,6 +18,7 @@ public class ProjectItem {
      * @param goal Goal of the project
      * @param color Color representing the project
      */
+    @SuppressWarnings("unused")
     public ProjectItem(String name, String goal, int color, long id) {
         mName = name;
         mGoal = goal;

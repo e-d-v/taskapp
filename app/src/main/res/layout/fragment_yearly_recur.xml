@@ -15,7 +15,6 @@
             android:labelFor="@id/yearsBetween"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/yearlySubheader"
             style="@style/subheader"
             android:text="@string/years_recur_prompt"/>
         <EditText
@@ -59,7 +58,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/recur_specific_days_months"
-            android:id="@+id/radioButtonSpecificMonthsDays"
             tools:ignore="HardcodedText" />
     </RadioGroup>
 
@@ -71,7 +69,6 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/recurMonthsPrompt"
             style="@style/subheader"
             android:text="@string/months_recur_prompt"/>
         <EditText
@@ -95,7 +92,6 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/recurDaysPrompt"
             style="@style/subheader"
             android:text="Days to recur on: "
             tools:ignore="HardcodedText" />

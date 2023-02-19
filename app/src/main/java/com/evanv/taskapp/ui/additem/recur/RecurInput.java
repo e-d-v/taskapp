@@ -17,5 +17,6 @@ public interface RecurInput {
      *
      * @return A bundle containing user input about recurrence.
      */
+    @SuppressWarnings("unused")
     Bundle getRecurInfo();
 }

@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"
             android:text="@string/submit"/>
         <LinearLayout
-            android:gravity="right|center_vertical"
+            android:gravity="end|center_vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
             <ImageButton
@@ -51,6 +51,7 @@
                 android:layout_height="48dp"
                 android:src="@drawable/baseline_help_24"
                 android:background="@null"
+                android:contentDescription="@string/question_mark"
                 app:tint="@color/text_primary"/>
         </LinearLayout>
     </LinearLayout>

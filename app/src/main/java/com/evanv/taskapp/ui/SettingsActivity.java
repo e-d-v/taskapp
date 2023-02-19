@@ -1,33 +1,18 @@
 package com.evanv.taskapp.ui;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
-import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.compose.ui.text.android.InternalPlatformTextApi;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.PreferenceScreen;
 
 import com.evanv.taskapp.R;
-import com.evanv.taskapp.db.TaskAppRoomDatabase;
 import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.ui.main.MainActivity;
 
-import java.io.File;
-import java.net.URI;
 import java.util.Objects;
 
 

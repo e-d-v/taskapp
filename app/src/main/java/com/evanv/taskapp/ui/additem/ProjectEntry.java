@@ -59,18 +59,18 @@ public class ProjectEntry extends DialogFragment {
             SpannableString colorText = new SpannableString(labelStart +
                     getResources().getStringArray(R.array.colors)[color]);
 
-            int[] colors = {getResources().getColor(R.color.pale_blue),
-                    getResources().getColor(R.color.blue),
-                    getResources().getColor(R.color.pale_green),
-                    getResources().getColor(R.color.green),
-                    getResources().getColor(R.color.pink),
-                    getResources().getColor(R.color.red),
-                    getResources().getColor(R.color.pale_orange),
-                    getResources().getColor(R.color.orange),
-                    getResources().getColor(R.color.lavender),
-                    getResources().getColor(R.color.purple),
-                    getResources().getColor(R.color.yellow),
-                    getResources().getColor(R.color.gray)};
+            int[] colors = {ContextCompat.getColor(requireContext(), R.color.pale_blue),
+                    ContextCompat.getColor(requireContext(), R.color.blue),
+                    ContextCompat.getColor(requireContext(), R.color.pale_green),
+                    ContextCompat.getColor(requireContext(), R.color.green),
+                    ContextCompat.getColor(requireContext(), R.color.pink),
+                    ContextCompat.getColor(requireContext(), R.color.red),
+                    ContextCompat.getColor(requireContext(), R.color.pale_orange),
+                    ContextCompat.getColor(requireContext(), R.color.orange),
+                    ContextCompat.getColor(requireContext(), R.color.lavender),
+                    ContextCompat.getColor(requireContext(), R.color.purple),
+                    ContextCompat.getColor(requireContext(), R.color.yellow),
+                    ContextCompat.getColor(requireContext(), R.color.gray)};
 
             int colorResource = colors[color];
 
@@ -79,6 +79,9 @@ public class ProjectEntry extends DialogFragment {
 
             mColorLabel.setText(colorText);
         }
+
+        view.findViewById(R.id.colorSelectTextView).setOnClickListener(this::handleColorPress);
+
         return view;
     }
 
@@ -95,6 +98,7 @@ public class ProjectEntry extends DialogFragment {
      *
      * @param view not used
      */
+    @SuppressWarnings("unused")
     public void handleColorPress(View view) {
         final Dialog dialog = new Dialog(requireContext());
         dialog.setContentView(R.layout.color_picker);
@@ -145,18 +149,18 @@ public class ProjectEntry extends DialogFragment {
             SpannableString colorText = new SpannableString(labelStart +
                     getResources().getStringArray(R.array.colors)[color]);
 
-            int[] colors = {getResources().getColor(R.color.pale_blue),
-                    getResources().getColor(R.color.blue),
-                    getResources().getColor(R.color.pale_green),
-                    getResources().getColor(R.color.green),
-                    getResources().getColor(R.color.pink),
-                    getResources().getColor(R.color.red),
-                    getResources().getColor(R.color.pale_orange),
-                    getResources().getColor(R.color.orange),
-                    getResources().getColor(R.color.lavender),
-                    getResources().getColor(R.color.purple),
-                    getResources().getColor(R.color.yellow),
-                    getResources().getColor(R.color.gray)};
+            int[] colors = {ContextCompat.getColor(requireContext(), R.color.pale_blue),
+                    ContextCompat.getColor(requireContext(), R.color.blue),
+                    ContextCompat.getColor(requireContext(), R.color.pale_green),
+                    ContextCompat.getColor(requireContext(), R.color.green),
+                    ContextCompat.getColor(requireContext(), R.color.pink),
+                    ContextCompat.getColor(requireContext(), R.color.red),
+                    ContextCompat.getColor(requireContext(), R.color.pale_orange),
+                    ContextCompat.getColor(requireContext(), R.color.orange),
+                    ContextCompat.getColor(requireContext(), R.color.lavender),
+                    ContextCompat.getColor(requireContext(), R.color.purple),
+                    ContextCompat.getColor(requireContext(), R.color.yellow),
+                    ContextCompat.getColor(requireContext(), R.color.gray)};
 
             int colorResource = colors[color];
 
@@ -176,6 +180,7 @@ public class ProjectEntry extends DialogFragment {
      *
      * @param view not used
      */
+    @SuppressWarnings("unused")
     public void submit(View view) {
         String name = String.valueOf((mNameET).getText());
         String goal = String.valueOf((mGoalET).getText());

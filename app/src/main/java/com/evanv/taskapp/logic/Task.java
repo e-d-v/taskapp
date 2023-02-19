@@ -17,7 +17,11 @@ import org.threeten.bp.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Represents a single task. Conceptually a Task is a node on a large task dependency graph that
@@ -133,7 +137,16 @@ public class Task implements Comparable<Task> {
         mParents = new ArrayList<>();
         mChildren = new ArrayList<>();
         mLabels = new ArrayList<>();
-        mParentArr = parentArr;
+        mParentArr = new ArrayList<>();
+
+        // Remove duplicate entries
+        for (long id : parentArr) {
+            if (!mParentArr.contains(id)) {
+                mParentArr.add(id);
+            }
+        }
+
+
         mPriority = priority;
         mProjectID = projectID;
         mLabelIDs = labelIDs;
@@ -264,7 +277,10 @@ public class Task implements Comparable<Task> {
     public void addParent(Task parent) {
         if (!mParents.contains(parent) && !mChildren.contains(parent) && parent != this) {
             this.mParents.add(parent);
-            this.mParentArr.add(parent.getID());
+
+            if (!mParentArr.contains(parent.getID())) {
+                this.mParentArr.add(parent.getID());
+            }
         }
     }
 

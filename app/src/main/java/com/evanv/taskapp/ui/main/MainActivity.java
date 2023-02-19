@@ -473,6 +473,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
                 mPosition = pair.getFirst();
                 mDay = pair.getSecond();
+                mEditedID = id;
                 completeTask();
                 break;
             // Options button pressed, set mPosition/mDay
@@ -622,8 +623,6 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * Handles the user choosing to edit a task.
      */
     private void editTask() {
-        mEditedID = mLogicSubsystem.getTaskID(mPosition, mDay);
-
         // Launch an edit intent
         addTask();
     }

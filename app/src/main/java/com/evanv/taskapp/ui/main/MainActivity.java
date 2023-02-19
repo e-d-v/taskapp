@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
@@ -431,8 +432,18 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 return true;
             case (R.id.action_about):
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                LayoutInflater inflater = getLayoutInflater();
                 builder.setTitle(R.string.about);
                 builder.setMessage(R.string.about_message);
+                builder.setNeutralButton("Send Feedback", (d, i) -> {
+                    Intent mailIntent = new Intent(Intent.ACTION_SENDTO);
+                    mailIntent.setData(Uri.parse("mailto:"));
+                    mailIntent.putExtra(Intent.EXTRA_EMAIL,
+                            new String[]{"taskapptvc+feedback@gmail.com"});
+                    mailIntent.putExtra(Intent.EXTRA_SUBJECT, "Feedback");
+                    startActivity(mailIntent);
+                });
+
                 builder.show();
                 return true;
             case (R.id.action_settings):

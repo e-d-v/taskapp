@@ -1,6 +1,5 @@
 package com.evanv.taskapp.ui.additem.recur;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,10 +11,8 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 
 import com.evanv.taskapp.R;
-import com.evanv.taskapp.ui.additem.EventEntry;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -57,10 +54,11 @@ public class YearlyRecurFragment extends DialogFragment {
     private EditText mDaysET;       // EditText containing what days to increment on
     private EditText mMonthsET;     // EditText containing what months to increment on
     private int currSelection;      // Currently selected radio button index
+    private final String mDay;      // The day the user has chosen (e.g. March 3rd)
+    private final String mDesc;     // Dynamic description of chosen day (e.g. 3rd Monday of March)
+    private final String mMonth;    // Month the user has chosen
+    // Listener that is called when the submit button is pressed
     private View.OnClickListener mSubmitListener;
-    private String mDay;
-    private String mDesc;
-    private String mMonth;
 
     /**
      * Sets fields to display

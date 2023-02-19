@@ -18,6 +18,7 @@ public class ProjectItem {
      * @param goal Goal of the project
      * @param color Color representing the project
      */
+    @SuppressWarnings("unused")
     public ProjectItem(String name, String goal, int color, long id) {
         mName = name;
         mGoal = goal;
@@ -52,6 +53,11 @@ public class ProjectItem {
         return mColor;
     }
 
+    /**
+     * Get the ID of this ProjectItem
+     *
+     * @return the ID of the project this ProjectItem represents
+     */
     public long getID() {
         return mID;
     }

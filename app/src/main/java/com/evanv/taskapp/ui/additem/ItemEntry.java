@@ -1,16 +1,12 @@
 package com.evanv.taskapp.ui.additem;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.TextWatcher;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -33,11 +29,15 @@ import org.threeten.bp.temporal.ChronoField;
 /**
  * Contains shared functionality of entering Tasks and Events, such as recurrence handling and
  * submitListeners
+ *
+ * @author Evan Voogd
  */
 public abstract class ItemEntry extends BottomSheetDialogFragment {
-    protected Bundle mRecur;
+    protected Bundle mRecur;                  // Bundle representing the user's chosen recurrences
     protected View.OnClickListener mListener; // Listener for Submit Button
-    protected long mEarlyDate;     // Holds the user selected early date
+    protected long mEarlyDate;                // Holds the user selected early date
+    private boolean mAllowEndDate;            // True iff interval != 0
+
     // Key for the value representing the type of until statement (number or until)
     public static final String EXTRA_UNTIL_TYPE = "com.evanv.taskapp.ui.additem.recur.RecurActivity.extra.UNTIL_TYPE";
     // Value representing an event that recurs until a specific date.
@@ -46,21 +46,6 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
     public static final String EXTRA_VAL_NUM = "com.evanv.taskapp.ui.additem.recur.RecurActivity.extra.val.NUM";
     // Key for the value representing the date the event stops recurring on / number of recurrences
     public static final String EXTRA_UNTIL = "com.evanv.taskapp.ui.additem.recur.RecurActivity.extra.UNTIL";
-    // Key for the value representing a bundle containing the user's input on recurrence
-    public static final String EXTRA_RECUR = "com.evanv.taskapp.ui.additem.recur.RecurActivity.extra.RECUR";
-    private boolean mAllowEndDate; // True iff interval != 0
-
-    /**
-     * Function that is called when result is received from recurrence activity.
-     *
-     * @param resultCode Is Activity.RESULT_OK if ran successfully
-     * @param data A bundle of data that describes the recurrence chosen
-     */
-    protected void handleRecurInput(int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK) {
-            mRecur = data.getBundleExtra(EXTRA_RECUR);
-        }
-    }
 
     /**
      * Launch a new intent to the RecurActivity, and give it the needed information
@@ -86,9 +71,6 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
         String month = getResources().getStringArray(R.array.months)
                 [ecd.get(ChronoField.MONTH_OF_YEAR) - 1];
 
-        // Get the time
-        long time = mEarlyDate;
-
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Choose Recurrence Interval")
                 .setItems(R.array.reoccur_names, ((dialogInterface, i) -> {
@@ -99,7 +81,7 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
                         case 1:
                             // Daily recurrence
                             DailyRecurFragment daily = new DailyRecurFragment();
-                            daily.addSubmitListener((View.OnClickListener) view -> {
+                            daily.addSubmitListener(view -> {
                                 Bundle returned = daily.getRecurInfo();
                                 if (returned != null) {
                                     daily.dismiss();
@@ -113,7 +95,7 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
                         case 2:
                             // Weekly recurrence
                             WeeklyRecurFragment weekly = new WeeklyRecurFragment();
-                            weekly.addSubmitListener((View.OnClickListener) view -> {
+                            weekly.addSubmitListener(view -> {
                                 Bundle returned = weekly.getRecurInfo();
                                 if (returned != null) {
                                     weekly.dismiss();
@@ -127,7 +109,7 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
                         case 3:
                             // Monthly recurrence
                             MonthlyRecurFragment monthly = new MonthlyRecurFragment(day, desc);
-                            monthly.addSubmitListener((View.OnClickListener) view -> {
+                            monthly.addSubmitListener(view -> {
                                 Bundle returned = monthly.getRecurInfo();
                                 if (returned != null) {
                                     monthly.dismiss();
@@ -141,7 +123,7 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
                         case 4:
                             // Yearly recurrence
                             YearlyRecurFragment yearly = new YearlyRecurFragment(day, desc, month);
-                            yearly.addSubmitListener((View.OnClickListener) view -> {
+                            yearly.addSubmitListener(view -> {
                                 Bundle returned = yearly.getRecurInfo();
                                 if (returned != null) {
                                     yearly.dismiss();
@@ -160,6 +142,11 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
         builder.show();
     }
 
+    /**
+     * Prompt user to ask when to stop recurring
+     *
+     * @param recurInfo Info user has entered so far
+     */
     private void endInfo(Bundle recurInfo) {
         AlertDialog.Builder builder = new AlertDialog.Builder((getContext()));
         builder.setTitle("Recur until date or number of times?")
@@ -182,6 +169,11 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
         builder.show();
     }
 
+    /**
+     * Prompt user to ask how many times to recur this item.
+     *
+     * @param recurInfo Info user has entered so far
+     */
     private void recurNumTimes(Bundle recurInfo) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
@@ -200,16 +192,10 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
     }
 
     /**
-     * This method converts dp unit to equivalent pixels, depending on device density.
+     * Prompt user to ask what date to stop recurring
      *
-     * @param dp A value in dp (density independent pixels) unit. Which we need to convert into pixels
-     * @param context Context to get resources and device specific display metrics
-     * @return A float value to represent px equivalent to dp depending on device density
+     * @param recurInfo Info user has entered so far
      */
-    public static float convertDpToPixel(float dp, Context context){
-        return dp * ((float) context.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
-    }
-
     private void recurEndDate(Bundle recurInfo) {
         EditText fakeDdET = new EditText(getContext());
         fakeDdET.addTextChangedListener(new TextWatcher() {
@@ -239,6 +225,13 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
         newFragment.show(getParentFragmentManager(), "datePicker");
     }
 
+    /**
+     * Set the text for the commonly used two-line TextView with subject and body lines.
+     *
+     * @param toShow Text to display in the message line
+     * @param element TextView to show
+     * @param formatString The format string describing the contents of the TextView
+     */
     protected void setText(String toShow, TextView element, String formatString) {
         // Make starting text bold
         SpannableString dateText = new SpannableString(String.format
@@ -251,6 +244,11 @@ public abstract class ItemEntry extends BottomSheetDialogFragment {
         element.setText(dateText);
     }
 
+    /**
+     * Add a listener that will be called when the submit button is pressed
+     *
+     * @param listener Listener to add
+     */
     public void addSubmitListener(View.OnClickListener listener) {
         mListener = listener;
     }

@@ -1,7 +1,6 @@
 package com.evanv.taskapp.ui.main.recycler;
 
 import android.app.Activity;
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.ui.main.ClickListener;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 
 /**
@@ -25,10 +23,10 @@ import java.util.List;
  */
 public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.EventViewHolder> {
     private final List<EventItem> mEventItemList; // List of events for this day
-    // Listener that allows easy deletion of events (see ClickListener)
-    private final ClickListener mListener;
-    private final int mDay; // How many days past today's date this Event list represents
-    private final Activity mActivity; // Parent Activity
+    private final ClickListener mListener;        // Listener that allows easy deletion of events
+    private final Activity mActivity;             // Parent Activity
+    // How many days past today's date this Event list represents
+    private final int mDay;
 
     /**
      * Constructs an adapter for a given DayItem's event recyclerview
@@ -72,7 +70,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.event_item, parent, false);
 
-        return new EventViewHolder(view, mListener);
+        return new EventViewHolder(view);
     }
 
     /**
@@ -90,7 +88,7 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
 
         holder.options.setOnClickListener(v -> {
             // Tell MainActivity what item to perform actions on
-            mListener.onButtonClick(position, mDay, 2, -1);
+            mListener.onButtonClick(position, mDay, 3, -1);
 
             // Handle onClickListener
             mActivity.registerForContextMenu(holder.options);
@@ -122,9 +120,8 @@ public class EventItemAdapter extends RecyclerView.Adapter<EventItemAdapter.Even
          * Constructs a new EventViewHolder, setting its values to the views in the event_item
          *
          * @param itemView View containing the views in the event_item
-         * @param listener ClickListener to handle button clicks
          */
-        public EventViewHolder(@NonNull View itemView, ClickListener listener) {
+        public EventViewHolder(@NonNull View itemView) {
             super(itemView);
             mEventItemName = itemView.findViewById(R.id.eventName);
             mEventItemTimespan = itemView.findViewById(R.id.timespan);

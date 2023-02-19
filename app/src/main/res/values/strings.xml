@@ -1,6 +1,5 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">taskapp</string>
-    <string name="action_settings">Settings</string>
     <string name="unchecked_button_desc">Empty, unfilled circle.</string>
     <string name="events">Events</string>
     <string name="tasks">Tasks</string>
@@ -8,47 +7,31 @@
     <string name="ecd">Earliest Completion Date</string>
     <string name="due_date">Due Date</string>
     <string name="ttc">Completion Time (min.)</string>
-    <string name="length">Length (in minutes)</string>
     <string name="start_time">Start Time</string>
     <string name="event_name">Event Name</string>
-    <string name="title_activity_add_item">AddItem</string>
-    <string name="task">Task</string>
-    <string name="event">Event</string>
     <string name="optimizing">Optimizing…</string>
     <string name="complete_dialog_message">How long (in minutes) did the task take to complete?</string>
     <string name="complete_dialog_title">Complete Task</string>
     <string name="parents_button">Complete After</string>
-    <string name="ecd_help_text_format">Start times are formatted as MM/DD/YY HH:MM AM/PM.</string>
-    <string name="ttc_error_empty">Make sure to enter an estimated completion time for the event.</string>
     <string name="ttc_error_empty_task">Make sure to enter an estimated completion time for the task.</string>
     <string name="name_error_event">Make sure to enter a name for the event.</string>
     <string name="ecd_empty_event">Make sure to enter the start time for the event.</string>
-    <string name="ecd_format_event">Make sure start time is today or later.</string>
-    <string name="am">AM</string>
-    <string name="pm">PM</string>
     <string name="ttc_format_event">Make sure to enter a whole number (in minutes) for completion time.</string>
     <string name="recur_format_event">Make sure to enter a whole number for the number of %s between recurrences.</string>
-    <string name="complete_task">Complete Task</string>
-    <string name="schedule_for">%s\n%d minutes</string>
-    <string name="minutes_to_complete">%d Minutes</string>
+    <string name="schedule_for" tools:ignore="PluralsCandidate">%s\n%d minutes</string>
+    <string name="minutes_to_complete" tools:ignore="PluralsCandidate">%d Minutes</string>
     <string name="ok">OK</string>
     <string name="name_empty_task">Make sure to enter a name for the task.</string>
     <string name="ecd_empty_task">Make sure to enter an earliest completion date for the task.</string>
-    <string name="ecd_early_task">Make sure earliest completion date is today or later.</string>
-    <string name="date_format_task">Make sure dates are formatted MM/DD/YY</string>
     <string name="due_empty_task">Make sure to enter a due date for the task.</string>
-    <string name="due_before_task">Make sure due date is on or after earliest completion date.</string>
     <string name="due_when">%s (Due %s)</string>
     <string name="overdue_dialog_title">Check if overdue task was completed</string>
     <string name="overdue_dialog_button">Mark selections as complete</string>
-    <string name="desc_delete_button">Trash can</string>
-    <string name="reoccur_header">Pick Recurrence Interval:</string>
     <string name="no_recur">Don\'t Recur</string>
     <string name="daily_recur">Recur Every Day</string>
     <string name="weekly_recur">Recur Every Week</string>
     <string name="monthly_recur">Recur Every Month</string>
     <string name="yearly_recur">Recur Every Year</string>
-    <string name="daily_recur_prompt">Recur every _ days:</string>
     <string name="sunday_initial">S</string>
     <string name="monday_initial">M</string>
     <string name="tuesday_initial">T</string>
@@ -91,15 +74,12 @@
     <string name="years_recur_prompt">Years between recurrences:</string>
     <string name="months_recur_prompt">Months to recur on:</string>
     <string name="recur_months_hint">Jan,Feb,Mar</string>
-    <string name="weekly_recur_prompt">Recur every _ weeks:</string>
-    <string name="recur_button">Recur</string>
     <string name="recur_on_the">Recur on the %s</string>
     <string name="recur_specific">Recur Specific Days</string>
     <string name="recur_specific_days_months">Recur specific months on specific days</string>
     <string name="recur_specific_months">Recur specific months on the %s</string>
     <string name="recur_on">Recur on %s %s</string>
     <string name="recur_on_of">Recur on the %s of %s</string>
-    <string name="recur_times">Recur _ times</string>
     <string name="recur_until">Recur until</string>
     <string name="days">days</string>
     <string name="no_day_selected">Make sure to choose at least one day to recur on.</string>
@@ -112,28 +92,14 @@
     <string name="empty_icon_desc">A calendar with a pencil in front of it.</string>
     <string name="add_task">Add Task</string>
     <string name="add_event">Add Event</string>
-    <string name="set_recur_interval">Set Recurrence Interval</string>
     <string name="generic_date">%d/%d/%d</string>
     <string name="two_words">%s %s</string>
     <string name="submit">Submit</string>
-    <string name="info_button">info</string>
     <string name="plus">plus</string>
-    <string name="event_ecd_info">This is the time and date this event starts at.</string>
-    <string name="event_length_info">This is how long the event should last (how many minutes between the start and end of the event).</string>
-    <string name="task_ecd_info">This is the earliest date you can complete this task. For instance, if you can\'t complete this task until after a specific meeting, put the date of that meeting.</string>
-    <string name="task_dd_info">This is the latest date this task can be scheduled for. If this task is due by a specific date, set this to that date.</string>
-    <string name="task_ttc_info">This is your best estimate on how long the task will take to complete. It doesn\'t have to be perfect, a rough estimate is good enough for the algorithm, although the more precise, the better the schedule.</string>
-    <string name="work_ahead_desc">(%d minutes, due %s)</string>
-    <string name="end_time">End Time</string>
     <string name="enter_end_time">Make sure to enter an end time for the event</string>
-    <string name="task_recur_button">Change how often this task recurs</string>
-    <string name="ecd_reminder">Make sure to enter an start date</string>
-    <string name="hourglass">Hourglass</string>
-    <string name="underline"><u>%s</u></string>
-    <string name="timer_prompt">Your timer said the task took %d minutes to complete. Would you like to accept this or enter your own time?</string>
+    <string name="timer_prompt" tools:ignore="PluralsCandidate">Your timer said the task took %d minutes to complete. Would you like to accept this or enter your own time?</string>
     <string name="work_ahead">Work Ahead</string>
     <string name="priority">Priority:</string>
-    <string name="priority_info">How important a task is. Leftmost is lowest priority, rightmost is highest priority.</string>
     <string name="project_name">Project Name</string>
     <string name="default_color">Color: Gray</string>
     <string name="project_goal">Project Goal</string>
@@ -152,21 +118,10 @@
     <string name="select">Select</string>
     <string name="name_reminder">Make sure to enter a name.</string>
     <string name="goal_reminder">Make sure to enter a goal.</string>
-    <string name="title_activity_project_entry">ProjectEntry</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
 
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="colorLabel">Color:\ </string>
-    <string name="project_spinner_default">No Project</string>
-    <string name="title_activity_project">ProjectActivity</string>
-    <string name="right_arrow">Right arrow</string>
     <string name="projects">Projects</string>
-    <string name="add_labels">Choose Labels</string>
     <string name="label_name">Label Name</string>
     <string name="pick_label_color">Pick Label Color</string>
     <string name="pick_labels">Pick Labels for Task</string>
@@ -178,7 +133,6 @@
     <string name="project_label">Project:\nNone Chosen</string>
     <string name="project_replace">Project:\n%s</string>
     <string name="label_label">Labels:\nNone Chosen</string>
-    <string name="label_replace">Labels:\n%d Chosen</string>
     <string name="label_format">Labels:\n%s Chosen</string>
     <string name="min_priority">Minimum Priority</string>
     <string name="start_date">Start Date</string>
@@ -189,8 +143,6 @@
     <string name="edit">Edit</string>
     <string name="start_timer">Start Timer</string>
     <string name="stop_timer">Stop Timer</string>
-    <string name="edit_event">Edit Event</string>
-    <string name="edit_task">Edit Task</string>
     <string name="enter_start_time">Please enter a start time first.</string>
     <string name="early_date_default">Early Date:\nNone Chosen</string>
     <string name="due_date_default">Due Date:\nNone Chosen</string>
@@ -207,7 +159,6 @@
     <string name="add_project">Add Project</string>
     <string name="add_label">Add Label</string>
     <string name="days_between_recur">Days between recurrences</string>
-    <string name="how_many_days_between_recurrences">How many days between recurrences?</string>
     <string name="postpone_task">Postpone Task</string>
     <string name="help">Help</string>
     <string name="filter_tasks_url">http://www.evanv.com/taskapp/filter-tasks/</string>
@@ -217,7 +168,7 @@
     <string name="project_url">http://www.evanv.com/taskapp/projects/</string>
     <string name="labels">Labels</string>
     <string name="three_dots">Three Dots</string>
-    <string name="corrupt_error">Our apologies, taskapp encountered an error. %d tasks were corrupted in the process.</string>
+    <string name="corrupt_error" tools:ignore="PluralsCandidate">Our apologies, taskapp encountered an error. %d tasks were corrupted in the process.</string>
     <string name="close">Close</string>
     <string name="open">Open</string>
     <string name="schedule_url">http://www.evanv.com/taskapp/schedule/</string>
@@ -228,25 +179,19 @@
     <string name="title_activity_settings">Settings</string>
 
     <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
 
     <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
 
     <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
-    <string name="import_backup">Import Backup</string>
-    <string name="export_backup">Export Backup</string>
-    <string name="restore_message_success">Backup restoration was a success. Click OK to restart the app for changes to take effect.</string>
-    <string name="restore_title_success">Import Success</string>
-    <string name="restore_title_failure">Import failed.</string>
-    <string name="restore_message_failure">taskapp could not restore from this file. Make sure that you select a valid backup file.</string>
     <string name="error_recur_infinite">Cannot recur infinitely.</string>
     <string name="search_results">Search Results</string>
+    <string name="calendar_icon">Calendar icon</string>
+    <string name="question_mark">question mark</string>
+    <string name="taskapp_logo">taskapp logo</string>
+    <string name="checkmark">checkmark</string>
+    <string name="name">Name</string>
+    <string name="minimum_time">Minimum Time</string>
+    <string name="maximum_time">Maximum Time</string>
+    <string name="show_only_completable_tasks">Show only completable tasks</string>
+    <string name="weeks_between_recurrences">Weeks between recurrences:</string>
 </resources>

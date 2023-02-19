@@ -26,18 +26,31 @@ import com.evanv.taskapp.logic.LogicSubsystem;
  * @author Evan Voogd
  */
 public class LabelEntry extends DialogFragment {
-    public int color; // User-selected label color
-    private EditText mNameET;
-    private TextView mColorLabel;
-    private long mEditedID = -1;
-    private View.OnClickListener mOnSubmit;
+    public int color;                       // User-selected label color
+    private EditText mNameET;               // The EditText representing label name
+    private TextView mColorLabel;           // The TextView representing label color
+    private long mEditedID = -1;            // The ID of the label to edit
+    private View.OnClickListener mOnSubmit; // The listener for the submit button
 
+    /**
+     * Called upon the LabelEntry's creation
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate
+     * any views in the fragment,
+     * @param container If non-null, this is the parent view that the fragment's
+     * UI should be attached to.  The fragment should not add the view itself,
+     * but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     *
+     * @return the root view of the fragment
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_label_entry, container, false);
-        view.findViewById(R.id.colorSelectTextView).setOnClickListener(this::handleColorPress);
-        view.findViewById(R.id.submitButton).setOnClickListener(this::submit);
+        view.findViewById(R.id.colorSelectTextView).setOnClickListener(view1 -> handleColorPress());
+        view.findViewById(R.id.submitButton).setOnClickListener(view1 -> submit());
         mNameET = view.findViewById(R.id.editTextLabelName);
         mColorLabel = view.findViewById(R.id.colorSelectTextView);
         color = 11;
@@ -57,18 +70,18 @@ public class LabelEntry extends DialogFragment {
             SpannableString colorText = new SpannableString(labelStart +
                     getResources().getStringArray(R.array.colors)[color]);
 
-            int[] colors = {getResources().getColor(R.color.pale_blue),
-                    getResources().getColor(R.color.blue),
-                    getResources().getColor(R.color.pale_green),
-                    getResources().getColor(R.color.green),
-                    getResources().getColor(R.color.pink),
-                    getResources().getColor(R.color.red),
-                    getResources().getColor(R.color.pale_orange),
-                    getResources().getColor(R.color.orange),
-                    getResources().getColor(R.color.lavender),
-                    getResources().getColor(R.color.purple),
-                    getResources().getColor(R.color.yellow),
-                    getResources().getColor(R.color.gray)};
+            int[] colors = {ContextCompat.getColor(requireContext(), R.color.pale_blue),
+                    ContextCompat.getColor(requireContext(), R.color.blue),
+                    ContextCompat.getColor(requireContext(), R.color.pale_green),
+                    ContextCompat.getColor(requireContext(), R.color.green),
+                    ContextCompat.getColor(requireContext(), R.color.pink),
+                    ContextCompat.getColor(requireContext(), R.color.red),
+                    ContextCompat.getColor(requireContext(), R.color.pale_orange),
+                    ContextCompat.getColor(requireContext(), R.color.orange),
+                    ContextCompat.getColor(requireContext(), R.color.lavender),
+                    ContextCompat.getColor(requireContext(), R.color.purple),
+                    ContextCompat.getColor(requireContext(), R.color.yellow),
+                    ContextCompat.getColor(requireContext(), R.color.gray)};
 
             int colorResource = colors[color];
 
@@ -81,20 +94,28 @@ public class LabelEntry extends DialogFragment {
         return view;
     }
 
+    @SuppressWarnings("unused")
+    /**
+     * Set the ID of the label to edit, if necessary
+     */
     public void setID(long id) {
         mEditedID = id;
     }
 
+    /**
+     * Add the submit listener that is called when the submit button is pressed
+     *
+     * @param callback listener that is called when the submit button is pressed
+     */
+    @SuppressWarnings("unused")
     public void setOnSubmit(View.OnClickListener callback) {
         mOnSubmit = callback;
     }
 
     /**
      * Creates dialog to choose color of the label.
-     *
-     * @param view not used
      */
-    public void handleColorPress(View view) {
+    public void handleColorPress() {
         final Dialog dialog = new Dialog(getContext());
         dialog.setContentView(R.layout.color_picker);
         dialog.setTitle(R.string.pick_label_color);
@@ -144,18 +165,18 @@ public class LabelEntry extends DialogFragment {
             SpannableString colorText = new SpannableString(labelStart +
                     getResources().getStringArray(R.array.colors)[color]);
 
-            int[] colors = {getResources().getColor(R.color.pale_blue),
-                    getResources().getColor(R.color.blue),
-                    getResources().getColor(R.color.pale_green),
-                    getResources().getColor(R.color.green),
-                    getResources().getColor(R.color.pink),
-                    getResources().getColor(R.color.red),
-                    getResources().getColor(R.color.pale_orange),
-                    getResources().getColor(R.color.orange),
-                    getResources().getColor(R.color.lavender),
-                    getResources().getColor(R.color.purple),
-                    getResources().getColor(R.color.yellow),
-                    getResources().getColor(R.color.gray)};
+            int[] colors = {ContextCompat.getColor(requireContext(), R.color.pale_blue),
+                    ContextCompat.getColor(requireContext(), R.color.blue),
+                    ContextCompat.getColor(requireContext(), R.color.pale_green),
+                    ContextCompat.getColor(requireContext(), R.color.green),
+                    ContextCompat.getColor(requireContext(), R.color.pink),
+                    ContextCompat.getColor(requireContext(), R.color.red),
+                    ContextCompat.getColor(requireContext(), R.color.pale_orange),
+                    ContextCompat.getColor(requireContext(), R.color.orange),
+                    ContextCompat.getColor(requireContext(), R.color.lavender),
+                    ContextCompat.getColor(requireContext(), R.color.purple),
+                    ContextCompat.getColor(requireContext(), R.color.yellow),
+                    ContextCompat.getColor(requireContext(), R.color.gray)};
 
             int colorResource = colors[color];
 
@@ -172,10 +193,8 @@ public class LabelEntry extends DialogFragment {
 
     /**
      * If no required fields are empty, pack user input into a bundle and send it.
-     *
-     * @param view not used
      */
-    public void submit(View view) {
+    public void submit() {
         String name = String.valueOf(mNameET.getText());
 
         if (name.equals("")) {

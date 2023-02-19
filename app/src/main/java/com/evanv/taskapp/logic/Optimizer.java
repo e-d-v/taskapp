@@ -2,8 +2,6 @@ package com.evanv.taskapp.logic;
 
 import static com.evanv.taskapp.logic.Task.getDiff;
 
-import android.util.Log;
-
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.temporal.ChronoField;
 import org.threeten.bp.temporal.ChronoUnit;

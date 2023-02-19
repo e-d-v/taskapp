@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.InputType;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -31,12 +30,13 @@ import java.util.Objects;
 
 import kotlin.Pair;
 
-@InternalPlatformTextApi /**
+/**
  * Activity that displays a list of Tasks. Can be created by various screens that need to show
  * a list of tasks, such as a Filter Screen or the Projects Screen.
  *
  * @author Evan Voogd
  */
+@InternalPlatformTextApi
 public class TaskListActivity extends AppCompatActivity implements ClickListener {
     // Key for the value of the earliest due date to show.
     public static final String EXTRA_START_DATE = "com.evanv.taskapp.ui.TaskListActivity.EXTRA_START_DATE";
@@ -57,14 +57,14 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
     // Key for the value of the priority.
     public static final String EXTRA_PRIORITY = "com.evanv.taskapp.ui.TaskListActivity.EXTRA_PRIORITY";
 
-    private TaskItemAdapter mAdapter;           // The adapter for the recycler
+    private TaskItemAdapter mAdapter; // The adapter for the recycler
 
-    private List<Long> mIDs;
-    private int mIndex;    // Index into the recycler to update.
-    private int mPosition; // Position in the recycler of the selected task.
-    private int mDay;      // Day of the selected task.
-    private long mID;      // ID of the currently selected task.
-    private Thread mOptimizer; // Holds optimizer thread if currently available.
+    private List<Long> mIDs;          // List of IDs for each task in the task list
+    private int mIndex;               // Index into the recycler to update.
+    private int mPosition;            // Position in the recycler of the selected task.
+    private int mDay;                 // Day of the selected task.
+    private long mID;                 // ID of the currently selected task.
+    private Thread mOptimizer;        // Holds optimizer thread if currently available.
 
     /**
      * Updates todayTime in SharedPreferences

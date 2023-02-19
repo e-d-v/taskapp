@@ -1,14 +1,5 @@
 package com.evanv.taskapp.ui.additem.recur;
 
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import androidx.fragment.app.Fragment;
-
-import com.evanv.taskapp.R;
-
 /**
  * Fragment that represents no recurrences
  *

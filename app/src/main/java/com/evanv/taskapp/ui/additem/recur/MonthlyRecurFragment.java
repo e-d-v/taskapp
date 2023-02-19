@@ -1,6 +1,5 @@
 package com.evanv.taskapp.ui.additem.recur;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,10 +11,8 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 
 import com.evanv.taskapp.R;
-import com.evanv.taskapp.ui.additem.EventEntry;
 
 import java.util.Objects;
 
@@ -43,14 +40,17 @@ public class MonthlyRecurFragment extends DialogFragment {
     public static final String EXTRA_DAYS = "com.evanv.taskapp.ui.additem.recur.MonthlyRecurFragment.extra.DAYS";
     private View.OnClickListener mSubmitListener;
 
-    private EditText mIntervalET;   // Edit text containing the interval value
-    private EditText mDaysET;       // EditText containing what days to increment on
-    private int currSelection;      // Representing the index of the currently selected radio item
-    private String mDay;
-    private String mDesc;
+    private EditText mIntervalET; // Edit text containing the interval value
+    private EditText mDaysET;     // EditText containing what days to increment on
+    private int currSelection;    // Representing the index of the currently selected radio item
+    private final String mDay;    // The day in the month the user has chosen
+    private final String mDesc;   // A description of the day (e.g. "3rd Monday")
 
     /**
      * Sets day information for UI.
+     *
+     * @param day The day in the month the user has chosen
+     * @param desc A description of the day (e.g. "3rd Monday")
      */
     public MonthlyRecurFragment(String day, String desc) {
         mDay = day;

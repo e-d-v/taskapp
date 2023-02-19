@@ -1,7 +1,6 @@
 package com.evanv.taskapp.ui.main.recycler;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -13,14 +12,12 @@ import android.text.style.AlignmentSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.OptIn;
 import androidx.compose.ui.text.android.InternalPlatformTextApi;
 import androidx.compose.ui.text.android.style.LineHeightSpan;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -33,20 +30,19 @@ import com.evanv.taskapp.ui.main.ClickListener;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-@InternalPlatformTextApi /**
+/**
  * Adapter to interface between data in DayItems and recyclerview in MainActivity
  *
  * @author Evan Voogd
  */
+@InternalPlatformTextApi
 public class DayItemAdapter extends RecyclerView.Adapter<DayItemAdapter.DayViewHolder> {
     public final List<DayItem> mDayItemList; // List of days
-
+    private final ClickListener mListener;   // Listener that allows easy completion of tasks
+    private final Activity mActivity;        // Context of current Activity
     // Used to share views between the Event/Task RecyclerViews and the Day RecyclerViews
     private final RecyclerView.RecycledViewPool mTaskViewPool = new RecyclerView.RecycledViewPool();
     private final RecyclerView.RecycledViewPool mEventViewPool = new RecyclerView.RecycledViewPool();
-    // Listener that allows easy completion of tasks (see ClickListener)
-    private final ClickListener mListener;
-    private final Activity mActivity; // Context of current Activity
 
     /**
      * Constructs an adapter for MainActivity's recyclerview

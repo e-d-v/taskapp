@@ -15,8 +15,6 @@ import com.evanv.taskapp.ui.additem.TimePickerFragment;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.ZoneId;
 
-import java.util.Calendar;
-
 /**
  * Class that creates a DatePicker to launch when setting a date for easier Date entering
  * for the user.
@@ -25,14 +23,14 @@ import java.util.Calendar;
  */
 public class DatePickerFragment extends DialogFragment
         implements DatePickerDialog.OnDateSetListener {
-    private final EditText mET;       // The EditText this date will be placed in.
-    private final String mTitle;      // The text for the title of the dialog
-    private final LocalDate mMinDate; // The earliest date user can choose
-    private final LocalDate mMaxDate; // The latest date user can choose
+    private final EditText mET;           // The EditText this date will be placed in.
+    private final String mTitle;          // The text for the title of the dialog
+    private final LocalDate mMinDate;     // The earliest date user can choose
+    private final LocalDate mMaxDate;     // The latest date user can choose
     private final LocalDate mDefaultDate; // Date to default the picker to
-    private final boolean mTP;        // True if time is needed, false if not.
-    private final int mHourOfDay;
-    private final int mMinute;
+    private final boolean mTP;            // True if time is needed, false if not.
+    private final int mHourOfDay;         // Hour of day to show in the picker
+    private final int mMinute;            // Minute of hour to show in the picker
 
     /**
      * Creates a DatePickerFragment for a dialog that puts its output in the given EditText,

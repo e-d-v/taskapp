@@ -34,10 +34,6 @@
         <item>@string/november</item>
         <item>@string/december</item>
     </string-array>
-    <string-array name="timespans">
-        <item>@string/recur_times</item>
-        <item>@string/recur_until</item>
-    </string-array>
 
     <string-array name="colors">
         <item>Pale Blue</item>

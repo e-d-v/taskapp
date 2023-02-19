@@ -1,6 +1,6 @@
 # taskapp - A smarter to-do list app.
 
-taskapp is a to-do list app that balances your schedule to help reduce your stress by reducing the variance between the amount of committments per day. taskapp works by taking three extra fields compared to most to-do list apps - the earliest day you can complete the task, what tasks must be completed first, and how long the task should take to complete. Using these three extra fields, as well as the standard due date, taskapp schedules a "Do Date", which is the date between the earliest completion date and due date that A) has minimum variance, and B) comes after all it's prerequisite tasks. taskapp also keeps track of your calendar events - making sure to give you a lighter schedule on meeting-filled days.
+taskapp is a to-do list app that balances your schedule to help reduce your stress by reducing the variance between the amount of commitments per day. taskapp works by taking three extra fields compared to most to-do list apps - the earliest day you can complete the task, what tasks must be completed first, and how long the task should take to complete. Using these three extra fields, as well as the standard due date, taskapp schedules a "Do Date", which is the date between the earliest completion date and due date that A) has minimum variance, and B) comes after all it's prerequisite tasks. taskapp also keeps track of your calendar events - making sure to give you a lighter schedule on meeting-filled days.
 
 ## Schedule
 <div align="center">

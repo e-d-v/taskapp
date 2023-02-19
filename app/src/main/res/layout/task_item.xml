@@ -50,7 +50,8 @@
                 android:text="CSCI 4011"
                 android:textSize="12sp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                tools:ignore="HardcodedText" />
             <View
                 android:layout_width="1dp"
                 android:id="@+id/bar"
@@ -76,7 +77,6 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/optionsLayout"
         android:layout_weight="0"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"

@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,23 +17,29 @@ import android.view.View;
 
 import com.evanv.taskapp.R;
 import com.evanv.taskapp.databinding.ActivityLabelsBinding;
-import com.evanv.taskapp.databinding.ActivityProjectBinding;
 import com.evanv.taskapp.logic.LogicSubsystem;
 import com.evanv.taskapp.ui.additem.LabelEntry;
 import com.evanv.taskapp.ui.main.MainActivity;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import javax.security.auth.callback.Callback;
-
+/**
+ * Activity representing the list of labels the user has created
+ */
+@SuppressWarnings("unused")
 @InternalPlatformTextApi public class LabelsActivity extends AppCompatActivity {
 
-    private ChipGroup mChipGroup;
+    @SuppressWarnings("unused")
+    private ChipGroup mChipGroup; // The ChipGroup that contains all labels
 
+    /**
+     * Ran on the creation of the label activity, displays the labels in the ChipGroup
+     *
+     * @param savedInstanceState unused
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +58,13 @@ import javax.security.auth.callback.Callback;
         }
     }
 
+    /**
+     * Handle user pressing a specific chip
+     *
+     * @param id ID of the label the clicked chip represents
+     * @param view The chip that was clicked
+     */
+    @SuppressWarnings("unused")
     private void clickChip (long id, View view) {
         AlertDialog.Builder diag = new AlertDialog.Builder(this);
         diag.setItems(R.array.label_options, (dialogInterface, i) -> {
@@ -70,7 +82,7 @@ import javax.security.auth.callback.Callback;
                         addChip(LogicSubsystem.getInstance().getLabelName(id),
                                 LogicSubsystem.getInstance().getLabelColor(id), id);
                     });
-                    labelEntry.show(getSupportFragmentManager(), "LABELENTRY");
+                    labelEntry.show(getSupportFragmentManager(), "LABEL ENTRY");
                     break;
                 case 2:
                     LogicSubsystem.getInstance().deleteLabel(id);
@@ -81,6 +93,14 @@ import javax.security.auth.callback.Callback;
         diag.show();
     }
 
+    /**
+     * Add a chip representing a label with these attributes to the ChipGroup
+     *
+     * @param name Name of the label this chip represents
+     * @param color Color of the label this chip represents
+     * @param id ID of the label this chip represents
+     */
+    @SuppressWarnings("unused")
     private void addChip(String name, int color, long id) {
         // Set label color
         int[] colors = {R.color.pale_blue,
@@ -122,12 +142,27 @@ import javax.security.auth.callback.Callback;
         mChipGroup.addView(toAdd);
     }
 
+    /**
+     * Add a help button to the top right corner of the screen
+     *
+     * @param menu The menu for the screen
+     *
+     * @return the inflated menu
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.help_button_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
+    /**
+     * If the user presses the help button, redirect them to the help page for labels, if they press
+     * the home button, press the back button.
+     *
+     * @param item the MenuItem the user selected
+     *
+     * @return true if handled successfully, false otherwise
+     */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_help) {

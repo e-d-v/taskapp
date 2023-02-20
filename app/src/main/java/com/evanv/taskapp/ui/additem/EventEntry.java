@@ -29,6 +29,7 @@ import org.threeten.bp.LocalDate;
 import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.temporal.ChronoField;
 import org.threeten.bp.temporal.ChronoUnit;
+import org.threeten.bp.temporal.WeekFields;
 
 import java.util.Locale;
 
@@ -281,7 +282,7 @@ public class EventEntry extends ItemEntry {
      */
     public static String getOrdinalDayInWeek(Context context, LocalDate date) {
         // Get the day of week in month and day of week (e.g. the "3" and "Monday" in "3rd Monday")
-        int dayOfWeekInMonth = date.get(ChronoField.ALIGNED_DAY_OF_WEEK_IN_MONTH);
+        int dayOfWeekInMonth = (int) Math.ceil((1.0 * date.get(ChronoField.DAY_OF_MONTH)) / 7.0);
         int weekday = date.get(ChronoField.DAY_OF_WEEK);
 
         // Format the number to ordinal (the "st" in "31st")
@@ -290,7 +291,7 @@ public class EventEntry extends ItemEntry {
 
         // Get the description (formatted "3rd Monday)"
         String ordinalNumber = formatter.format(dayOfWeekInMonth);
-        String weekdayString = context.getResources().getStringArray(R.array.weekdays)[weekday - 1];
+        String weekdayString = context.getResources().getStringArray(R.array.weekdays)[weekday % 7];
 
         return ordinalNumber + " " + weekdayString;
     }

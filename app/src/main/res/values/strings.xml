@@ -194,4 +194,5 @@
     <string name="maximum_time">Maximum Time</string>
     <string name="show_only_completable_tasks">Show only completable tasks</string>
     <string name="weeks_between_recurrences">Weeks between recurrences:</string>
+    <string name="end_before_start_err">Make sure to enter a time after the start time</string>
 </resources>

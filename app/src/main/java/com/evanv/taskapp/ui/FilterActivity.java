@@ -71,6 +71,11 @@ public class FilterActivity extends AppCompatActivity {
 
         setSupportActionBar(findViewById(R.id.toolbar));
 
+        // Go back to the main screen if logic subsystem hasn't been initialized yet.
+        if (LogicSubsystem.getInstance() == null) {
+            onBackPressed();
+        }
+
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         mContext = this;
@@ -619,14 +624,16 @@ public class FilterActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         // Update todayTime in SharedPreferences
-        SharedPreferences sp = getSharedPreferences(MainActivity.PREF_FILE, MODE_PRIVATE);
-        SharedPreferences.Editor edit = sp.edit();
-        edit.putLong(MainActivity.PREF_DAY, LogicSubsystem.getInstance().getStartDate().toEpochDay());
-        edit.putInt(MainActivity.PREF_TIME, LogicSubsystem.getInstance().getTodayTime());
-        edit.putLong(MainActivity.PREF_TIMED_TASK, LogicSubsystem.getInstance().getTimedID());
-        edit.putLong(MainActivity.PREF_TIMER, LogicSubsystem.getInstance().getTimerStart());
+        if (LogicSubsystem.getInstance() != null) {
+            SharedPreferences sp = getSharedPreferences(MainActivity.PREF_FILE, MODE_PRIVATE);
+            SharedPreferences.Editor edit = sp.edit();
+            edit.putLong(MainActivity.PREF_DAY, LogicSubsystem.getInstance().getStartDate().toEpochDay());
+            edit.putInt(MainActivity.PREF_TIME, LogicSubsystem.getInstance().getTodayTime());
+            edit.putLong(MainActivity.PREF_TIMED_TASK, LogicSubsystem.getInstance().getTimedID());
+            edit.putLong(MainActivity.PREF_TIMER, LogicSubsystem.getInstance().getTimerStart());
+            edit.apply();
+        }
 
-        edit.apply();
         super.onPause();
     }
 }

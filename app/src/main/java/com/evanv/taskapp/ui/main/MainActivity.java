@@ -464,6 +464,23 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                 // Show optimizing... screen
                 Pair<Integer, Integer> pair = mLogicSubsystem.convertDay(id);
 
+                if (pair == null) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    LayoutInflater inflater = getLayoutInflater();
+                    builder.setTitle(R.string.error_encountered);
+                    builder.setMessage(R.string.task_complete_error);
+                    builder.setNeutralButton("Send Feedback", (d, i) -> {
+                                Intent mailIntent = new Intent(Intent.ACTION_SENDTO);
+                                mailIntent.setData(Uri.parse("mailto:"));
+                                mailIntent.putExtra(Intent.EXTRA_EMAIL,
+                                        new String[]{"taskapptvc+feedback@gmail.com"});
+                                mailIntent.putExtra(Intent.EXTRA_SUBJECT, "Feedback");
+                                startActivity(mailIntent);
+                            });
+                    builder.show();
+                    break;
+                }
+
                 mPosition = pair.getFirst();
                 mDay = pair.getSecond();
                 completeTask();
@@ -477,6 +494,22 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             case 2:
                 Pair<Integer, Integer> pair2 = mLogicSubsystem.convertDay(id);
 
+                if (pair2 == null) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    LayoutInflater inflater = getLayoutInflater();
+                    builder.setTitle(R.string.error_encountered);
+                    builder.setMessage(R.string.task_edit_error);
+                    builder.setNeutralButton("Send Feedback", (d, i) -> {
+                        Intent mailIntent = new Intent(Intent.ACTION_SENDTO);
+                        mailIntent.setData(Uri.parse("mailto:"));
+                        mailIntent.putExtra(Intent.EXTRA_EMAIL,
+                                new String[]{"taskapptvc+feedback@gmail.com"});
+                        mailIntent.putExtra(Intent.EXTRA_SUBJECT, "Feedback");
+                        startActivity(mailIntent);
+                    });
+                    builder.show();
+                    break;
+                }
                 mPosition = pair2.getFirst();
                 mDay = pair2.getSecond();
                 mEditedID = id;

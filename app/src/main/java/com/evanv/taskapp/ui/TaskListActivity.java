@@ -113,6 +113,11 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         List<Long> labels = convertArrayToList(getIntent().getLongArrayExtra(EXTRA_LABELS));
         int priority = getIntent().getIntExtra(EXTRA_PRIORITY, -1);
 
+        // Go back to the main screen if logic subsystem hasn't been initialized yet.
+        if (getLogicSubsystem() == null) {
+            onBackPressed();
+        }
+
         List<TaskItem> taskItemList = getLogicSubsystem().filter(startDate, endDate,
                 project, name, minTime, maxTime, completable, labels, priority, this);
 

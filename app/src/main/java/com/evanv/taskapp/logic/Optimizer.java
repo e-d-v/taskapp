@@ -275,6 +275,8 @@ public class Optimizer {
                 }
             }
 
+            minIndex = minIndex == -1 ? earlyDateIndex : minIndex;
+
             // Schedule the task for this date
             schedule(t, minIndex, startDate, taskSchedule, time);
 

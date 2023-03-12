@@ -195,4 +195,7 @@
     <string name="show_only_completable_tasks">Show only completable tasks</string>
     <string name="weeks_between_recurrences">Weeks between recurrences:</string>
     <string name="end_before_start_err">Make sure to enter a time after the start time</string>
+    <string name="error_encountered">Error encountered.</string>
+    <string name="task_complete_error">taskapp had an error completing this task. Please send us an email with details of how this occurred using this link. Don\'t worry, no data loss occurred, we would recommend restarting the app.</string>
+    <string name="task_edit_error">taskapp had an error editing this task. Please send us an email with details of how this occurred using this link. Don\'t worry, no data loss occurred, we would recommend restarting the app.</string>
 </resources>

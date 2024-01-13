@@ -162,8 +162,13 @@ public class EventEntry extends ItemEntry {
                     EventEntry.super.mEarlyDate = mStartTime.toLocalDate().toEpochDay();
                     setText(Event.dateFormat.format(mStartTime), mStartTimeLabel,
                             getString(R.string.start_time_format));
-                    mEndTime = null;
-                    setText("None Chosen", mEndTimeLabel, getString(R.string.end_time_format));
+
+                    if (mStartTime.getDayOfYear() != mEndTime.getDayOfYear() ||
+                        mStartTime.getYear() != mEndTime.getYear() ||
+                        mStartTime.isAfter(mEndTime)) {
+                        mEndTime = null;
+                        setText("None Chosen", mEndTimeLabel, getString(R.string.end_time_format));
+                    }
                 } catch (Exception ignored) { }
             }
 
@@ -202,9 +207,10 @@ public class EventEntry extends ItemEntry {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 try {
-                    mEndTime = LocalDateTime.from(Event.dateFormat.parse(charSequence));
+                    LocalDateTime temp = LocalDateTime.from(Event.dateFormat.parse(charSequence));
                     
-                    if (!mEndTime.isBefore(mStartTime)) {
+                    if (!temp.isBefore(mStartTime)) {
+                        mEndTime = temp;
                         setText(Event.dateFormat.format(mEndTime), mEndTimeLabel,
                                 getString(R.string.end_time_format));
                     }

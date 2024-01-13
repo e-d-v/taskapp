@@ -415,6 +415,7 @@ public class TaskEntry extends ItemEntry {
                             ((dialogInterface, i) -> {
                                 // Open Label Entry dialog
                                 LabelEntry labelEntry = new LabelEntry();
+                                labelEntry.setOnSubmit(this);
                                 labelEntry.show(getParentFragmentManager(), "LABEL ENTRY");
                             }));
 
@@ -431,7 +432,7 @@ public class TaskEntry extends ItemEntry {
     /**
      * Handles the pick project dialog
      */
-    private class PickProjectListener implements View.OnClickListener {
+    public class PickProjectListener implements View.OnClickListener {
         /**
          * Opens a dialog allowing the user to set labels for the task
          *
@@ -468,6 +469,7 @@ public class TaskEntry extends ItemEntry {
                     .setNeutralButton(getString(R.string.add_project), ((dialogInterface, i) -> {
                         // Open Project Entry dialog
                         ProjectEntry projectEntry = new ProjectEntry();
+                        projectEntry.setOnSubmit(this);
                         projectEntry.show(getParentFragmentManager(), "PROJECT ENTRY");
                     }));
 
@@ -568,12 +570,22 @@ public class TaskEntry extends ItemEntry {
 
             ImageView finalSelectIndicator = convertView.findViewById(R.id.selectIndicator);
             chip.setOnClickListener(v -> {
+                long oldProject = mProject;
+
                 mProject = LogicSubsystem.getInstance().getProjectID(position);
-                if (mCurrentSelected != null) {
+
+                if (mProject == oldProject) {
                     mCurrentSelected.setVisibility(View.INVISIBLE);
+                    mCurrentSelected = null;
+                    mProject = -1;
+                } else {
+                    if (mCurrentSelected != null) {
+                        mCurrentSelected.setVisibility(View.INVISIBLE);
+                    }
+                    mCurrentSelected = finalSelectIndicator;
+                    mCurrentSelected.setVisibility(View.VISIBLE);
                 }
-                mCurrentSelected = finalSelectIndicator;
-                mCurrentSelected.setVisibility(View.VISIBLE);
+
             });
 
             if (mProject == LogicSubsystem.getInstance().getProjectID(position)) {

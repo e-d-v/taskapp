@@ -127,6 +127,7 @@ public class ProjectItemAdapter extends RecyclerView.Adapter<ProjectItemAdapter.
                         LogicSubsystem.getInstance().deleteProject(curr.getID());
                         mProjectsList.remove(position);
                         notifyItemRemoved(position);
+                        notifyItemRangeChanged(position, getItemCount());
                         break;
                 }
             });

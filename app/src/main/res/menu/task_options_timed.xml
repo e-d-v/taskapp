@@ -14,4 +14,9 @@
         android:id="@+id/action_time_task"
         android:orderInCategory="102"
         android:title="@string/stop_timer"/>
+    
+    <item
+        android:id="@+id/action_pause_timer"
+        android:orderInCategory="103"
+        android:title="@string/pause_timer"/>
 </menu>

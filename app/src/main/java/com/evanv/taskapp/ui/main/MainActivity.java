@@ -583,6 +583,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             case (R.id.action_time_task):
                 timeTask();
                 break;
+            case (R.id.action_pause_timer):
+                pauseTimer();
+                break;
             case (R.id.action_delete_event):
                 // Show optimizing... screen
                 deleteEvent();
@@ -597,6 +600,18 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         }
 
         return true;
+    }
+
+    private void pauseTimer() {
+        int timerVal = mLogicSubsystem.getTimer();
+        mLogicSubsystem.addTodayTime(timerVal);
+
+        timeTask();
+
+        Runnable toRun = new OptimizeRunnable();
+
+        Thread thread = new Thread(toRun);
+        thread.start();
     }
 
     /**

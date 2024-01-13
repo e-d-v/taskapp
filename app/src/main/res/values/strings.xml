@@ -198,4 +198,5 @@
     <string name="days_to_recur_on">Days to recur on:</string>
     <string name="an_error_occurred">An error occurred</string>
     <string name="already_completed">This task had already been marked as completed. No further data was corrupted.</string>
+    <string name="pause_timer">Pause Timer</string>
 </resources>

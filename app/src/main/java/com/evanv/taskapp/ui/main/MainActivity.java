@@ -507,7 +507,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      * Show a prompt asking the user how much time a task took to complete, and then add that time
      * to todayTime.
      */
-    private void ttcPrompt(int newDays, int oldDays) {
+    private void ttcPrompt() {
         // Prompt the user to ask how long it took to complete the task, and add this time to
         // todayTime to prevent the user from being overscheduled on today's date.
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
@@ -518,12 +518,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         builder.setTitle(R.string.complete_dialog_title)
                 .setMessage(R.string.complete_dialog_message)
                 .setPositiveButton("OK", ((dialogInterface, i) -> {
+                    mLogicSubsystem.onButtonClick(mPosition, mDay, 0, this);
+                    int newDays = mLogicSubsystem.getNumDays();
+
                     if (et.getText().length() != 0) {
                         mLogicSubsystem.addTodayTime(Integer.parseInt(et.getText().toString()));
 
                         finishButtonPress(newDays);
                     }
-                }));
+                }))
+                .setNegativeButton("Cancel", (dialogInterface, i) -> {});
         builder.show();
     }
 
@@ -674,12 +678,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             timerVal = mLogicSubsystem.getTimer();
         }
 
-        int oldDays = mLogicSubsystem.getNumDays();
-        mLogicSubsystem.onButtonClick(mPosition, mDay, 0, this);
-        int newDays = mLogicSubsystem.getNumDays();
 
         if (isTimed) {
-
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
             builder.setMessage(String.format(getString(R.string.timer_prompt), timerVal));
@@ -688,6 +688,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             // continue.
             int finalTimerVal = timerVal;
             builder.setPositiveButton("OK", (dialogInterface, i) -> {
+                mLogicSubsystem.onButtonClick(mPosition, mDay, 0, this);
+                int newDays = mLogicSubsystem.getNumDays();
+
                 mLogicSubsystem.addTodayTime(finalTimerVal);
 
                 finishButtonPress(newDays);
@@ -695,15 +698,16 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
             // If user chooses to use a different time, show the normal time to complete
             // dialog.
-            builder.setNegativeButton("Manual Time", (dialogInterface, i) ->
-                    ttcPrompt(newDays, oldDays));
+            builder.setNeutralButton("Manual Time", (dialogInterface, i) -> ttcPrompt());
+
+            builder.setNegativeButton("Cancel", (dialogInterface, i) -> {});
 
             builder.show();
             return;
         }
 
         // User did not have a timer set, so use the normal time to complete dialog.
-        ttcPrompt(newDays, oldDays);
+        ttcPrompt();
     }
 
     /**

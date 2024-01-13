@@ -53,6 +53,11 @@ public class ProjectActivity extends AppCompatActivity implements ClickListener 
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
+        if (LogicSubsystem.getInstance() == null) {
+            finish();
+            return;
+        }
+
         ArrayList<String> projectNames = LogicSubsystem.getInstance().getProjectNames();
         ArrayList<String> projectGoals = LogicSubsystem.getInstance().getProjectGoals();
         ArrayList<Integer> projectColors = LogicSubsystem.getInstance().getProjectColors();

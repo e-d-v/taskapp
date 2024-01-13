@@ -93,8 +93,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/subheader"
-            android:text="Days to recur on: "
-            tools:ignore="HardcodedText" />
+            android:text="@string/days_to_recur_on"/>
         <EditText
             android:inputType="textShortMessage"
             android:id="@+id/recurDaysEditText"

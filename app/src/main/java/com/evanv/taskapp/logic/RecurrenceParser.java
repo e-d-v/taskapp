@@ -350,6 +350,10 @@ public class RecurrenceParser {
             LocalDate toRet = mCurrent;
             mCurrent = toRet.plus(1, ChronoUnit.DAYS);
 
+            if (mCurrDate == 7) {
+                mCurrDate = 0;
+            }
+
             if (!mDays[mCurrDate]) {
                 toRet = null;
             }

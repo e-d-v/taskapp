@@ -38,18 +38,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/radioButtonStatic"
-            android:checked="true"
-            tools:ignore="HardcodedText" />
+            android:checked="true" />
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/radioButtonDynamic"
-            tools:ignore="HardcodedText" />
+            android:id="@+id/radioButtonDynamic" />
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/recur_specific"
-            tools:ignore="HardcodedText" />
+            android:text="@string/recur_specific" />
     </RadioGroup>
 
     <LinearLayout
@@ -62,8 +59,7 @@
             android:layout_height="wrap_content"
             android:visibility="visible"
             style="@style/subheader"
-            android:text="Days to recur on: "
-            tools:ignore="HardcodedText" />
+            android:text="@string/days_to_recur_on" />
         <EditText
             android:inputType="textShortMessage"
             android:id="@+id/recurDaysEditText"

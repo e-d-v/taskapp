@@ -125,7 +125,6 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             case 4:
                 name.setSpan(new ForegroundColorSpan(Color.RED), 0, name.length(), 0);
             case 3:
-                holder.complete.setColorFilter(Color.RED);
                 break;
         }
 

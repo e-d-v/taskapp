@@ -117,7 +117,7 @@ public class Optimizer {
      */
     public ArrayList<Task> Optimize(List<Task> tasks, List<List<Task>> taskSchedule,
                                     List<List<Event>> eventSchedule, LocalDate startDate,
-                                    int todayTime) {
+                                    int todayTime, boolean enableConsistency) {
         taskSchedule.clear();
 
         LocalDate lateDate = startDate;
@@ -182,7 +182,7 @@ public class Optimizer {
         // swap with to better spread out time. Repeats until local minimum is found or max_iters is
         // reached (although something is likely seriously wrong if it gets anywhere close to that.
         while (changed && iter++ < max_iters) {
-            changed = update(tasks, startDate, taskSchedule, time);
+            changed = update(tasks, startDate, taskSchedule, time, enableConsistency);
         }
 
         // With the schedule finalized, we will create a list of all the changed do dates. This list
@@ -276,7 +276,7 @@ public class Optimizer {
             }
 
             // Schedule the task for this date
-            schedule(t, minIndex, startDate, taskSchedule, time);
+            schedule(t, minIndex == -1 ? earlyDateIndex : minIndex, startDate, taskSchedule, time);
 
             // Remove it as a dependency for it's children in the working task dependency graph so
             // we can schedule tasks that now have all their prerequisite tasks scheduled
@@ -313,7 +313,7 @@ public class Optimizer {
      * @return true if the update moved a task, false if converged
      */
     private boolean update(List<Task> tasks, LocalDate startDate, List<List<Task>> taskSchedule
-            , int[] time) {
+            , int[] time, boolean enableConsistency) {
         boolean changed = false;
 
         // Sees if there's a date that is underscheduled it can move to
@@ -332,6 +332,10 @@ public class Optimizer {
             // Get the index into tasks/taskSchedule
             int lateDateIndex = getDiff(currLateDate, startDate);
 
+            for (int j = taskSchedule.size(); j <= lateDateIndex; j++) {
+                taskSchedule.add(new ArrayList<>());
+            }
+
             // Sees if it can find a better date to schedule the task for
             for (int j = earlyDateIndex; j <= lateDateIndex; j++) {
                 if (moveDate(time, j, curr, startDate, taskSchedule)) {
@@ -345,7 +349,7 @@ public class Optimizer {
                     // The task we would potentially swap curr with
                     Task other = taskSchedule.get(j).get(k);
 
-                    if (swapTasks(curr, other, time, startDate, taskSchedule)) {
+                    if (swapTasks(curr, other, time, startDate, taskSchedule, enableConsistency)) {
                         changed = true;
                     }
                 }
@@ -405,7 +409,7 @@ public class Optimizer {
      * @return true if tasks were swapped, false otherwise
      */
     private boolean swapTasks(Task t1, Task t2, int[] time, LocalDate startDate,
-                              List<List<Task>> taskSchedule) {
+                              List<List<Task>> taskSchedule, boolean enableConsistency) {
         boolean changed = false;
 
         // Get indices
@@ -443,15 +447,19 @@ public class Optimizer {
 
         // True if the swap "preserves order", essentially makes sure that if task swapping doesn't
         // change time in minutes, it will instead make sure to prioritize tasks by compareTo.
-        boolean preservesOrder = (t1.compareTo(t2) < 0) ? doDateIndex > otherDateIndex :
-                doDateIndex < otherDateIndex;
+        boolean preservesOrder = false;
 
-        // True if the swap makes less changes to today's schedule than the current scheduling
-        int currSame = (doDateIndex == getDiff(t1.getDoDate(), startDate) && doDateIndex == 0 ? 1 : 0) +
-                (otherDateIndex == getDiff(t2.getDoDate(), startDate) && otherDateIndex == 0 ? 1 : 0);
-        int newSame = (otherDateIndex == getDiff(t1.getDoDate(), startDate) && otherDateIndex == 0 ? 1 : 0) +
-                (doDateIndex == getDiff(t2.getDoDate(), startDate) && doDateIndex == 0 ? 1 : 0);
-        preservesOrder |= newSame > currSame;
+        if (enableConsistency) {
+            preservesOrder = (t1.compareTo(t2) < 0) ? doDateIndex > otherDateIndex :
+                    doDateIndex < otherDateIndex;
+
+            // True if the swap makes less changes to today's schedule than the current scheduling
+            int currSame = (doDateIndex == getDiff(t1.getDoDate(), startDate) && doDateIndex == 0 ? 1 : 0) +
+                    (otherDateIndex == getDiff(t2.getDoDate(), startDate) && otherDateIndex == 0 ? 1 : 0);
+            int newSame = (otherDateIndex == getDiff(t1.getDoDate(), startDate) && otherDateIndex == 0 ? 1 : 0) +
+                    (doDateIndex == getDiff(t2.getDoDate(), startDate) && doDateIndex == 0 ? 1 : 0);
+            preservesOrder |= newSame > currSame;
+        }
 
         // Swaps the tasks if it creates a more optimal schedule
         if (newDiff < currDiff || (newDiff == currDiff && preservesOrder)) {

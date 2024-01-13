@@ -114,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         boolean assumeOverdueIncomplete = settings.getBoolean("assumeIncomplete", false);
+        boolean enableConsistency = settings.getBoolean("enableConsistency", false);
 
         mEditedID = -1;
 
@@ -124,7 +125,8 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         mLogicSubsystem = LogicSubsystem.getInstance();
 
         if (mLogicSubsystem == null) {
-            mLogicSubsystem = new LogicSubsystem(this, todayTime, timedTaskID, timerStart);
+            mLogicSubsystem = new LogicSubsystem(this, todayTime, timedTaskID, timerStart,
+                    enableConsistency);
         }
 
         // Will eventually return info from projects
@@ -155,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             // User set to assume overdue tasks are incomplete, so mark all overdue tasks as
             // incomplete
             if (assumeOverdueIncomplete) {
-                mLogicSubsystem.updateOverdueTasks(selectedItems, context);
+                mLogicSubsystem.updateOverdueTasks(selectedItems, this);
                 finishProcessing(true);
                 return;
             }
@@ -463,25 +465,42 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             case 0:
                 // Show optimizing... screen
                 Pair<Integer, Integer> pair = mLogicSubsystem.convertDay(id);
+                if (pair == null) {
+                    completedTaskError();
+                    return;
+                }
 
                 mPosition = pair.getFirst();
                 mDay = pair.getSecond();
                 completeTask();
-                break;
+                return;
             // Options button pressed, set mPosition/mDay
             case 1:
             case 3:
                 mPosition = position;
                 mDay = day;
-                break;
+                return;
             case 2:
                 Pair<Integer, Integer> pair2 = mLogicSubsystem.convertDay(id);
+
+                if (pair2 == null) {
+                    completedTaskError();
+                    return;
+                }
 
                 mPosition = pair2.getFirst();
                 mDay = pair2.getSecond();
                 mEditedID = id;
                 break;
         }
+    }
+
+    private void completedTaskError() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        builder.setTitle(R.string.an_error_occurred);
+        builder.setMessage(R.string.already_completed);
+        builder.show();
     }
 
     /**
@@ -531,13 +550,11 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
                     getMenuInflater().inflate(R.menu.task_options_timed_today, menu);
                 }
             }
+            else if (mDay != 0) {
+                getMenuInflater().inflate(R.menu.task_options, menu);
+            }
             else {
-                if (mDay != 0) {
-                    getMenuInflater().inflate(R.menu.task_options, menu);
-                }
-                else {
-                    getMenuInflater().inflate(R.menu.task_options_today, menu);
-                }
+                getMenuInflater().inflate(R.menu.task_options_today, menu);
             }
         }
     }

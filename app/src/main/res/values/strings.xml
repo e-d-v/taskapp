@@ -194,4 +194,8 @@
     <string name="maximum_time">Maximum Time</string>
     <string name="show_only_completable_tasks">Show only completable tasks</string>
     <string name="weeks_between_recurrences">Weeks between recurrences:</string>
+    <string name="end_before_start_err">Make sure not to put end date before start date.</string>
+    <string name="days_to_recur_on">Days to recur on:</string>
+    <string name="an_error_occurred">An error occurred</string>
+    <string name="already_completed">This task had already been marked as completed. No further data was corrupted.</string>
 </resources>

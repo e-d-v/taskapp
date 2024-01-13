@@ -37,24 +37,29 @@ import kotlin.Pair;
  * @author Evan Voogd
  */
 public class LogicSubsystem {
-    // taskSchedule[i] represents the list of tasks for the day i days past startDate
-    private final List<List<Task>> mTaskSchedule = new ArrayList<>();
-    // eventSchedule[i] represents the list of events for the day i days past startDate
-    private final List<List<Event>> mEventSchedule = new ArrayList<>();
-    private final LocalDate mStartDate;           // The current date
-    private int mTodayTime;                       // The time spent completing tasks today
-    private List<Task> mTasks;                    // List of all tasks for user
-    private TaskAppViewModel mTaskAppViewModel;   // ViewModel to interact with Database
-    private List<Task> overdueTasks;              // Overdue tasks
-    private Task mTimerTask;                      // Task currently being timed.
-    private LocalDateTime mTimer;                 // Start time of current timer
-    private final List<Project> mProjects;        // List of current projects.
-    private final List<Label> mLabels;            // List of current labels.
-    private List<Integer> mUpdatedIndices;        // List of updated indices.
-    private boolean mCorruptionDetected;          // Did we find corruption?
-    private int mFailures;                        // Number of corrupted tasks
 
     private static volatile LogicSubsystem INSTANCE; // The singleton of the LogicSubsystem
+    private boolean mCorruptionDetected;          // Did we find corruption?
+    // eventSchedule[i] represents the list of events for the day i days past startDate
+    private final List<List<Event>> mEventSchedule = new ArrayList<>();
+    private int mFailures;                        // Number of corrupted tasks
+    private final List<Label> mLabels;            // List of current labels.
+    private final List<Project> mProjects;        // List of current projects.
+    private final LocalDate mStartDate;           // The current date
+    private TaskAppViewModel mTaskAppViewModel;   // ViewModel to interact with Database
+    // taskSchedule[i] represents the list of tasks for the day i days past startDate
+    private final List<List<Task>> mTaskSchedule = new ArrayList<>();
+    private List<Task> mTasks;                    // List of all tasks for user
+    private LocalDateTime mTimer;                 // Start time of current timer
+    private Task mTimerTask;                      // Task currently being timed.
+    private int mTodayTime;                       // The time spent completing tasks today
+    private List<Integer> mUpdatedIndices;        // List of updated indices.
+    private List<Task> overdueTasks;              // Overdue tasks
+    private final boolean mEnableConsistency;     // Try to keep task schedule consistent
+
+    
+    
+    
 
     /**
      * Creates a new LogicSubsystem and loads data from database into internal data structures.
@@ -66,12 +71,14 @@ public class LogicSubsystem {
      * @param timedTaskID ID of the task currently being timed.
      * @param timerStart Start time of the current timer.
      */
-    public LogicSubsystem(MainActivity mainActivity, int todayTime, long timedTaskID, long timerStart) {
+    public LogicSubsystem(MainActivity mainActivity, int todayTime, long timedTaskID,
+                          long timerStart, boolean enableConsistency) {
         if (INSTANCE != null) {
             throw new IllegalStateException();
         }
 
         this.mTodayTime = todayTime;
+        mEnableConsistency = enableConsistency;
         mFailures = 0;
 
         // startDate is our representation for the current date upon the launch of TaskApp.
@@ -173,7 +180,11 @@ public class LogicSubsystem {
      * @return The singleton instance of the LogicSubsystem
      */
     public static synchronized LogicSubsystem getInstance() {
-        return INSTANCE;
+        LogicSubsystem logicSubsystem;
+        synchronized (LogicSubsystem.class) {
+            logicSubsystem = INSTANCE;
+        }
+        return logicSubsystem;
     }
 
     /**
@@ -238,8 +249,8 @@ public class LogicSubsystem {
     public void updateOverdueTasks(List<Integer> completedItems, Context context) {
         // As the user has marked these tasks as completed, remove them.
         for (int i = 0; i < completedItems.size(); i++) {
-            Complete(overdueTasks.get(completedItems.get(i)), context);
-            mTaskAppViewModel.delete(overdueTasks.get(completedItems.get(i)));
+            Complete(this.overdueTasks.get(completedItems.get(i)), context);
+            this.mTaskAppViewModel.delete(this.overdueTasks.get(completedItems.get(i)));
         }
 
         // Change due date for overdue tasks if it has already been passed to today.
@@ -333,16 +344,14 @@ public class LogicSubsystem {
         // If the task is in the internal data structure, remove it.
         if (diff >= 0) {
             mTaskSchedule.get(diff).remove(task);
-
-            mUpdatedIndices.add(diff);
+            this.mUpdatedIndices.add(diff);
         }
 
         // Remove the task from the task dependency graph
         for (int i = 0; i < task.getChildren().size(); i++) {
             task.getChildren().get(i).removeParent(task);
             mTaskAppViewModel.update(task.getChildren().get(i));
-
-            mUpdatedIndices.add(getDiff(task.getChildren().get(i).getDoDate(), mStartDate));
+            this.mUpdatedIndices.add(Task.getDiff(task.getChildren().get(i).getDoDate(), this.mStartDate));
         }
         for (int i = 0; i < task.getParents().size(); i++) {
             task.getParents().get(i).removeChild(task);
@@ -381,7 +390,7 @@ public class LogicSubsystem {
     public void Optimize() {
         Optimizer opt = new Optimizer();
         ArrayList<Task> changedTasks = opt.Optimize
-                (mTasks, mTaskSchedule, mEventSchedule, mStartDate, mTodayTime);
+                (mTasks, mTaskSchedule, mEventSchedule, mStartDate, mTodayTime, mEnableConsistency);
 
         pareDownSchedules();
 
@@ -398,9 +407,8 @@ public class LogicSubsystem {
     private void updateTasks(List<Task> changedTasks) {
         // Update the task with the new do date, and reflect this change in the database.
         for (Task t : changedTasks) {
-            mUpdatedIndices.add(getDiff(t.getDoDate(), mStartDate));
-            mUpdatedIndices.add(getDiff(t.getWorkingDoDate(), mStartDate));
-
+            this.mUpdatedIndices.add(Task.getDiff(t.getDoDate(), this.mStartDate));
+            this.mUpdatedIndices.add(Task.getDiff(t.getWorkingDoDate(), this.mStartDate));
             t.setDoDate(t.getWorkingDoDate());
             mTaskAppViewModel.update(t);
         }
@@ -588,14 +596,15 @@ public class LogicSubsystem {
         // The list of TaskItems representing the tasks scheduled for the date index days past
         // today's date
         List<TaskItem> itemList = new ArrayList<>();
+        List<Task> taskList2 = new ArrayList<>(taskList);
 
-        Collections.sort(taskList);
+        Collections.sort(taskList2);
 
         // Add all the tasks scheduled for the given date to itemList
-        if (!taskList.isEmpty()) {
-            for (int j = 0; j < taskList.size(); j++) {
+        if (!taskList2.isEmpty()) {
+            for (int j = 0; j < taskList2.size(); j++) {
                 // Get the jth task scheduled for the given day.
-                Task task = taskList.get(j);
+                Task task = taskList2.get(j);
 
                 itemList.add(TaskItemHelper(task, j, context));
             }
@@ -800,7 +809,7 @@ public class LogicSubsystem {
      */
     @SuppressWarnings("UnusedReturnValue")
     public int getNumDays() {
-        return Integer.max(mEventSchedule.size(), mTaskSchedule.size());
+        return Math.max(this.mEventSchedule.size(), this.mTaskSchedule.size());
     }
 
     /**
@@ -821,8 +830,7 @@ public class LogicSubsystem {
 
         mTimer = LocalDateTime.now();
         mTimerTask = toTime;
-
-        mUpdatedIndices.add(day);
+        this.mUpdatedIndices.add(day);
     }
 
     /**
@@ -1304,7 +1312,7 @@ public class LogicSubsystem {
      * @return the ID of the given task
      */
     public Long getTaskID(int index) {
-        return mTasks.get(index).getID();
+        return this.mTasks.get(index).getID();
     }
 
     /**
@@ -1717,7 +1725,7 @@ public class LogicSubsystem {
                 for (Task t : p.getTasks()) {
                     t.removeProject();
                     mTaskAppViewModel.update(t);
-                    mUpdatedIndices.add(getDiff(t.getDoDate(), mStartDate));
+                    this.mUpdatedIndices.add(Task.getDiff(t.getDoDate(), this.mStartDate));
                 }
                 mProjects.remove(p);
                 mTaskAppViewModel.delete(p);
@@ -1789,7 +1797,7 @@ public class LogicSubsystem {
                 mTaskAppViewModel.update(p);
 
                 for (Task t : p.getTasks()) {
-                    mUpdatedIndices.add(getDiff(t.getDoDate(), mStartDate));
+                    this.mUpdatedIndices.add(Task.getDiff(t.getDoDate(), this.mStartDate));
                 }
             }
         }

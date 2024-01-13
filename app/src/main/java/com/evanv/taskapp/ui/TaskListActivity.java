@@ -113,6 +113,11 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         List<Long> labels = convertArrayToList(getIntent().getLongArrayExtra(EXTRA_LABELS));
         int priority = getIntent().getIntExtra(EXTRA_PRIORITY, -1);
 
+        if (getLogicSubsystem() == null) {
+            finish();
+            return;
+        }
+
         List<TaskItem> taskItemList = getLogicSubsystem().filter(startDate, endDate,
                 project, name, minTime, maxTime, completable, labels, priority, this);
 
@@ -342,6 +347,11 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
         // If it is today's date, check if "Work Ahead" is displayed and then convert position/day
         convertDay();
 
+        if (this.mID == -1) {
+            finish();
+            return;
+        }
+
         getLogicSubsystem().onButtonClick(mID, 1, this);
 
         removeItem();
@@ -381,7 +391,8 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
                         removeItem();
                     }
                 }));
-        builder.show();}
+        builder.show();
+    }
 
     /**
      * Remove the currently selected item and update the recycler

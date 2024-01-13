@@ -10,6 +10,7 @@ import com.evanv.taskapp.db.Converters;
 
 import org.threeten.bp.LocalDateTime;
 
+import org.threeten.bp.chrono.ChronoLocalDateTime;
 import org.threeten.bp.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
@@ -170,6 +171,6 @@ public class Event implements Comparable<Event> {
      */
     @Override
     public int compareTo(Event other) {
-        return mDoDate.compareTo(other.getDoDate());
+        return mDoDate.compareTo((ChronoLocalDateTime<?>) other.getDoDate());
     }
 }

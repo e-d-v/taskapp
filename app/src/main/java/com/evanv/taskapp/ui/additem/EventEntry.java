@@ -203,8 +203,15 @@ public class EventEntry extends ItemEntry {
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 try {
                     mEndTime = LocalDateTime.from(Event.dateFormat.parse(charSequence));
-                    setText(Event.dateFormat.format(mEndTime), mEndTimeLabel,
-                            getString(R.string.end_time_format));
+                    
+                    if (!mEndTime.isBefore(mStartTime)) {
+                        setText(Event.dateFormat.format(mEndTime), mEndTimeLabel,
+                                getString(R.string.end_time_format));
+                    }
+                    else {
+                        Toast.makeText(requireContext(), getString(R.string.end_before_start_err),
+                                Toast.LENGTH_LONG).show();
+                    }
                 }
                 catch (Exception ignored) { }
             }

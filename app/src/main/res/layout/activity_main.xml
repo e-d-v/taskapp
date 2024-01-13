@@ -54,7 +54,7 @@
         <LinearLayout
             android:id="@+id/addEventLayout"
             android:orientation="horizontal"
-            android:layout_gravity="bottom|end"
+            android:layout_gravity="bottom|center_vertical|center_horizontal|center|end"
             app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
             android:gravity="center"
             android:layout_width="wrap_content"
@@ -88,7 +88,7 @@
         <LinearLayout
             android:id="@+id/addTaskLayout"
             android:orientation="horizontal"
-            android:layout_gravity="bottom|end"
+            android:layout_gravity="bottom|center_vertical|center_horizontal|center|end"
             app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
             android:gravity="center"
             android:layout_margin="@dimen/standard_21"
@@ -125,7 +125,7 @@
             android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
+            android:layout_gravity="bottom|center_vertical|center_horizontal|center|end"
             android:layout_marginEnd="@dimen/fab_margin"
             android:layout_marginBottom="16dp"
             android:contentDescription="@string/plus"

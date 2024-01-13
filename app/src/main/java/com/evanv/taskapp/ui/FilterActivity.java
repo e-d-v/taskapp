@@ -71,6 +71,11 @@ public class FilterActivity extends AppCompatActivity {
 
         setSupportActionBar(findViewById(R.id.toolbar));
 
+        if (LogicSubsystem.getInstance() == null) {
+            onBackPressed();
+            return;
+        }
+
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         mContext = this;
@@ -543,6 +548,12 @@ public class FilterActivity extends AppCompatActivity {
 
             Chip chip = convertView.findViewById(R.id.chip);
             ImageView checkmark = convertView.findViewById(R.id.selectIndicator);
+
+            if (LogicSubsystem.getInstance() == null) {
+                finish();
+                return convertView;
+            }
+
             long labelID = LogicSubsystem.getInstance().getLabelID(position);
 
             chip.setText(LogicSubsystem.getInstance().getLabelName(labelID));
@@ -618,15 +629,18 @@ public class FilterActivity extends AppCompatActivity {
      */
     @Override
     protected void onPause() {
-        // Update todayTime in SharedPreferences
-        SharedPreferences sp = getSharedPreferences(MainActivity.PREF_FILE, MODE_PRIVATE);
-        SharedPreferences.Editor edit = sp.edit();
-        edit.putLong(MainActivity.PREF_DAY, LogicSubsystem.getInstance().getStartDate().toEpochDay());
-        edit.putInt(MainActivity.PREF_TIME, LogicSubsystem.getInstance().getTodayTime());
-        edit.putLong(MainActivity.PREF_TIMED_TASK, LogicSubsystem.getInstance().getTimedID());
-        edit.putLong(MainActivity.PREF_TIMER, LogicSubsystem.getInstance().getTimerStart());
+        if (LogicSubsystem.getInstance() != null) {
+            // Update todayTime in SharedPreferences
+            SharedPreferences sp = getSharedPreferences(MainActivity.PREF_FILE, MODE_PRIVATE);
+            SharedPreferences.Editor edit = sp.edit();
+            edit.putLong(MainActivity.PREF_DAY, LogicSubsystem.getInstance().getStartDate().toEpochDay());
+            edit.putInt(MainActivity.PREF_TIME, LogicSubsystem.getInstance().getTodayTime());
+            edit.putLong(MainActivity.PREF_TIMED_TASK, LogicSubsystem.getInstance().getTimedID());
+            edit.putLong(MainActivity.PREF_TIMER, LogicSubsystem.getInstance().getTimerStart());
 
-        edit.apply();
+            edit.apply();
+        }
+
         super.onPause();
     }
 }

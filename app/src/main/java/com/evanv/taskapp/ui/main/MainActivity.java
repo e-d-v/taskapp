@@ -597,6 +597,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
             case (R.id.action_postpone_task):
                 postponeTask();
                 break;
+            case (R.id.action_lock_task_date):
+                lockTaskDate();
+                break;
         }
 
         return true;
@@ -667,6 +670,13 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
      */
     private void deleteTask() {
         mLogicSubsystem.onButtonClick(mPosition, mDay, 1, this);
+        int newDays = mLogicSubsystem.getNumDays();
+
+        finishButtonPress(newDays);
+    }
+
+    private void lockTaskDate() {
+        mLogicSubsystem.lockTaskDate(mPosition, mDay);
         int newDays = mLogicSubsystem.getNumDays();
 
         finishButtonPress(newDays);

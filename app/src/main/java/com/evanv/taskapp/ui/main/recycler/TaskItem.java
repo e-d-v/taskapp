@@ -10,7 +10,6 @@ import java.util.List;
 public class TaskItem {
     private final String mName;               // Name of the task (e.g. "Read Ch. 3")
     private int mIndex;                       // Index into taskSchedule.get(day) for this event
-    private final boolean mHasTimer;          // Task has active timer.
     private final int mPriority;              // Priority of task
     private final String mProject;            // Name of the Project associated with the Task
     private final int mProjectColor;          // Color of the Project associated with the Task
@@ -24,7 +23,6 @@ public class TaskItem {
      * @param name The name of the Task
      * @param index Index in the recycler of the task
      * @param completable Can the task be completed right now?
-     * @param hasTimer Does the task currently have an active timer?
      * @param priority Priority of the Task
      * @param project Name of the task's project
      * @param projectColor Color of the task's project
@@ -33,13 +31,12 @@ public class TaskItem {
      * @param ID the ID of the Task.
      */
     @SuppressWarnings("unused")
-    public TaskItem(String name, int index, boolean completable, boolean hasTimer, int priority,
+    public TaskItem(String name, int index, boolean completable, int priority,
                     String project, int projectColor, List<String> labels, List<Integer> labelColors,
                     long ID) {
         mName = name;
         mIndex = index;
         // Can be completed today
-        mHasTimer = hasTimer;
         mPriority = priority;
         mProject = project;
         mProjectColor = projectColor;
@@ -72,15 +69,6 @@ public class TaskItem {
      */
     public String getName() {
         return mName;
-    }
-
-    /**
-     * Returns true if task is being timed, false otherwise.
-     *
-     * @return true if task is being timed, false otherwise.
-     */
-    public boolean isTimed() {
-        return mHasTimer;
     }
 
     /**

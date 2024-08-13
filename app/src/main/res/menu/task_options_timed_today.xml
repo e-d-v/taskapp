@@ -24,4 +24,9 @@
         android:id="@+id/action_postpone_task"
         android:orderInCategory="104"
         android:title="@string/postpone_task"/>
+
+    <item
+        android:id="@+id/action_lock_task_date"
+        android:orderInCategory="105"
+        android:title="@string/lock_task_desc"/>
 </menu>

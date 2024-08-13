@@ -199,4 +199,5 @@
     <string name="an_error_occurred">An error occurred</string>
     <string name="already_completed">This task had already been marked as completed. No further data was corrupted.</string>
     <string name="pause_timer">Pause Timer</string>
+    <string name="lock_task_desc">Lock Task to Scheduled Date</string>
 </resources>

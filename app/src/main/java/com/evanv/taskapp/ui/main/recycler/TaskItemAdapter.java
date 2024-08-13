@@ -104,14 +104,6 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
 
         SpannableString name = new SpannableString(taskItem.getName());
 
-        // If a task is timed, set it's name to be red.
-        if (taskItem.isTimed()) {
-            holder.options.setColorFilter(Color.RED);
-        }
-        else {
-            holder.options.setColorFilter(ContextCompat.getColor(mContext, R.color.text_primary));
-        }
-
         switch (taskItem.getPriority()) {
             case 0:
                 holder.complete.setColorFilter(ContextCompat.getColor(mContext, R.color.text_primary));
@@ -125,6 +117,7 @@ public class TaskItemAdapter extends RecyclerView.Adapter<TaskItemAdapter.TaskVi
             case 4:
                 name.setSpan(new ForegroundColorSpan(Color.RED), 0, name.length(), 0);
             case 3:
+                holder.complete.setColorFilter(ContextCompat.getColor(mContext, R.color.red));
                 break;
         }
 

@@ -628,14 +628,15 @@ public class LogicSubsystem {
         boolean completable;
 
         // Create the name in the format NAME (TTC minutes to complete)
-        name = task.getName() + "\n" +
-                String.format(context.getString(R.string.minutes_to_complete),
-                        task.getTimeToComplete());
+        name = task.getName();
+
+        if (mTimerTask != null && mTimerTask == task) {
+            name += new String(Character.toChars(0x23F3));
+        }
+        name += "\n" + String.format(context.getString(R.string.minutes_to_complete), task.getTimeToComplete());
 
         completable = (task.getEarlyDate().equals(mStartDate))
                 && (task.getParents().size() == 0);
-
-        boolean hasTimer = mTimerTask != null && mTimerTask == task;
 
         int priority = !mStartDate.isBefore(task.getDueDate()) ? 4 : task.getPriority();
 
@@ -652,7 +653,7 @@ public class LogicSubsystem {
             labelColors.add(l.getColor());
         }
 
-        return new TaskItem(name, position, completable, hasTimer, priority, project, projectColor,
+        return new TaskItem(name, position, completable, priority, project, projectColor,
                 labels, labelColors, ID);
     }
 
@@ -771,7 +772,6 @@ public class LogicSubsystem {
 
             pareDownSchedules();
         }
-
     }
 
     /**
@@ -1632,6 +1632,15 @@ public class LogicSubsystem {
         toPostpone.setEarlyDate(toPostpone.getEarlyDate().plusDays(1));
 
         mTaskAppViewModel.update(toPostpone);
+    }
+
+    public void lockTaskDate(int position, int day) {
+        Task toLock = mTaskSchedule.get(day).get(position);
+
+        toLock.setEarlyDate(toLock.getDoDate());
+        toLock.setDueDate(toLock.getDoDate());
+
+        mTaskAppViewModel.update(toLock);
     }
 
     /**

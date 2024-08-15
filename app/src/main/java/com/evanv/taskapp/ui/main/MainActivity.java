@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     public static final String PREF_TIME = "taskappTime";  // Time for todayTime
     public static final String PREF_TIMED_TASK = "taskappTimerTask"; // TaskID for timer
     public static final String PREF_TIMER = "taskappTimerStart"; // Start Date for the timer
+    private boolean mSubtractTTCOnTimerPause = false;
 
     /**
      * Runs on the start of the app. Most importantly it loads the user data from the file.
@@ -115,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         boolean assumeOverdueIncomplete = settings.getBoolean("assumeIncomplete", false);
         boolean enableConsistency = settings.getBoolean("enableConsistency", false);
+        mSubtractTTCOnTimerPause = settings.getBoolean("subtractTTCOnTimerPause", false);
 
         mEditedID = -1;
 
@@ -611,6 +613,10 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
     private void pauseTimer() {
         int timerVal = mLogicSubsystem.getTimer();
         mLogicSubsystem.addTodayTime(timerVal);
+
+        if (mSubtractTTCOnTimerPause) {
+            mLogicSubsystem.subtractFromTimedTask();
+        }
 
         timeTask();
 

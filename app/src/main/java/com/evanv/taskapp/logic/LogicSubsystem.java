@@ -1811,4 +1811,15 @@ public class LogicSubsystem {
             }
         }
     }
+
+    /**
+     * Subtracts length of current timer from timed task
+     */
+    public void subtractFromTimedTask() {
+        int ttc = mTimerTask.getTimeToComplete();
+        int timerDuration = getTimer();
+        mTimerTask.setTimeToComplete(Integer.max(0, ttc - timerDuration));
+        mTaskAppViewModel.update(mTimerTask);
+        this.mUpdatedIndices.add(Task.getDiff(mTimerTask.getDoDate(), this.mStartDate));
+    }
 }

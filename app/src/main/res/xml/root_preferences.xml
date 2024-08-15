@@ -12,4 +12,10 @@
         app:singleLineTitle="false"
         app:title="Attempt to keep tasks scheduled for same day when optimizing (slower)" />
 
+    <SwitchPreferenceCompat
+        app:iconSpaceReserved="false"
+        app:key="subtractTTCOnTimerPause"
+        app:singleLineTitle="false"
+        app:title="Subtract time spent working on task from time to complete when pausing timer" />
+
 </PreferenceScreen>

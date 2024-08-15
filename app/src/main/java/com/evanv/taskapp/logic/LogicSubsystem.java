@@ -630,7 +630,7 @@ public class LogicSubsystem {
         // Create the name in the format NAME (TTC minutes to complete)
         name = task.getName();
 
-        if (mTimerTask != null && mTimerTask == task) {
+        if (mTimerTask != null && mTimerTask.getID() == task.getID()) {
             name += new String(Character.toChars(0x23F3));
         }
         name += "\n" + String.format(context.getString(R.string.minutes_to_complete), task.getTimeToComplete());

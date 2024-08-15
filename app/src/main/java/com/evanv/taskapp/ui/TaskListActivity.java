@@ -262,8 +262,19 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
 
-        if (v.getId() == R.id.buttonTaskOptions) {
+        if (getLogicSubsystem().isTimed(mPosition, mDay)) {
+            if (mDay != 0) {
+                getMenuInflater().inflate(R.menu.task_options_timed, menu);
+            }
+            else {
+                getMenuInflater().inflate(R.menu.task_options_timed_today, menu);
+            }
+        }
+        else if (mDay != 0) {
             getMenuInflater().inflate(R.menu.task_options, menu);
+        }
+        else {
+            getMenuInflater().inflate(R.menu.task_options_today, menu);
         }
     }
 
@@ -287,9 +298,50 @@ public class TaskListActivity extends AppCompatActivity implements ClickListener
             case (R.id.action_time_task):
                 timeTask();
                 break;
+            case (R.id.action_pause_timer):
+                pauseTimer();
+                break;
+            case (R.id.action_postpone_task):
+                postponeTask();
+                break;
+            case (R.id.action_lock_task_date):
+                lockTaskDate();
+                break;
         }
 
         return true;
+    }
+
+    /**
+     * Handles the user choosing to postpone a task.
+     */
+    private void pauseTimer() {
+        int timerVal = getLogicSubsystem().getTimer();
+        getLogicSubsystem().addTodayTime(timerVal);
+
+        timeTask();
+
+        optimize();
+    }
+
+    /**
+     * Handles the user choosing to lock a task to a specific date
+     */
+    private void lockTaskDate() {
+        getLogicSubsystem().lockTaskDate(mPosition, mDay);
+        int newDays = getLogicSubsystem().getNumDays();
+
+        optimize();
+    }
+
+    /**
+     * Handles the user choosing to postpone a task.
+     */
+    private void postponeTask() {
+        getLogicSubsystem().postponeTask(mPosition, mDay);
+        int newDays = getLogicSubsystem().getNumDays();
+
+        optimize();
     }
 
     /**

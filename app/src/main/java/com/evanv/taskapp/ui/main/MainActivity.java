@@ -605,6 +605,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         return true;
     }
 
+    /**
+     * Pauses the timer of the currently timed task
+     */
     private void pauseTimer() {
         int timerVal = mLogicSubsystem.getTimer();
         mLogicSubsystem.addTodayTime(timerVal);
@@ -675,6 +678,9 @@ public class MainActivity extends AppCompatActivity implements ClickListener {
         finishButtonPress(newDays);
     }
 
+    /**
+     * Handles the user choosing to lock a task to a specific date
+     */
     private void lockTaskDate() {
         mLogicSubsystem.lockTaskDate(mPosition, mDay);
         int newDays = mLogicSubsystem.getNumDays();
